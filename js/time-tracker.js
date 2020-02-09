@@ -56,11 +56,27 @@ let stopCounter = function() {
 };
 let startNewCounter = function(projectEl) {
     // TODO Create new log
-    let startDate = getCurrentTimestamp();
-    let logId = 12;
-    let logMessage = "LAST";
-    projectEl.find(".logs").append('<div><span class="time" data-logid="' + logId + '" data-startdate="' + startDate + '" data-enddate="">0:00:00</span> - ' + logMessage + '</div>');
-    startCounter(projectEl.find(".logs .time").last());
+    $.ajax('ajax/log.php', {
+        type: 'POST',
+        data: {
+            "action": "save",
+            "projectId": projectEl.attr('data-projectid'),
+            "startDate": getCurrentTimestamp()
+        },
+        success: function(data, status, xhr) {
+console.log(data);
+            let startDate = data.startDate;
+            let logId = data.id;
+            let logMessage = data.message;
+            projectEl.find(".logs").append('<div><span class="time" data-logid="' + logId + '" data-startdate="' + startDate + '" data-enddate="">0:00:00</span> - ' + logMessage + '</div>');
+            startCounter(projectEl.find(".logs .time").last());
+        },
+        error: function(xhr, status, error) {
+            console.log(xhr.responseJSON);
+            console.log(error);
+            // TODO Log error
+        }
+    });
 };
 let startCounter = function(logEl) {
     if (runningLogEl) {

@@ -1,5 +1,6 @@
 <?php
 include_once 'PersistentObject.php';
+include_once 'Project.php';
 
 class Log extends PersistentObject {
     public static $tableName = 'log';
@@ -39,14 +40,27 @@ class Log extends PersistentObject {
             $stmt->execute();
 
             // TODO So something nice here
-            echo "Table $table created successfully";
+//            echo "Table $table created successfully";
         } catch(PDOException $e) {
             // TODO So something nice here
-            echo $e->getMessage();
+//            echo $e->getMessage();
         }
     }
 
     protected function _insert(PDO $pdo) {
+        if (!$this->message) {
+            // Get last log message or project name
+            $lastLog = Log::_getLast($pdo, $this->projectId);
+            if ($lastLog) {
+                $this->message = $lastLog->message;
+            } else {
+                $project = Project::get($this->projectId);
+                if ($project) {
+                    $this->message = $project->getName();
+                }
+            }
+        }
+
         try {
             $table = self::$tableName;
             $stmt = $pdo->prepare("INSERT INTO $table (projectId, message, startDate, endDate) VALUES (:projectId, :message, :startDate, :endDate)");
@@ -58,10 +72,10 @@ class Log extends PersistentObject {
             ));
 
             // TODO So something nice here
-            echo "Log created successfully";
+//            echo "Log created successfully";
         } catch(PDOException $e) {
             // TODO So something nice here
-            echo $e->getMessage();
+//            echo $e->getMessage();
         }
     }
     protected function _update(PDO $pdo) {
@@ -77,10 +91,10 @@ class Log extends PersistentObject {
             ));
 
             // TODO So something nice here
-            echo "Log updated successfully";
+//            echo "Log updated successfully";
         } catch(PDOException $e) {
             // TODO So something nice here
-            echo $e->getMessage();
+//            echo $e->getMessage();
         }
     }
     protected function _delete(PDO $pdo) {
@@ -92,10 +106,10 @@ class Log extends PersistentObject {
             ));
 
             // TODO So something nice here
-            echo "Log deleted successfully";
+//            echo "Log deleted successfully";
         } catch(PDOException $e) {
             // TODO So something nice here
-            echo $e->getMessage();
+//            echo $e->getMessage();
         }
     }
 
@@ -106,7 +120,8 @@ class Log extends PersistentObject {
         $stmt->execute(array(
             ':id' => $id
         ));
-        return new Log($stmt->fetch());
+        $record = $stmt->fetch();
+        return $record ? new Log($record) : NULL;
     }
     static public function getAll($projectId) {
         $db = new Database();
@@ -121,10 +136,25 @@ class Log extends PersistentObject {
 
         $logs = array();
         while($row = $stmt->fetch()) {
-            array_push($logs, new Log($row));
+            if ($row) {
+                array_push($logs, new Log($row));
+            }
         }
 
         return $logs;
+    }
+    static public function getLast($projectId) {
+        $db = new Database();
+        return Log::_getLast($db->getPDO(), $projectId);
+    }
+    static public function _getLast(PDO $pdo, $projectId) {
+        $table = self::$tableName;
+        $stmt = $pdo->prepare("SELECT * FROM $table WHERE projectId = :projectId ORDER BY startDate DESC LIMIT 1");
+        $stmt->execute(array(
+            ':projectId' => $projectId
+        ));
+        $record = $stmt->fetch();
+        return $record ? new Log($record) : NULL;
     }
 
     public function getProjectId() {

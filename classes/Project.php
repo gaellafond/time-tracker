@@ -35,10 +35,10 @@ class Project extends PersistentObject {
             $stmt->execute();
 
             // TODO So something nice here
-            echo "Table $table created successfully";
+//            echo "Table $table created successfully";
         } catch(PDOException $e) {
             // TODO So something nice here
-            echo $e->getMessage();
+//            echo $e->getMessage();
         }
     }
 
@@ -53,10 +53,10 @@ class Project extends PersistentObject {
             ));
 
             // TODO So something nice here
-            echo "Project created successfully";
+//            echo "Project created successfully";
         } catch(PDOException $e) {
             // TODO So something nice here
-            echo $e->getMessage();
+//            echo $e->getMessage();
         }
     }
     protected function _update(PDO $pdo) {
@@ -71,10 +71,10 @@ class Project extends PersistentObject {
             ));
 
             // TODO So something nice here
-            echo "Project updated successfully";
+//            echo "Project updated successfully";
         } catch(PDOException $e) {
             // TODO So something nice here
-            echo $e->getMessage();
+//            echo $e->getMessage();
         }
     }
     protected function _delete(PDO $pdo) {
@@ -91,10 +91,10 @@ class Project extends PersistentObject {
             }
 
             // TODO So something nice here
-            echo "Project deleted successfully";
+//            echo "Project deleted successfully";
         } catch(PDOException $e) {
             // TODO So something nice here
-            echo $e->getMessage();
+//            echo $e->getMessage();
         }
     }
 
@@ -106,7 +106,8 @@ class Project extends PersistentObject {
         $stmt->execute(array(
             ':id' => $id
         ));
-        return new Project($stmt->fetch());
+        $record = $stmt->fetch();
+        return $record ? new Project($record) : NULL;
     }
     static public function getAll() {
         $db = new Database();
@@ -116,7 +117,9 @@ class Project extends PersistentObject {
 
         $projects = array();
         while($row = $stmt->fetch()) {
-            array_push($projects, new Project($row));
+            if ($row) {
+                array_push($projects, new Project($row));
+            }
         }
 
         return $projects;
