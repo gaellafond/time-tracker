@@ -1,6 +1,7 @@
 <?php
 // To connect to MariaDB:
 //     sudo mariadb
+//     use timetracker;
 // Create DB
 //     CREATE DATABASE timetracker DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_unicode_ci;
 //     GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES ON timetracker.* TO 'timetracker'@'localhost' IDENTIFIED BY 'b;FT_mEQW:u5d#26';
