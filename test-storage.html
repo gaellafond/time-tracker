@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+
+        // https://blog.logrocket.com/the-complete-guide-to-using-localstorage-in-javascript-apps-ba44edb53a36/
+
+        const getPerson = function() {
+            const person = window.localStorage.getItem('user');
+
+            return person == null ? createPerson() : person;
+        };
+
+        const createPerson = function() {
+            const person = {
+                name: "Potato",
+                location: "Perth",
+            };
+
+            window.localStorage.setItem('user', JSON.stringify(person));
+
+            return person;
+        };
+
+        const deletePerson = function() {
+            window.localStorage.removeItem('user');
+        };
+
+        const clearDatabase = function() {
+            window.localStorage.clear();
+        };
+
+        const personStr = getPerson();
+        const jsonPerson = JSON.parse(personStr);
+
+        console.log(jsonPerson);
+    </script>
+</head>
+
+<body>
+    <h2>Check JavaScript console</h2>
+</body>
+
+</html>
