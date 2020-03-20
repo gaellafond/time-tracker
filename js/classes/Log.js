@@ -1,6 +1,6 @@
 class Log extends PersistentObject {
     constructor(projectName, message, startDate, endDate) {
-        super(Log.getKeyPrefix(projectName));
+        super(Log.getKeyPrefix(projectName), Log.getKeyPrefix(projectName) + startDate);
         this.projectName = projectName;
         this.message = message;
         this.startDate = startDate;

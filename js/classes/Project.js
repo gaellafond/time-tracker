@@ -1,15 +1,37 @@
 class Project extends PersistentObject {
     constructor(name, bgColour, order) {
-        super("project_");
+        super(Project.keyPrefix, Project.keyPrefix + name);
         this.name = name;
         this.bgColour = bgColour;
         this.order = order;
     }
 
-    static get(name) {
+    static get keyPrefix() {
+        return "project_";
+    }
+
+    static get(projectId) {
+        PersistentObject.load(projectId);
     }
 
     static getAll() {
+        let jsonProjects = PersistentObject.getAllJSON(Project.keyPrefix);
+
+        let projects = [];
+        jsonProjects.forEach(jsonProject => {
+            projects.push(new Project(
+                jsonProject.name,
+                jsonProject.bgColour,
+                jsonProject.order
+            ));
+        });
+
+        // Sort projects by order
+        projects.sort(function (a, b) {
+            return a.getOrder() - b.getOrder();
+        });
+
+        return projects;
     }
 
     getName() {

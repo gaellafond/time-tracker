@@ -12,13 +12,53 @@
     <script src="js/classes/Project.js"></script>
     <script src="js/classes/Log.js"></script>
 
+    <link rel="stylesheet" type="text/css" href="css/time-tracker.css" />
     <script src="js/time-tracker.js"></script>
 
     <script>
-        let projects = Project.getAll();
-        for (projects as project) {
-            include "projectMarkup.php";
-        }
+        //let lunch = new Project("Lunch", "#FFFF00", 1);
+        //let eAtlas = new Project("eAtlas", "#0000FF", 2);
+
+        $(document).ready(function() {
+            let projects = Project.getAll();
+            let projectsMarkup = "";
+            projects.forEach(project => {
+                projectsMarkup += `
+                    <div class="project" data-projectkey="${project.getKey()}" style="background-color: ${project.getBackgroundColour()}">
+                        <h2 class="title">${project.getName()}</h2>
+                        <div class="logs">
+<!--
+                            $logs = $project->getLogs();
+                            $currentLogDate = null;
+                            foreach ($logs as $log) {
+                                $logId = $log->getId();
+                                $logDate = $log->getDateStr();
+                                $logDuration = $log->getDurationStr();
+                                $logMessage = $log->getMessage();
+                                $logStartDate = $log->getStartDate();
+                                $logEndDate = $log->getEndDate();
+                                if ($logDate !== $currentLogDate) {
+                                    $currentLogDate = $logDate;
+                                    ?>
+                                    <div><span class="date"><?=$logDate ?></span></div>
+                                    <?php
+                                }
+                                ?>
+                                <div><span class="time" data-logid="<?=$logId ?>" data-startdate="<?=$logStartDate ?>" data-enddate="<?=($logEndDate ? $logEndDate : '') ?>"><?=$logDuration ?></span> - <?=$logMessage ?></div>
+                                <?php
+                            }
+-->
+                        </div>
+                        <div class="buttons"><button class="start">Start</button></div>
+                    </div>
+                `;
+
+//                console.log(project);
+                //include "projectMarkup.php";
+            });
+
+            $("#dashboard").html(projectsMarkup);
+        });
     </script>
 
 </head>
@@ -28,17 +68,17 @@
 <button style="float: right">Check out</button>
 <h1>Gael Lafond</h1>
 
-<div class="dashboard">
-    <div id="overlay"></div>
-    <div id="modal">
-        <h2 class="title">New activity</h2>
-        <div class="field"><label for="activity">Activity:</label> <input type="text" id="activity" /></div>
-        <div class="buttons">
-            <button onclick="cancel()">Ok</button>
-            <button onclick="cancel()">Cancel</button>
-        </div>
+<div id="overlay"></div>
+<div id="modal">
+    <h2 class="title">New activity</h2>
+    <div class="field"><label for="activity">Activity:</label> <input type="text" id="activity" /></div>
+    <div class="buttons">
+        <button onclick="cancel()">Ok</button>
+        <button onclick="cancel()">Cancel</button>
     </div>
-<div>
+</div>
+
+<div class="dashboard" id="dashboard"></div>
 
 </body>
 
