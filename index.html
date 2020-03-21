@@ -14,53 +14,6 @@
 
     <link rel="stylesheet" type="text/css" href="css/time-tracker.css" />
     <script src="js/time-tracker.js"></script>
-
-    <script>
-        //let lunch = new Project("Lunch", "#FFFF00", 1);
-        //let eAtlas = new Project("eAtlas", "#0000FF", 2);
-
-        $(document).ready(function() {
-            let projects = Project.getAll();
-            let projectsMarkup = "";
-            projects.forEach(project => {
-                projectsMarkup += `
-                    <div class="project" data-projectkey="${project.getKey()}" style="background-color: ${project.getBackgroundColour()}">
-                        <h2 class="title">${project.getName()}</h2>
-                        <div class="logs">
-<!--
-                            $logs = $project->getLogs();
-                            $currentLogDate = null;
-                            foreach ($logs as $log) {
-                                $logId = $log->getId();
-                                $logDate = $log->getDateStr();
-                                $logDuration = $log->getDurationStr();
-                                $logMessage = $log->getMessage();
-                                $logStartDate = $log->getStartDate();
-                                $logEndDate = $log->getEndDate();
-                                if ($logDate !== $currentLogDate) {
-                                    $currentLogDate = $logDate;
-                                    ?>
-                                    <div><span class="date"><?=$logDate ?></span></div>
-                                    <?php
-                                }
-                                ?>
-                                <div><span class="time" data-logid="<?=$logId ?>" data-startdate="<?=$logStartDate ?>" data-enddate="<?=($logEndDate ? $logEndDate : '') ?>"><?=$logDuration ?></span> - <?=$logMessage ?></div>
-                                <?php
-                            }
--->
-                        </div>
-                        <div class="buttons"><button class="start">Start</button></div>
-                    </div>
-                `;
-
-//                console.log(project);
-                //include "projectMarkup.php";
-            });
-
-            $("#dashboard").html(projectsMarkup);
-        });
-    </script>
-
 </head>
 
 <body>

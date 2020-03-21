@@ -16,6 +16,7 @@ button {
 
 .dashboard .project {
     width: 250px;
+    min-height: 300px;
     background-color: #9999FF;
     margin: 1em;
     padding: 1em;
@@ -60,6 +61,16 @@ button {
 
 .dashboard .project .buttons {
     text-align: center;
+}
+
+.dashboard .new.project {
+    background-color: transparent;
+    border-style: dashed;
+    box-shadow: none;
+}
+
+.dashboard .new.project .buttons {
+    margin-top: 50%;
 }
 
 #overlay {
