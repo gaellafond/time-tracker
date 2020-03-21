@@ -4,6 +4,52 @@ class Project extends PersistentObject {
         this.name = name;
         this.bgColour = bgColour;
         this.order = order;
+        this.logs = []; // TODO
+
+        let projectMarkup = `
+            <div class="project" data-projectkey="${this.getKey()}" style="background-color: ${this.getBackgroundColour()}">
+                <h2 class="title">${this.getName()}</h2>
+                <div class="logs">
+        `;
+
+        // TODO Add logs
+        /*
+                    $logs = $project->getLogs();
+                    $currentLogDate = null;
+                    foreach ($logs as $log) {
+                        $logId = $log->getId();
+                        $logDate = $log->getDateStr();
+                        $logDuration = $log->getDurationStr();
+                        $logMessage = $log->getMessage();
+                        $logStartDate = $log->getStartDate();
+                        $logEndDate = $log->getEndDate();
+                        if ($logDate !== $currentLogDate) {
+                            $currentLogDate = $logDate;
+                            ?>
+                            <div><span class="date"><?=$logDate ?></span></div>
+                            <?php
+                        }
+                        ?>
+                        <div><span class="time" data-logid="<?=$logId ?>" data-startdate="<?=$logStartDate ?>" data-enddate="<?=($logEndDate ? $logEndDate : '') ?>"><?=$logDuration ?></span> - <?=$logMessage ?></div>
+                        <?php
+                    }
+        */
+
+        projectMarkup += `
+                </div>
+                <div class="buttons"><button class="start">Start</button></div>
+            </div>
+        `;
+
+        // Create the JQuery element
+        this.markup = $(projectMarkup);
+
+        // Add click event on start button
+        this.markup.find("button.start").click(function(project) {
+            return function() {
+                project.addLog();
+            };
+        }(this));
     }
 
     static get keyPrefix() {
@@ -34,12 +80,41 @@ class Project extends PersistentObject {
         return projects;
     }
 
+    addLog() {
+        const log = new Log(this, this.guessNextLogName(), getCurrentTimestamp(), null);
+        this.logs.push(log);
+        this.markup.find(".logs").append(log.getMarkup());
+
+        log.startCounter();
+    }
+    getLogs() {
+        return this.logs;
+    }
+
+    getMarkup() {
+        return this.markup;
+    }
+
+    setActive(active) {
+        if (active) {
+            this.markup.addClass('active');
+        } else {
+            this.markup.removeClass('active');
+        }
+    }
+    isActive() {
+        this.markup.hasClass('active');
+    }
+
     getName() {
         return this.name;
     }
     setName(name) {
-        // TODO Delete old item and add new item
         this.name = name;
+    }
+
+    guessNextLogName() {
+        return this.name;
     }
 
     getBackgroundColour() {
@@ -54,15 +129,6 @@ class Project extends PersistentObject {
     }
     setOrder(order) {
         this.order = order;
-    }
-
-    getLogs() {
-        return Log.getAll(this.name);
-    }
-
-    addLog(log) {
-        log.setProjectId(this.name);
-        log.save();
     }
 
     toJson() {
