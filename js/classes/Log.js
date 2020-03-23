@@ -1,6 +1,15 @@
 class Log extends PersistentObject {
-    constructor(project, message, startDate, endDate) {
-        super(Log.getKeyPrefix(project.getName()), Log.getKeyPrefix(project.getName()) + formatTime(startDate));
+    constructor(project, message, startDate, endDate, key=null) {
+        if (key === null) {
+            super(Log.getKeyPrefix(project.getKey()), false);
+            console.log("CREATING LOG: " + this.getKey());
+        } else {
+            super(key, true);
+            console.log("LOADING LOG: " + this.getKey());
+        }
+
+
+        super(Log.getKeyPrefix(project.getKey()), load);
         this.project = project;
         this.message = message;
         this.startDate = startDate;
@@ -13,11 +22,64 @@ class Log extends PersistentObject {
         `);
     }
 
-    static getKeyPrefix(projectName) {
-        return "log_" + projectName + "_";
+    static getKeyPrefix(projectKey) {
+        return "log_" + projectKey + "_";
     }
 
-    static getAll(projectName) {
+    static getAll(projectKey) {
+        let jsonLogs = PersistentObject.getAllJSON(Log.getKeyPrefix(projectKey));
+
+        let logs = [];
+        jsonLogs.forEach(jsonLog => {
+            logs.push(Log.load(jsonLog));
+        });
+
+        // Sort projects by order
+        logs.sort(function (a, b) {
+            return a.getStartDate() - b.getStartDate();
+        });
+
+        return logs;
+    }
+
+    static load(jsonLog) {
+        return new Log(
+            Project.get(jsonLog.projectKey),
+            jsonLog.message,
+            Log.parseTime(jsonLog.startDate),
+            Log.parseTime(jsonLog.endDate),
+            jsonLog.key
+        );
+    }
+
+    static getCurrentTimestamp() {
+        return Math.floor(new Date() / 1000);
+    }
+
+    static formatTime(s) {
+        // https://stackoverflow.com/questions/9763441/milliseconds-to-time-in-javascript
+
+        // Pad to 2 or 3 digits, default is 2
+        let pad = function(n, z) {
+            z = z || 2;
+            return ('00' + n).slice(-z);
+        };
+
+        s = Math.floor(s);
+        let secs = s % 60;
+        s = Math.floor(s / 60);
+        let mins = s % 60;
+        let hrs = Math.floor(s / 60);
+
+        return hrs + ':' + pad(mins) + ':' + pad(secs);
+    }
+
+    static parseTime(str) {
+        if (str === null || str === "") {
+            return null;
+        }
+
+        // TODO!!
     }
 
     getMarkup() {
@@ -35,8 +97,8 @@ class Log extends PersistentObject {
 
         Log.runningInterval = window.setInterval(function(log) {
             return function() {
-                let elapse = getCurrentTimestamp() - log.getStartDate();
-                logEl.html(formatTime(elapse));
+                let elapse = Log.getCurrentTimestamp() - log.getStartDate();
+                logEl.html(Log.formatTime(elapse));
             };
         }(this), 500);
     }
@@ -80,7 +142,7 @@ class Log extends PersistentObject {
     toJson() {
         return {
             "key": this.getKey(),
-            "projectName": this.project.getName(),
+            "projectKey": this.project.getKey(),
             "message": this.message,
             "startDate": this.startDate,
             "endDate": this.endDate

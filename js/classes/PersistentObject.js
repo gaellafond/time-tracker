@@ -2,9 +2,22 @@
 
 class PersistentObject {
 
-    constructor(keyPrefix, key) {
-        this.keyPrefix = keyPrefix;
+    constructor(key, load=false) {
         this.key = key;
+        if (!load) {
+            this.key = PersistentObject.getUniqueKey(this.key);
+        }
+    }
+
+    static getUniqueKey(rawKey) {
+        let counter = 0;
+        let key = rawKey;
+        do {
+            counter++;
+            key = rawKey + counter;
+        } while (key in window.localStorage);
+
+        return key;
     }
 
     static getAllKeys(keyPrefix) {

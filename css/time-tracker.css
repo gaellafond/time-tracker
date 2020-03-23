@@ -35,6 +35,7 @@ button {
     text-overflow: ellipsis;
     text-align: center;
     font-size: 2em;
+    max-width: 100%;
     margin: 0;
 }
 

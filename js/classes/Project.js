@@ -1,8 +1,15 @@
 class Project extends PersistentObject {
-    constructor(name, bgColour, order) {
-        super(Project.keyPrefix, Project.keyPrefix + name);
+    constructor(name, bgColourIndex, order, key=null) {
+        if (key === null) {
+            super(Project.keyPrefix, false);
+            console.log("CREATING PROJECT: " + this.getKey());
+        } else {
+            super(key, true);
+            console.log("LOADING PROJECT: " + this.getKey());
+        }
+
         this.name = name;
-        this.bgColour = bgColour;
+        this.bgColourIndex = bgColourIndex;
         this.order = order;
         this.logs = []; // TODO
 
@@ -50,14 +57,61 @@ class Project extends PersistentObject {
                 project.addLog();
             };
         }(this));
+
+        // Add click event on title (edit)
+        this.markup.find("h2.title").click(function(project) {
+            return function() {
+                // Hide the title (it will be replaced with a input field)
+                const titleEl = $(this);
+                titleEl.hide();
+
+                // Create an input field, add it in the markup after the (hidden) title
+                const inputEl = $(`<input class="title" type="text" value="${project.getName()}">`);
+                titleEl.after(inputEl);
+                inputEl.select(); // Select the text in the text field
+
+                const changeFunction = function(inputEl) {
+                    return function() {
+                        // Get the new project name that was typed
+                        const newName = inputEl.val();
+
+                        // Set the new name on the markup and in the Project object
+                        titleEl.html(newName);
+                        project.setName(newName);
+                        project.save();
+
+                        // Delete the input field and show the changed title
+                        inputEl.remove();
+                        titleEl.show();
+                    };
+                }(inputEl);
+
+                // Update the project name when
+                inputEl.change(changeFunction); // The user tape "enter"
+                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+            };
+        }(this));
     }
 
     static get keyPrefix() {
-        return "project_";
+        return "project";
     }
 
-    static get(projectId) {
-        PersistentObject.load(projectId);
+    static getBackgroundColour(colourIndex) {
+        const colours = [
+            "#ccffff",
+            "#ccccff",
+            "#ffccff",
+            "#ffcccc",
+            "#ffffcc",
+            "#ccffcc"
+        ];
+
+        return colours[colourIndex % colours.length];
+    }
+
+    static get(projectKey) {
+        return Project.load(PersistentObject.load(projectKey));
     }
 
     static getAll() {
@@ -65,11 +119,7 @@ class Project extends PersistentObject {
 
         let projects = [];
         jsonProjects.forEach(jsonProject => {
-            projects.push(new Project(
-                jsonProject.name,
-                jsonProject.bgColour,
-                jsonProject.order
-            ));
+            projects.push(Project.load(jsonProject));
         });
 
         // Sort projects by order
@@ -80,8 +130,17 @@ class Project extends PersistentObject {
         return projects;
     }
 
+    static load(jsonProject) {
+        return new Project(
+            jsonProject.name,
+            jsonProject.bgColourIndex,
+            jsonProject.order,
+            jsonProject.key
+        );
+    }
+
     addLog() {
-        const log = new Log(this, this.guessNextLogName(), getCurrentTimestamp(), null);
+        const log = new Log(this, this.guessNextLogName(), Log.getCurrentTimestamp(), null);
         this.logs.push(log);
         this.markup.find(".logs").append(log.getMarkup());
 
@@ -117,11 +176,15 @@ class Project extends PersistentObject {
         return this.name;
     }
 
-    getBackgroundColour() {
-        return this.bgColour;
+    getBackgroundColourIndex() {
+        return this.bgColourIndex;
     }
-    setBackgroundColour(bgColour) {
-        this.bgColour = bgColour;
+    setBackgroundColour(bgColourIndex) {
+        this.bgColourIndex = bgColourIndex;
+    }
+
+    getBackgroundColour() {
+        return Project.getBackgroundColour(this.bgColourIndex);
     }
 
     getOrder() {
@@ -135,7 +198,7 @@ class Project extends PersistentObject {
         return {
             "key": this.getKey(),
             "name": this.name,
-            "bgColour": this.bgColour,
+            "bgColourIndex": this.bgColourIndex,
             "order": this.order
         }
     }
