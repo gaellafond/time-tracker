@@ -14,7 +14,7 @@ class Project extends PersistentObject {
         this.logs = []; // TODO
 
         let projectMarkup = `
-            <div class="project" data-projectkey="${this.getKey()}" style="background-color: ${this.getBackgroundColour()}">
+            <div class="project" draggable="true" data-projectkey="${this.getKey()}" style="background-color: ${this.getBackgroundColour()}">
                 <h2 class="title">${this.getName()}</h2>
                 <div class="logs">
         `;
@@ -50,6 +50,20 @@ class Project extends PersistentObject {
 
         // Create the JQuery element
         this.markup = $(projectMarkup);
+
+        // Drag and drop events
+        // See: https://www.w3schools.com/html/html5_draganddrop.asp
+        this.markup.on("dragstart", function(event) {
+            console.log("dragStart");
+        });
+        this.markup.on("dragover", function(event) {
+            event.preventDefault();
+            console.log("dragOver");
+        });
+        this.markup.on("drop", function(event) {
+            event.preventDefault();
+            console.log("drop");
+        });
 
         // Add click event on start button
         this.markup.find("button.start").click(function(project) {
