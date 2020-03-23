@@ -1,5 +1,5 @@
 class Project extends PersistentObject {
-    constructor(name, bgColourIndex, order, key=null) {
+    constructor(timeTracker, name, bgColourIndex, order, key=null) {
         if (key === null) {
             super(Project.keyPrefix, false);
             console.log("CREATING PROJECT: " + this.getKey());
@@ -8,8 +8,7 @@ class Project extends PersistentObject {
             console.log("LOADING PROJECT: " + this.getKey() + " order: " + order);
         }
 
-        Project.map[this.getKey()] = this;
-
+        this.timeTracker = timeTracker;
         this.name = name;
         this.bgColourIndex = bgColourIndex;
         this.order = order;
@@ -76,13 +75,13 @@ class Project extends PersistentObject {
             return function(event) {
                 event.preventDefault();
                 const draggedProjectKey = event.originalEvent.dataTransfer.getData("text");
-                const draggedProject = Project.map[draggedProjectKey];
+                const draggedProject = dropOnProject.timeTracker.getProject(draggedProjectKey);
 
                 const draggedProjectOrder = draggedProject.getOrder();
                 const dropOnProjectOrder = dropOnProject.getOrder();
                 const newOrder = dropOnProjectOrder;
                 if (draggedProjectOrder > dropOnProjectOrder) {
-                    $.each(Project.map, function(projectKey, project) {
+                    $.each(dropOnProject.timeTracker.getProjectMap(), function(projectKey, project) {
                         let projectOrder = project.getOrder();
                         if (projectOrder >= dropOnProjectOrder) {
                             project.setOrder(projectOrder + 1);
@@ -90,7 +89,7 @@ class Project extends PersistentObject {
                         }
                     });
                 } else if (draggedProjectOrder < dropOnProjectOrder) {
-                    $.each(Project.map, function(projectKey, project) {
+                    $.each(dropOnProject.timeTracker.getProjectMap(), function(projectKey, project) {
                         let projectOrder = project.getOrder();
                         if (projectOrder >= draggedProjectOrder) {
                             project.setOrder(projectOrder - 1);
@@ -164,16 +163,16 @@ class Project extends PersistentObject {
         return colours[colourIndex % colours.length];
     }
 
-    static get(projectKey) {
-        return Project.load(PersistentObject.load(projectKey));
+    static get(timeTracker, projectKey) {
+        return Project.load(timeTracker, PersistentObject.load(projectKey));
     }
 
-    static getAll() {
+    static getAll(timeTracker) {
         let jsonProjects = PersistentObject.getAllJSON(Project.keyPrefix);
 
         let projects = [];
         jsonProjects.forEach(jsonProject => {
-            projects.push(Project.load(jsonProject));
+            projects.push(Project.load(timeTracker, jsonProject));
         });
 
         // Sort projects by order
@@ -184,8 +183,9 @@ class Project extends PersistentObject {
         return projects;
     }
 
-    static load(jsonProject) {
+    static load(timeTracker, jsonProject) {
         return new Project(
+            timeTracker,
             jsonProject.name,
             jsonProject.bgColourIndex,
             jsonProject.order,
@@ -198,7 +198,7 @@ class Project extends PersistentObject {
         this.logs.push(log);
         this.markup.find(".logs").append(log.getMarkup());
 
-        log.startCounter();
+        this.timeTracker.startLogCounter(log);
     }
     getLogs() {
         return this.logs;
@@ -257,5 +257,3 @@ class Project extends PersistentObject {
         }
     }
 }
-
-Project.map = {};

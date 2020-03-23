@@ -8,8 +8,6 @@ class Log extends PersistentObject {
             console.log("LOADING LOG: " + this.getKey());
         }
 
-
-        super(Log.getKeyPrefix(project.getKey()), load);
         this.project = project;
         this.message = message;
         this.startDate = startDate;
@@ -26,12 +24,12 @@ class Log extends PersistentObject {
         return "log_" + projectKey + "_";
     }
 
-    static getAll(projectKey) {
+    static getAll(timeTracker, projectKey) {
         let jsonLogs = PersistentObject.getAllJSON(Log.getKeyPrefix(projectKey));
 
         let logs = [];
-        jsonLogs.forEach(jsonLog => {
-            logs.push(Log.load(jsonLog));
+        jsonLogs.forEach(function(jsonLog) {
+            logs.push(Log.load(timeTracker, jsonLog));
         });
 
         // Sort projects by order
@@ -42,9 +40,9 @@ class Log extends PersistentObject {
         return logs;
     }
 
-    static load(jsonLog) {
+    static load(timeTracker, jsonLog) {
         return new Log(
-            Project.get(jsonLog.projectKey),
+            Project.get(timeTracker, jsonLog.projectKey),
             jsonLog.message,
             Log.parseTime(jsonLog.startDate),
             Log.parseTime(jsonLog.endDate),
@@ -86,34 +84,6 @@ class Log extends PersistentObject {
         return this.markup;
     }
 
-    startCounter() {
-        let logEl = this.markup.find(".time");
-
-        if (Log.runningLog) {
-            Log.stopCounter();
-        }
-        Log.runningLog = this;
-        this.project.setActive(true);
-
-        Log.runningInterval = window.setInterval(function(log) {
-            return function() {
-                let elapse = Log.getCurrentTimestamp() - log.getStartDate();
-                logEl.html(Log.formatTime(elapse));
-            };
-        }(this), 500);
-    }
-    static stopCounter() {
-        // Stop incrementing the counter on the screen
-        window.clearInterval(Log.runningInterval);
-        Log.runningInterval = null;
-
-        // Save stop time in DB
-        let logKey = Log.runningLog.getKey();
-
-        Log.runningLog.getProject().setActive(false);
-        Log.runningLog = null;
-    }
-
     getProject() {
         return this.project;
     }
@@ -149,6 +119,3 @@ class Log extends PersistentObject {
         }
     }
 }
-
-Log.runningLog = null;
-Log.runningInterval = null;

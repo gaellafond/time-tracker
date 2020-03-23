@@ -11,6 +11,7 @@
     <script src="js/classes/PersistentObject.js"></script>
     <script src="js/classes/Project.js"></script>
     <script src="js/classes/Log.js"></script>
+    <script src="js/classes/TimeTracker.js"></script>
 
     <link rel="stylesheet" type="text/css" href="css/time-tracker.css" />
     <script src="js/time-tracker.js"></script>
@@ -19,7 +20,7 @@
 <body>
 
 <button style="float: left; background-color: #FF0000" onclick="reset()">RESET</button>
-<button style="float: right" onclick="alert('TODO')">Check out</button>
+<button style="float: right" onclick="checkOut()">Check out</button>
 <h1>Gael Lafond</h1>
 
 <div id="overlay"></div>
@@ -32,11 +33,7 @@
     </div>
 </div>
 
-<div class="dashboard" id="dashboard">
-    <div class="new project" id="new-project">
-        <div class="buttons"><button class="new">New Project</button></div>
-    </div>
-</div>
+<div class="dashboard" id="dashboard"></div>
 
 </body>
 
