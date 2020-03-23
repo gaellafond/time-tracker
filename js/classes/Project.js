@@ -5,8 +5,10 @@ class Project extends PersistentObject {
             console.log("CREATING PROJECT: " + this.getKey());
         } else {
             super(key, true);
-            console.log("LOADING PROJECT: " + this.getKey());
+            console.log("LOADING PROJECT: " + this.getKey() + " order: " + order);
         }
+
+        Project.map[this.getKey()] = this;
 
         this.name = name;
         this.bgColourIndex = bgColourIndex;
@@ -53,17 +55,55 @@ class Project extends PersistentObject {
 
         // Drag and drop events
         // See: https://www.w3schools.com/html/html5_draganddrop.asp
-        this.markup.on("dragstart", function(event) {
-            console.log("dragStart");
-        });
+
+        // Save dragged project key in the event
+        // this = dragged project
+        this.markup.on("dragstart", function(draggedProject) {
+            return function(event) {
+                event.originalEvent.dataTransfer.setData("text", draggedProject.getKey());
+            };
+        }(this));
+
+        // Tell the browser the project can be dropped on another project
+        // this = project under the dragged project
         this.markup.on("dragover", function(event) {
             event.preventDefault();
-            console.log("dragOver");
         });
-        this.markup.on("drop", function(event) {
-            event.preventDefault();
-            console.log("drop");
-        });
+
+        // The dragged project was drop on another project
+        // this = drop on project
+        this.markup.on("drop", function(dropOnProject) {
+            return function(event) {
+                event.preventDefault();
+                const draggedProjectKey = event.originalEvent.dataTransfer.getData("text");
+                const draggedProject = Project.map[draggedProjectKey];
+
+                const draggedProjectOrder = draggedProject.getOrder();
+                const dropOnProjectOrder = dropOnProject.getOrder();
+                const newOrder = dropOnProjectOrder;
+                if (draggedProjectOrder > dropOnProjectOrder) {
+                    $.each(Project.map, function(projectKey, project) {
+                        let projectOrder = project.getOrder();
+                        if (projectOrder >= dropOnProjectOrder) {
+                            project.setOrder(projectOrder + 1);
+                            project.save();
+                        }
+                    });
+                } else if (draggedProjectOrder < dropOnProjectOrder) {
+                    $.each(Project.map, function(projectKey, project) {
+                        let projectOrder = project.getOrder();
+                        if (projectOrder >= draggedProjectOrder) {
+                            project.setOrder(projectOrder - 1);
+                            project.save();
+                        }
+                    });
+                }
+                draggedProject.setOrder(newOrder);
+                draggedProject.save();
+
+                location.reload(); // TODO Do it live on the markup
+            };
+        }(this));
 
         // Add click event on start button
         this.markup.find("button.start").click(function(project) {
@@ -217,3 +257,5 @@ class Project extends PersistentObject {
         }
     }
 }
+
+Project.map = {};

@@ -23,7 +23,7 @@ $(document).ready(function() {
         newProjectBox.before(newProject.getMarkup());
     });
 
-    const projects = Project.getAll();
+    const projects = Project.getAll(); // TODO Use Project.map instead
     projects.forEach(project => {
         // Insert the JQuery element to the page Markup, before the "New Project" box
         newProjectBox.before(project.getMarkup());
