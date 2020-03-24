@@ -12,16 +12,55 @@ class Project extends PersistentObject {
         this.name = name;
         this.bgColourIndex = bgColourIndex;
         this.order = order;
-        this.logs = []; // TODO
+        this.logs = [];
 
         let projectMarkup = `
             <div class="project" draggable="true" data-projectkey="${this.getKey()}" style="background-color: ${this.getBackgroundColour()}">
                 <h2 class="title">${this.getName()}</h2>
-                <div class="logs">
+                <div class="logs"></div>
+                <div class="buttons"><button class="start">Start</button></div>
+            </div>
         `;
 
-        // TODO Add logs
-        /*
+        // Create the JQuery element
+        this.markup = $(projectMarkup);
+    }
+
+    static get keyPrefix() {
+        return "project";
+    }
+
+    static getBackgroundColour(colourIndex) {
+        const colours = [
+            "#ccffff",
+            "#ccccff",
+            "#ffccff",
+            "#ffcccc",
+            "#ffffcc",
+            "#ccffcc"
+        ];
+
+        return colours[colourIndex % colours.length];
+    }
+
+    static load(timeTracker, jsonProject) {
+        return new Project(
+            timeTracker,
+            jsonProject.name,
+            jsonProject.bgColourIndex,
+            jsonProject.order,
+            jsonProject.key
+        );
+    }
+
+    loadLogs() {
+        this.logs = Log.getAll(this.timeTracker, this.getKey());
+
+        const logsEl = this.markup.find(".logs");
+        $.each(this.logs, function(project) {
+            return function(index, log) {
+                // TODO Add dates
+                /*
                     $logs = $project->getLogs();
                     $currentLogDate = null;
                     foreach ($logs as $log) {
@@ -41,17 +80,17 @@ class Project extends PersistentObject {
                         <div><span class="time" data-logid="<?=$logId ?>" data-startdate="<?=$logStartDate ?>" data-enddate="<?=($logEndDate ? $logEndDate : '') ?>"><?=$logDuration ?></span> - <?=$logMessage ?></div>
                         <?php
                     }
-        */
+                */
+                logsEl.append(log.getMarkup());
 
-        projectMarkup += `
-                </div>
-                <div class="buttons"><button class="start">Start</button></div>
-            </div>
-        `;
+                if (log.getEndDate() === null) {
+                    project.timeTracker.startLogCounter(log);
+                }
+            };
+        }(this));
+    }
 
-        // Create the JQuery element
-        this.markup = $(projectMarkup);
-
+    addEventListeners() {
         // Drag and drop events
         // See: https://www.w3schools.com/html/html5_draganddrop.asp
 
@@ -77,30 +116,7 @@ class Project extends PersistentObject {
                 const draggedProjectKey = event.originalEvent.dataTransfer.getData("text");
                 const draggedProject = dropOnProject.timeTracker.getProject(draggedProjectKey);
 
-                const draggedProjectOrder = draggedProject.getOrder();
-                const dropOnProjectOrder = dropOnProject.getOrder();
-                const newOrder = dropOnProjectOrder;
-                if (draggedProjectOrder > dropOnProjectOrder) {
-                    $.each(dropOnProject.timeTracker.getProjectMap(), function(projectKey, project) {
-                        let projectOrder = project.getOrder();
-                        if (projectOrder >= dropOnProjectOrder) {
-                            project.setOrder(projectOrder + 1);
-                            project.save();
-                        }
-                    });
-                } else if (draggedProjectOrder < dropOnProjectOrder) {
-                    $.each(dropOnProject.timeTracker.getProjectMap(), function(projectKey, project) {
-                        let projectOrder = project.getOrder();
-                        if (projectOrder >= draggedProjectOrder) {
-                            project.setOrder(projectOrder - 1);
-                            project.save();
-                        }
-                    });
-                }
-                draggedProject.setOrder(newOrder);
-                draggedProject.save();
-
-                location.reload(); // TODO Do it live on the markup
+                draggedProject.moveOn(dropOnProject);
             };
         }(this));
 
@@ -123,7 +139,7 @@ class Project extends PersistentObject {
                 titleEl.after(inputEl);
                 inputEl.select(); // Select the text in the text field
 
-                const changeFunction = function(inputEl) {
+                const changeFunction = function(project, inputEl) {
                     return function() {
                         // Get the new project name that was typed
                         const newName = inputEl.val();
@@ -137,64 +153,53 @@ class Project extends PersistentObject {
                         inputEl.remove();
                         titleEl.show();
                     };
-                }(inputEl);
+                }(project, inputEl);
 
                 // Update the project name when
                 inputEl.change(changeFunction); // The user tape "enter"
                 inputEl.focusout(changeFunction); // The user click somewhere else in the page
             };
         }(this));
-    }
 
-    static get keyPrefix() {
-        return "project";
-    }
-
-    static getBackgroundColour(colourIndex) {
-        const colours = [
-            "#ccffff",
-            "#ccccff",
-            "#ffccff",
-            "#ffcccc",
-            "#ffffcc",
-            "#ccffcc"
-        ];
-
-        return colours[colourIndex % colours.length];
-    }
-
-    static get(timeTracker, projectKey) {
-        return Project.load(timeTracker, PersistentObject.load(projectKey));
-    }
-
-    static getAll(timeTracker) {
-        let jsonProjects = PersistentObject.getAllJSON(Project.keyPrefix);
-
-        let projects = [];
-        jsonProjects.forEach(jsonProject => {
-            projects.push(Project.load(timeTracker, jsonProject));
+        $.each(this.logs, function(index, log) {
+            log.addEventListeners();
         });
-
-        // Sort projects by order
-        projects.sort(function (a, b) {
-            return a.getOrder() - b.getOrder();
-        });
-
-        return projects;
     }
 
-    static load(timeTracker, jsonProject) {
-        return new Project(
-            timeTracker,
-            jsonProject.name,
-            jsonProject.bgColourIndex,
-            jsonProject.order,
-            jsonProject.key
-        );
+    moveOn(dropOnProject) {
+        if (dropOnProject !== this) {
+            const draggedProjectOrder = this.getOrder();
+            const dropOnProjectOrder = dropOnProject.getOrder();
+            const newOrder = dropOnProjectOrder;
+            if (draggedProjectOrder > dropOnProjectOrder) {
+                $.each(this.timeTracker.getProjectMap(), function(projectKey, project) {
+                    let projectOrder = project.getOrder();
+                    if (projectOrder >= dropOnProjectOrder && projectOrder < draggedProjectOrder) {
+                        project.setOrder(projectOrder + 1);
+                        project.save();
+                    }
+                });
+            } else if (draggedProjectOrder < dropOnProjectOrder) {
+                $.each(this.timeTracker.getProjectMap(), function(projectKey, project) {
+                    let projectOrder = project.getOrder();
+                    if (projectOrder <= dropOnProjectOrder && projectOrder > draggedProjectOrder) {
+                        project.setOrder(projectOrder - 1);
+                        project.save();
+                    }
+                });
+            }
+            this.setOrder(newOrder);
+            this.save();
+
+            this.timeTracker.fixProjectOrder();
+        } else {
+            console.log("NO DROP!!");
+        }
     }
 
     addLog() {
         const log = new Log(this, this.guessNextLogName(), Log.getCurrentTimestamp(), null);
+        log.save();
         this.logs.push(log);
         this.markup.find(".logs").append(log.getMarkup());
 
