@@ -57,7 +57,8 @@ class Project extends PersistentObject {
         this.logs = Log.getAll(this.timeTracker, this.getKey());
 
         const logsEl = this.markup.find(".logs");
-        $.each(this.logs, function(project) {
+        let lastLog = null;
+        $.each(this.logs, function(project, logsEl) {
             return function(index, log) {
                 // TODO Add dates
                 /*
@@ -81,13 +82,16 @@ class Project extends PersistentObject {
                         <?php
                     }
                 */
+                project.addLogDate(lastLog, log);
                 logsEl.append(log.getMarkup());
 
                 if (log.getEndDate() === null) {
                     project.timeTracker.startLogCounter(log);
                 }
+
+                lastLog = log;
             };
-        }(this));
+        }(this, logsEl));
     }
 
     addEventListeners() {
@@ -198,14 +202,35 @@ class Project extends PersistentObject {
     }
 
     addLog() {
+        const lastLog = this.getLastLog();
         const log = new Log(this, this.guessNextLogName(), Log.getCurrentTimestamp(), null);
         log.save();
         this.logs.push(log);
+
+        this.addLogDate(lastLog, log);
         this.markup.find(".logs").append(log.getMarkup());
         log.addEventListeners();
 
         this.timeTracker.startLogCounter(log);
     }
+
+    addLogDate(previousLog, log) {
+        let logDate = null;
+        if (previousLog === null) {
+            logDate = Log.formatDate(log.getStartDate());
+        } else {
+            const previousDateStr = Log.formatDate(previousLog.getStartDate());
+            const currentDateStr = Log.formatDate(log.getStartDate());
+            if (previousDateStr !== currentDateStr) {
+                logDate = currentDateStr;
+            }
+        }
+
+        if (logDate !== null) {
+            this.markup.find(".logs").append(`<div class="date">${logDate}</div>`);
+        }
+    }
+
     getLogs() {
         return this.logs;
     }
@@ -232,7 +257,18 @@ class Project extends PersistentObject {
         this.name = name;
     }
 
+    getLastLog() {
+        if (this.logs !== null && this.logs.length > 0) {
+            return this.logs[this.logs.length - 1];
+        }
+        return null;
+    }
+
     guessNextLogName() {
+        const lastLog = this.getLastLog();
+        if (lastLog !== null) {
+            return lastLog.getMessage();
+        }
         return this.name;
     }
 

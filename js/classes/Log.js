@@ -55,23 +55,29 @@ class Log extends PersistentObject {
         return Math.floor(new Date() / 1000);
     }
 
-    static formatTime(s) {
+    static formatTime(elapseSeconds) {
         // https://stackoverflow.com/questions/9763441/milliseconds-to-time-in-javascript
 
-        // Pad to 2 or 3 digits, default is 2
-        let pad = function(n, z) {
-            z = z || 2;
-            return ('00' + n).slice(-z);
-        };
+        elapseSeconds = Math.floor(elapseSeconds);
+        let secs = elapseSeconds % 60;
+        elapseSeconds = Math.floor(elapseSeconds / 60);
+        let mins = elapseSeconds % 60;
+        let hrs = Math.floor(elapseSeconds / 60);
 
-        s = Math.floor(s);
-        let secs = s % 60;
-        s = Math.floor(s / 60);
-        let mins = s % 60;
-        let hrs = Math.floor(s / 60);
-
-        return hrs + ':' + pad(mins) + ':' + pad(secs);
+        return hrs + ':' + Log.padNumber(mins) + ':' + Log.padNumber(secs);
     }
+
+    static formatDate(timestamp) {
+        let date = new Date(timestamp * 1000);
+
+        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate());
+    }
+
+    // Pad to 2 or 3 digits, default is 2
+    static padNumber(n, z) {
+        z = z || 2;
+        return ('00' + n).slice(-z);
+    };
 
     addEventListeners() {
         // Add click event on log name (edit)
