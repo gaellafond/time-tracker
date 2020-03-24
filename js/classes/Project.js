@@ -202,6 +202,7 @@ class Project extends PersistentObject {
         log.save();
         this.logs.push(log);
         this.markup.find(".logs").append(log.getMarkup());
+        log.addEventListeners();
 
         this.timeTracker.startLogCounter(log);
     }
