@@ -1,5 +1,5 @@
 TimeTracker
-[ ] Export logs
+[X] Export logs
 
 Logs
 [X] Log persistence

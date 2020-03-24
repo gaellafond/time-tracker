@@ -73,6 +73,19 @@ class Log extends PersistentObject {
         return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate());
     }
 
+    static formatDateForFilename(timestamp) {
+        let date = new Date(timestamp * 1000);
+
+        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate());
+    }
+
+    static formatDateForCSV(timestamp) {
+        let date = new Date(timestamp * 1000);
+
+        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate()) + ' ' +
+            Log.padNumber(date.getHours()) + ':' + Log.padNumber(date.getMinutes()) + ':' + Log.padNumber(date.getSeconds());
+    }
+
     // Pad to 2 or 3 digits, default is 2
     static padNumber(n, z) {
         z = z || 2;
