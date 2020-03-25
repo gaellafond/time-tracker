@@ -4,6 +4,7 @@ const reset = function() {
     location.reload();
 };
 
+let timeRibbon = null;
 let timeTracker = null;
 const checkOut = function() {
     timeTracker.stopLogCounter();
@@ -15,4 +16,5 @@ const exportCSV = function() {
 
 $(document).ready(function() {
     timeTracker = new TimeTracker($("#dashboard"));
+    timeRibbon = new TimeRibbon($("#time-ribbon"), timeTracker);
 });

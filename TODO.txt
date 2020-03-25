@@ -1,5 +1,6 @@
 TimeTracker
 [X] Export logs
+[X] Time ribbon
 
 Logs
 [X] Log persistence
@@ -9,3 +10,9 @@ Logs
 Projects
 [ ] Delete project with warning if project has logs
 [ ] Edit project background colour
+
+Admin page
+[ ] Create admin page
+[ ] Views
+[ ] Edit logs dates
+[ ] Export CSV

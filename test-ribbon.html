@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        .time-ribbon .row {
+            display: flex;
+            border: 3px solid #000000;
+            min-height: 30px;
+        }
+        .time-ribbon .row .log {
+            width: 0;
+        }
+
+        .time-ribbon .row .log .message {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 6px 10px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="time-ribbon">
+        <div class="row">
+            <div class="log" style="flex-grow:120; background-color:#FFFFFF;"></div>
+            <div class="log" style="flex-grow:560; background-color:#FFCCCC;"></div>
+            <div class="log" style="flex-grow:1240; background-color:#CCFFCC;"></div>
+            <div class="log" style="flex-grow:500; background-color:#CCFFFF;"></div>
+            <div class="log" style="flex-grow:60; background-color:#FFFFFF;"></div>
+        </div>
+        <div class="row">
+            <div class="log" style="flex-grow:120; background-color:#FFFFFF;"><div class=message></div></div>
+            <div class="log" style="flex-grow:560; background-color:#FFCCCC;"><div class=message>Fix something that was broken</div></div>
+            <div class="log" style="flex-grow:1240; background-color:#CCFFCC;"><div class=message>Other stuff</div></div>
+            <div class="log" style="flex-grow:500; background-color:#CCFFFF;"><div class=message>Blah</div></div>
+            <div class="log" style="flex-grow:60; background-color:#FFFFFF;"><div class=message></div></div>
+        </div>
+
+
+        <div class="row">
+            <div class="log" style="flex-grow:0; background-color:#FFFFFF;"></div>
+            <div class="log" style="flex-grow:600; background-color:#FFCCCC;"></div>
+            <div class="log" style="flex-grow:890; background-color:#CCFFCC;"></div>
+            <div class="log" style="flex-grow:990; background-color:#CCFFFF;"></div>
+            <div class="log" style="flex-grow:0; background-color:#FFFFFF;"></div>
+        </div>
+    </div>
+</body>
+
+</html>

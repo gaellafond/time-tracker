@@ -33,12 +33,15 @@ class Log extends PersistentObject {
             logs.push(Log.load(timeTracker, jsonLog));
         });
 
-        // Sort projects by order
-        logs.sort(function (a, b) {
-            return a.getStartDate() - b.getStartDate();
-        });
+        Log.sort(logs);
 
         return logs;
+    }
+
+    static sort(logArray) {
+        logArray.sort(function (a, b) {
+            return a.getStartDate() - b.getStartDate();
+        });
     }
 
     static load(timeTracker, jsonLog) {
