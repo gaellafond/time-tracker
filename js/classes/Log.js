@@ -11,10 +11,10 @@ class Log extends PersistentObject {
         this.startDate = startDate;
         this.endDate = endDate;
 
-        const elapse = (this.endDate ? this.endDate : Log.getCurrentTimestamp()) - this.startDate;
+        const elapse = (this.endDate ? this.endDate : Utils.getCurrentTimestamp()) - this.startDate;
         this.markup = $(`
             <div>
-                <span class="time" data-logkey="${this.getKey()}">${Log.formatTime(elapse)}</span> - <span class="message">${TimeTracker.escapeHTML(this.getMessage())}</span>
+                <span class="time" data-logkey="${this.getKey()}">${Utils.formatTime(elapse)}</span> - <span class="message">${Utils.escapeHTML(this.getMessage())}</span>
             </div>
         `);
     }
@@ -52,41 +52,6 @@ class Log extends PersistentObject {
         );
     }
 
-    static getCurrentTimestamp() {
-        return Math.floor(new Date() / 1000);
-    }
-
-    static formatTime(elapseSeconds) {
-        // https://stackoverflow.com/questions/9763441/milliseconds-to-time-in-javascript
-
-        elapseSeconds = Math.floor(elapseSeconds);
-        let secs = elapseSeconds % 60;
-        elapseSeconds = Math.floor(elapseSeconds / 60);
-        let mins = elapseSeconds % 60;
-        let hrs = Math.floor(elapseSeconds / 60);
-
-        return hrs + ':' + Log.padNumber(mins) + ':' + Log.padNumber(secs);
-    }
-
-    static formatDate(timestamp) {
-        let date = new Date(timestamp * 1000);
-
-        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate());
-    }
-
-    static formatDateForFilename(timestamp) {
-        let date = new Date(timestamp * 1000);
-
-        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate());
-    }
-
-    static formatDateForCSV(timestamp) {
-        let date = new Date(timestamp * 1000);
-
-        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate()) + ' ' +
-            Log.padNumber(date.getHours()) + ':' + Log.padNumber(date.getMinutes()) + ':' + Log.padNumber(date.getSeconds());
-    }
-
     // Pad to 2 or 3 digits, default is 2
     static padNumber(n, z) {
         z = z || 2;
@@ -102,7 +67,7 @@ class Log extends PersistentObject {
                 messageEl.hide();
 
                 // Create an input field, add it in the markup after the (hidden) title
-                const inputEl = $(`<input class="message" type="text" value="${TimeTracker.escapeHTML(log.getMessage())}">`);
+                const inputEl = $(`<input class="message" type="text" value="${Utils.escapeHTML(log.getMessage())}">`);
                 messageEl.after(inputEl);
                 inputEl.select(); // Select the text in the text field
 
@@ -112,7 +77,7 @@ class Log extends PersistentObject {
                         const newMessage = inputEl.val();
 
                         // Set the new name on the markup and in the Project object
-                        messageEl.html(TimeTracker.escapeHTML(newMessage));
+                        messageEl.html(Utils.escapeHTML(newMessage));
                         log.setMessage(newMessage);
                         log.save();
 

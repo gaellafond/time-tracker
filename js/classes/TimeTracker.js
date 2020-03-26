@@ -37,17 +37,6 @@ class TimeTracker {
         this.reloadProjectsMarkup();
     }
 
-    static escapeCSV(val) {
-        return '"' + val.replace(/"/g, '""') + '"';
-    }
-    static escapeHTML(val) {
-        return val.replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
     showAdmin() {
         this.admin.show();
     }
@@ -141,14 +130,14 @@ class TimeTracker {
 
         this.runningLogInterval = window.setInterval(function(log) {
             return function() {
-                let elapse = Log.getCurrentTimestamp() - log.getStartDate();
-                logEl.html(Log.formatTime(elapse));
+                let elapse = Utils.getCurrentTimestamp() - log.getStartDate();
+                logEl.html(Utils.formatTime(elapse));
             };
         }(log), 500);
     }
 
     stopLogCounter() {
-        this.runningLog.setEndDate(Log.getCurrentTimestamp());
+        this.runningLog.setEndDate(Utils.getCurrentTimestamp());
         this.runningLog.save();
 
         // Stop incrementing the counter on the screen
@@ -157,54 +146,5 @@ class TimeTracker {
 
         this.runningLog.getProject().setActive(false);
         this.runningLog = null;
-    }
-
-    exportCSV() {
-        // CSV content, starting with URI header
-        let csvContent = "data:text/csv;charset=utf-8,";
-
-        // Get data as an array and generate a CSV string from it.
-        const dataArray = this.generateDataArray();
-        $.each(dataArray, function(rowIndex, row) {
-            let rowStr = "";
-            $.each(row, function(cellIndex, cell) {
-                if (rowStr) {
-                    rowStr += ',';
-                }
-                rowStr += TimeTracker.escapeCSV(cell);
-            });
-            csvContent += rowStr + "\r\n";
-        });
-        // Encode the URI to put it in a HREF
-        const encodedUri = encodeURI(csvContent);
-
-        // Create a link to the CSV and put it in the page markup
-        let dateStr = Log.formatDateForFilename(Log.getCurrentTimestamp());
-        let link = $(`<a href="${encodedUri}" download="time-tracker_export_${dateStr}.csv"></a>`);
-        $("body").append(link);
-
-        // Simulate a click on the link to trigger the file download
-        link[0].click();
-
-        // Remove the link from the page
-        link.remove();
-    }
-
-    // Generate an array of data used to generate a CSV file
-    generateDataArray() {
-        const dataArray = [];
-        dataArray.push(
-            ["project_key", "project_name", "log_key", "log_startdate", "log_enddate", "log_message"]
-        );
-
-        $.each(this.getProjects(), function(projectIndex, project) {
-            $.each(project.logs, function(logIndex, log) {
-                dataArray.push(
-                    [project.getKey(), project.getName(), log.getKey(), Log.formatDateForCSV(log.getStartDate()), Log.formatDateForCSV(log.getEndDate()), log.getMessage()]
-                );
-            });
-        });
-
-        return dataArray;
     }
 }

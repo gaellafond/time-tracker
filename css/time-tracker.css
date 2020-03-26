@@ -114,6 +114,14 @@ button {
     margin: 1em;
 }
 
+.admin .footer-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+.admin button.reset {
+    background-color: #FF0000;
+}
+
 #time-ribbon {
     border: 3px solid #000000;
 }

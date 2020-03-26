@@ -15,7 +15,7 @@ class Project extends PersistentObject {
         // Create the JQuery element
         this.markup = $(`
             <div class="project" draggable="true" data-projectkey="${this.getKey()}" style="background-color: ${this.getBackgroundColour()}">
-                <h2 class="title">${TimeTracker.escapeHTML(this.getName())}</h2>
+                <h2 class="title">${Utils.escapeHTML(this.getName())}</h2>
                 <div class="logs"></div>
                 <div class="buttons"><button class="start">Start</button></div>
             </div>
@@ -114,7 +114,7 @@ class Project extends PersistentObject {
                 titleEl.hide();
 
                 // Create an input field, add it in the markup after the (hidden) title
-                const inputEl = $(`<input class="title" type="text" value="${TimeTracker.escapeHTML(project.getName())}">`);
+                const inputEl = $(`<input class="title" type="text" value="${Utils.escapeHTML(project.getName())}">`);
                 titleEl.after(inputEl);
                 inputEl.select(); // Select the text in the text field
 
@@ -124,7 +124,7 @@ class Project extends PersistentObject {
                         const newName = inputEl.val();
 
                         // Set the new name on the markup and in the Project object
-                        titleEl.html(TimeTracker.escapeHTML(newName));
+                        titleEl.html(Utils.escapeHTML(newName));
                         project.setName(newName);
                         project.save();
 
@@ -176,7 +176,7 @@ class Project extends PersistentObject {
 
     addLog() {
         const lastLog = this.getLastLog();
-        const log = new Log(this, this.guessNextLogName(), Log.getCurrentTimestamp(), null);
+        const log = new Log(this, this.guessNextLogName(), Utils.getCurrentTimestamp(), null);
         log.save();
         this.logs.push(log);
 
@@ -196,10 +196,10 @@ class Project extends PersistentObject {
     addLogDate(previousLog, log) {
         let logDate = null;
         if (previousLog === null) {
-            logDate = Log.formatDate(log.getStartDate());
+            logDate = Utils.formatDate(log.getStartDate());
         } else {
-            const previousDateStr = Log.formatDate(previousLog.getStartDate());
-            const currentDateStr = Log.formatDate(log.getStartDate());
+            const previousDateStr = Utils.formatDate(previousLog.getStartDate());
+            const currentDateStr = Utils.formatDate(log.getStartDate());
             if (previousDateStr !== currentDateStr) {
                 logDate = currentDateStr;
             }

@@ -2,7 +2,7 @@ TimeTracker
 [X] Export logs
 [X] Time ribbon
 [X] Time ribbon auto-refresh 5 minutes
-[ ] Time ribbon hours
+[X] Time ribbon hours
 
 Logs
 [X] Log persistence
@@ -16,6 +16,6 @@ Projects
 
 Admin page
 [X] Create admin page
-[ ] Views
+[X] Views
 [ ] Edit logs dates
-[ ] Export CSV
+[X] Export CSV

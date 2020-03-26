@@ -1,18 +1,8 @@
-// DEBUG
-const reset = function() {
-    window.localStorage.clear();
-    location.reload();
-};
-
 let timeRibbon = null;
 let timeTracker = null;
 
 const checkOut = function() {
     timeTracker.stopLogCounter();
-};
-
-const exportCSV = function() {
-    timeTracker.exportCSV();
 };
 
 const showAdmin = function() {
@@ -22,5 +12,5 @@ const showAdmin = function() {
 $(document).ready(function() {
     timeTracker = new TimeTracker($("#dashboard"));
     timeRibbon = new TimeRibbon($("#time-ribbon"), timeTracker);
-    timeRibbon.render([Log.formatDate(Log.getCurrentTimestamp())]);
+    timeRibbon.render([Utils.formatDate(Utils.getCurrentTimestamp())]);
 });

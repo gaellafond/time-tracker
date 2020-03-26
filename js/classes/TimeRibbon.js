@@ -6,15 +6,8 @@ class TimeRibbon {
     }
 
     static drawCell(cellLength, backgroundColour, projectName = "", logMessage = "") {
-        let message = projectName ? `<span class="project-name">${TimeTracker.escapeHTML(projectName)}</span>: ${TimeTracker.escapeHTML(logMessage)}` : `${TimeTracker.escapeHTML(logMessage)}`;
-        return `<div class="log" style="flex-grow:${cellLength}; background-color:${backgroundColour};" title="${TimeTracker.escapeHTML(logMessage)}"><div class=message>${message}</div></div>`;
-    }
-
-    static getSecondsInDay(timestamp) {
-        let date = new Date(timestamp * 1000);
-        return date.getHours() * 60 * 60 +
-            date.getMinutes() * 60 +
-            date.getSeconds();
+        let message = projectName ? `<span class="project-name">${Utils.escapeHTML(projectName)}</span>: ${Utils.escapeHTML(logMessage)}` : `${Utils.escapeHTML(logMessage)}`;
+        return `<div class="log" style="flex-grow:${cellLength}; background-color:${backgroundColour};" title="${Utils.escapeHTML(logMessage)}"><div class=message>${message}</div></div>`;
     }
 
     render(renderedDates) {
@@ -35,7 +28,7 @@ class TimeRibbon {
         const projectMap = this.timeTracker.getProjectMap();
         $.each(projectMap, function(projectKey, project) {
             $.each(project.getLogs(), function(logIndex, log) {
-                let date = Log.formatDate(log.getStartDate())
+                let date = Utils.formatDate(log.getStartDate())
 
                 if (!dates[date]) {
                     dates[date] = [];
@@ -58,17 +51,17 @@ class TimeRibbon {
             let logArray = dates[date];
             Log.sort(logArray);
 
-            let startSecInDay = TimeRibbon.getSecondsInDay(logArray[0].getStartDate());
+            let startSecInDay = Utils.getSecondsInDay(logArray[0].getStartDate());
             if (minSecInDay === null || startSecInDay < minSecInDay) {
                 minSecInDay = startSecInDay;
             }
 
             let lastTimestamp = logArray[logArray.length-1].getEndDate();
             if (lastTimestamp == null) {
-                lastTimestamp = Log.getCurrentTimestamp();
+                lastTimestamp = Utils.getCurrentTimestamp();
             }
 
-            let endSecInDay = TimeRibbon.getSecondsInDay(lastTimestamp);
+            let endSecInDay = Utils.getSecondsInDay(lastTimestamp);
             if (maxSecInDay === null || endSecInDay > maxSecInDay) {
                 maxSecInDay = endSecInDay;
             }
@@ -77,7 +70,7 @@ class TimeRibbon {
         // Quantise to half hour (3:30, 4:30, etc)
         const hour = 60 * 60;
         let dayStart = 7.5 * hour;
-        let dayEnd = 16.5 * hour;
+        let dayEnd = 17.5 * hour;
         while (minSecInDay < dayStart) {
             dayStart -= hour;
         }
@@ -140,14 +133,14 @@ class TimeRibbon {
         let lastEndSecInDay = dayStart;
         $.each(logArray, function(ribbonRow) {
             return function(logIndex, log) {
-                let startSecInDay = TimeRibbon.getSecondsInDay(log.getStartDate());
+                let startSecInDay = Utils.getSecondsInDay(log.getStartDate());
                 let project = log.getProject();
 
                 let endTimestamp = log.getEndDate();
                 if (endTimestamp === null) {
-                    endTimestamp = Log.getCurrentTimestamp();
+                    endTimestamp = Utils.getCurrentTimestamp();
                 }
-                let endSecInDay = TimeRibbon.getSecondsInDay(endTimestamp);
+                let endSecInDay = Utils.getSecondsInDay(endTimestamp);
 
                 // If logs overlaps (should not happen)
                 if (startSecInDay < lastEndSecInDay) {
