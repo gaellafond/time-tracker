@@ -5,6 +5,17 @@ class TimeRibbon {
         this.timeTracker = timeTracker;
 
         this.render();
+
+        this.refreshInterval = window.setInterval(function(timeRibbon) {
+            return function() {
+                timeRibbon.render();
+            };
+        }(this), 60 * 1000);
+    }
+
+    static addCell(row, cellLength, backgroundColour, projectName = "", logMessage = "") {
+        let message = projectName ? `<span class="project-name">${TimeTracker.escapeHTML(projectName)}</span>: ${TimeTracker.escapeHTML(logMessage)}` : `${TimeTracker.escapeHTML(logMessage)}`;
+        row.append(`<div class="log" style="flex-grow:${cellLength}; background-color:${backgroundColour};" title="${TimeTracker.escapeHTML(logMessage)}"><div class=message>${message}</div></div>`);
     }
 
     render() {
@@ -59,15 +70,6 @@ class TimeRibbon {
             }
         });
 
-        let tooltipEscape = function(message) {
-            return message.replace(/"/g, '&quot;');
-        };
-
-        let addCell = function(row, cellLength, backgroundColour, projectName = "", logMessage = "") {
-            let message = projectName ? `<span class="project-name">${projectName}</span>: ${logMessage}` : `${logMessage}`;
-            row.append(`<div class="log" style="flex-grow:${cellLength}; background-color:${backgroundColour};" title="${tooltipEscape(logMessage)}"><div class=message>${message}</div></div>`);
-        };
-
         // Draw
         this.timeRibbonEl.html(""); // Clear
         $.each(dateArray, function(timeRibbon) {
@@ -97,17 +99,17 @@ class TimeRibbon {
                         }
                         // White space at the beginning and gap in the logs (white space)
                         if (startSecInDay > lastEndSecInDay) {
-                            addCell(ribbonRow, startSecInDay - lastEndSecInDay, "#ffffff");
+                            TimeRibbon.addCell(ribbonRow, startSecInDay - lastEndSecInDay, "#ffffff");
                         }
                         // Actual log
-                        addCell(ribbonRow, endSecInDay - startSecInDay, project.getBackgroundColour(), project.getName(), log.getMessage());
+                        TimeRibbon.addCell(ribbonRow, endSecInDay - startSecInDay, project.getBackgroundColour(), project.getName(), log.getMessage());
 
                         lastEndSecInDay = endSecInDay;
                     };
                 }(ribbonRow));
                 // White space at the end
                 if (lastEndSecInDay < maxSecInDay) {
-                    addCell(ribbonRow, maxSecInDay - lastEndSecInDay, "#ffffff");
+                    TimeRibbon.addCell(ribbonRow, maxSecInDay - lastEndSecInDay, "#ffffff");
                 }
             };
         }(this));

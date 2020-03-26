@@ -35,6 +35,17 @@ class TimeTracker {
         this.reloadProjectsMarkup();
     }
 
+    static escapeCSV(val) {
+        return '"' + val.replace(/"/g, '""') + '"';
+    }
+    static escapeHTML(val) {
+        return val.replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     reloadProjects() {
         let jsonProjects = PersistentObject.getAllJSON(Project.keyPrefix);
         jsonProjects.forEach(jsonProject => {
@@ -142,10 +153,6 @@ class TimeTracker {
     }
 
     exportCSV() {
-        const escapeValue = function(val) {
-            return '"' + val.replace(/"/g, '""') + '"'
-        };
-
         // CSV content, starting with URI header
         let csvContent = "data:text/csv;charset=utf-8,";
 
@@ -157,7 +164,7 @@ class TimeTracker {
                 if (rowStr) {
                     rowStr += ',';
                 }
-                rowStr += escapeValue(cell);
+                rowStr += TimeTracker.escapeCSV(cell);
             });
             csvContent += rowStr + "\r\n";
         });

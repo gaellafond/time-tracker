@@ -2,10 +2,8 @@ class Log extends PersistentObject {
     constructor(project, message, startDate, endDate, key=null) {
         if (key === null) {
             super(Log.getKeyPrefix(project.getKey()), false);
-            console.log("CREATING LOG: " + this.getKey());
         } else {
             super(key, true);
-            console.log("LOADING LOG: " + this.getKey());
         }
 
         this.project = project;
@@ -16,7 +14,7 @@ class Log extends PersistentObject {
         const elapse = (this.endDate ? this.endDate : Log.getCurrentTimestamp()) - this.startDate;
         this.markup = $(`
             <div>
-                <span class="time" data-logkey="${this.getKey()}">${Log.formatTime(elapse)}</span> - <span class="message">${this.getMessage()}</span>
+                <span class="time" data-logkey="${this.getKey()}">${Log.formatTime(elapse)}</span> - <span class="message">${TimeTracker.escapeHTML(this.getMessage())}</span>
             </div>
         `);
     }
@@ -104,7 +102,7 @@ class Log extends PersistentObject {
                 messageEl.hide();
 
                 // Create an input field, add it in the markup after the (hidden) title
-                const inputEl = $(`<input class="message" type="text" value="${log.getMessage()}">`);
+                const inputEl = $(`<input class="message" type="text" value="${TimeTracker.escapeHTML(log.getMessage())}">`);
                 messageEl.after(inputEl);
                 inputEl.select(); // Select the text in the text field
 
@@ -114,7 +112,7 @@ class Log extends PersistentObject {
                         const newMessage = inputEl.val();
 
                         // Set the new name on the markup and in the Project object
-                        messageEl.html(newMessage);
+                        messageEl.html(TimeTracker.escapeHTML(newMessage));
                         log.setMessage(newMessage);
                         log.save();
 

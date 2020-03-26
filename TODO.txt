@@ -1,6 +1,8 @@
 TimeTracker
 [X] Export logs
 [X] Time ribbon
+[X] Time ribbon auto-refresh 5 minutes
+[ ] Time ribbon hours
 
 Logs
 [X] Log persistence

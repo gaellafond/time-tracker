@@ -2,10 +2,8 @@ class Project extends PersistentObject {
     constructor(timeTracker, name, bgColourIndex, order, key=null) {
         if (key === null) {
             super(Project.keyPrefix, false);
-            console.log("CREATING PROJECT: " + this.getKey());
         } else {
             super(key, true);
-            console.log("LOADING PROJECT: " + this.getKey() + " order: " + order);
         }
 
         this.timeTracker = timeTracker;
@@ -14,16 +12,14 @@ class Project extends PersistentObject {
         this.order = order;
         this.logs = [];
 
-        let projectMarkup = `
+        // Create the JQuery element
+        this.markup = $(`
             <div class="project" draggable="true" data-projectkey="${this.getKey()}" style="background-color: ${this.getBackgroundColour()}">
-                <h2 class="title">${this.getName()}</h2>
+                <h2 class="title">${TimeTracker.escapeHTML(this.getName())}</h2>
                 <div class="logs"></div>
                 <div class="buttons"><button class="start">Start</button></div>
             </div>
-        `;
-
-        // Create the JQuery element
-        this.markup = $(projectMarkup);
+        `);
     }
 
     static get keyPrefix() {
@@ -60,28 +56,6 @@ class Project extends PersistentObject {
         let lastLog = null;
         $.each(this.logs, function(project, logsEl) {
             return function(index, log) {
-                // TODO Add dates
-                /*
-                    $logs = $project->getLogs();
-                    $currentLogDate = null;
-                    foreach ($logs as $log) {
-                        $logId = $log->getId();
-                        $logDate = $log->getDateStr();
-                        $logDuration = $log->getDurationStr();
-                        $logMessage = $log->getMessage();
-                        $logStartDate = $log->getStartDate();
-                        $logEndDate = $log->getEndDate();
-                        if ($logDate !== $currentLogDate) {
-                            $currentLogDate = $logDate;
-                            ?>
-                            <div><span class="date"><?=$logDate ?></span></div>
-                            <?php
-                        }
-                        ?>
-                        <div><span class="time" data-logid="<?=$logId ?>" data-startdate="<?=$logStartDate ?>" data-enddate="<?=($logEndDate ? $logEndDate : '') ?>"><?=$logDuration ?></span> - <?=$logMessage ?></div>
-                        <?php
-                    }
-                */
                 project.addLogDate(lastLog, log);
                 logsEl.append(log.getMarkup());
 
@@ -139,7 +113,7 @@ class Project extends PersistentObject {
                 titleEl.hide();
 
                 // Create an input field, add it in the markup after the (hidden) title
-                const inputEl = $(`<input class="title" type="text" value="${project.getName()}">`);
+                const inputEl = $(`<input class="title" type="text" value="${TimeTracker.escapeHTML(project.getName())}">`);
                 titleEl.after(inputEl);
                 inputEl.select(); // Select the text in the text field
 
@@ -149,7 +123,7 @@ class Project extends PersistentObject {
                         const newName = inputEl.val();
 
                         // Set the new name on the markup and in the Project object
-                        titleEl.html(newName);
+                        titleEl.html(TimeTracker.escapeHTML(newName));
                         project.setName(newName);
                         project.save();
 
@@ -196,8 +170,6 @@ class Project extends PersistentObject {
             this.save();
 
             this.timeTracker.fixProjectOrder();
-        } else {
-            console.log("NO DROP!!");
         }
     }
 
