@@ -108,6 +108,7 @@ class TimeTracker {
             return function(index, project) {
                 // Insert the JQuery element to the page Markup, before the "New Project" box
                 timeTracker.newProjectBox.before(project.getMarkup());
+                project.scrollToBottom();
                 project.addEventListeners();
             };
         }(this));

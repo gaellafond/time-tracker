@@ -10,6 +10,7 @@ Logs
 [X] Show dates in logs
 
 Projects
+[X] Auto-scroll when log is added
 [ ] Delete project with warning if project has logs
 [ ] Edit project background colour
 

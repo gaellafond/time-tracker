@@ -33,7 +33,8 @@ class Project extends PersistentObject {
             "#ffccff",
             "#ffcccc",
             "#ffffcc",
-            "#ccffcc"
+            "#ccffcc",
+            "#cccccc"
         ];
 
         return colours[colourIndex % colours.length];
@@ -184,6 +185,12 @@ class Project extends PersistentObject {
         log.addEventListeners();
 
         this.timeTracker.startLogCounter(log);
+        this.scrollToBottom();
+    }
+
+    scrollToBottom() {
+        const logsEl = this.markup.find(".logs");
+        logsEl.prop("scrollTop", logsEl.prop("scrollHeight"));
     }
 
     addLogDate(previousLog, log) {
