@@ -6,6 +6,7 @@ const reset = function() {
 
 let timeRibbon = null;
 let timeTracker = null;
+
 const checkOut = function() {
     timeTracker.stopLogCounter();
 };
@@ -14,7 +15,12 @@ const exportCSV = function() {
     timeTracker.exportCSV();
 };
 
+const showAdmin = function() {
+    timeTracker.showAdmin();
+};
+
 $(document).ready(function() {
     timeTracker = new TimeTracker($("#dashboard"));
     timeRibbon = new TimeRibbon($("#time-ribbon"), timeTracker);
+    timeRibbon.render([Log.formatDate(Log.getCurrentTimestamp())]);
 });

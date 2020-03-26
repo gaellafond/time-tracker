@@ -7,6 +7,8 @@ class TimeTracker {
         this.runningLog = null;
         this.runningLogInterval = null;
 
+        this.admin = new Admin(this);
+
         this.newProjectBox =
             $(`<div class="new-project" id="new-project">
                 <div class="buttons"><button class="new">New Project</button></div>
@@ -44,6 +46,10 @@ class TimeTracker {
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+    }
+
+    showAdmin() {
+        this.admin.show();
     }
 
     reloadProjects() {

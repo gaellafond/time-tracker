@@ -15,7 +15,7 @@ Projects
 [ ] Edit project background colour
 
 Admin page
-[ ] Create admin page
+[X] Create admin page
 [ ] Views
 [ ] Edit logs dates
 [ ] Export CSV

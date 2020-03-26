@@ -13,6 +13,7 @@
     <script src="js/classes/Log.js"></script>
     <script src="js/classes/TimeTracker.js"></script>
     <script src="js/classes/TimeRibbon.js"></script>
+    <script src="js/classes/Admin.js"></script>
 
     <link rel="stylesheet" type="text/css" href="css/time-tracker.css" />
     <script src="js/time-tracker.js"></script>
@@ -24,20 +25,10 @@
 <button style="float: right" onclick="checkOut()">Check out</button>
 <h1>Gael Lafond</h1>
 
-<div id="overlay"></div>
-<div id="modal">
-    <h2 class="title">New activity</h2>
-    <div class="field"><label for="activity">Activity:</label> <input type="text" id="activity" /></div>
-    <div class="buttons">
-        <button onclick="cancel()">Ok</button>
-        <button onclick="cancel()">Cancel</button>
-    </div>
-</div>
-
 <div class="time-ribbon" id="time-ribbon"></div>
-
 <div class="dashboard" id="dashboard"></div>
 
+<button style="float: right" onclick="showAdmin()">Admin</button>
 <button style="float: right" onclick="exportCSV()">Export CSV</button>
 
 </body>
