@@ -11,11 +11,12 @@ Logs
 
 Projects
 [X] Auto-scroll when log is added
-[ ] Delete project with warning if project has logs
-[ ] Edit project background colour
 
 Admin page
 [X] Create admin page
 [X] Views
-[ ] Edit logs dates
 [X] Export CSV
+[ ] Delete project with warning if project has logs
+[ ] Edit project background colour
+[ ] Edit logs dates / change project / split logs
+[ ] Auto-refresh page when admin is closed if something has been modified
