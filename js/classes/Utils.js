@@ -46,6 +46,13 @@ class Utils {
             Log.padNumber(date.getHours()) + ':' + Log.padNumber(date.getMinutes()) + ':' + Log.padNumber(date.getSeconds());
     }
 
+    static formatDateForEditor(timestamp) {
+        let date = new Date(timestamp * 1000);
+
+        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate()) + ' ' +
+            Log.padNumber(date.getHours()) + ':' + Log.padNumber(date.getMinutes()) + ':' + Log.padNumber(date.getSeconds());
+    }
+
     static getSecondsInDay(timestamp) {
         let date = new Date(timestamp * 1000);
         return date.getHours() * 60 * 60 +

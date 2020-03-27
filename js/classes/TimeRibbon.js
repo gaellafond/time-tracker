@@ -81,7 +81,7 @@ class TimeRibbon {
 
         // Draw
         const drawTable = renderedDates.length > 1;
-        this.timeRibbonEl.html(""); // Clear
+        this.timeRibbonEl.empty(); // Clear
         if (drawTable) {
             let tableEl = $(`<table></table>`);
             this.timeRibbonEl.append(tableEl);
@@ -176,6 +176,6 @@ class TimeRibbon {
 
     destroy() {
         window.clearInterval(this.refreshInterval);
-        this.timeRibbonEl.html("");
+        this.timeRibbonEl.empty();
     }
 }

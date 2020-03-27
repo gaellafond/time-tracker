@@ -9,6 +9,8 @@ class Admin {
                 <div style="text-align: right;"><button class="close">X</button></div>
                 <div class="time-ribbon"></div>
 
+                <div class="project-editor"></div>
+
                 <div class="footer-buttons">
                     <button class="reset">RESET</button>
                     <button class="exportCSV">Export CSV</button>
@@ -39,6 +41,72 @@ class Admin {
         body.prepend(this.overlayMarkup);
 
         this.adminTimeRibbon = new TimeRibbon(this.markup.find(".time-ribbon"), this.timeTracker);
+        this.projectEditorEl = this.markup.find(".project-editor");
+    }
+
+    renderProjectEditor() {
+        const projects = this.timeTracker.getProjects();
+
+        let projectTable = $(`<table>
+            <tr>
+                <th>Key</th>
+                <th>Name</th>
+                <th>Colour</th>
+            </tr>
+        </table>`);
+        $.each(projects, function(admin) {
+            return function(projectIndex, project) {
+                let projectTableRow = $(`<tr style="background-color: ${project.getBackgroundColour()}">
+                    <td>${project.getName()}</td>
+                    <td>${project.getKey()}</td>
+                    <td>${project.getBackgroundColourIndex()}</td>
+                </tr>`);
+
+                projectTable.append(projectTableRow);
+
+                let projectLogsRow = $(`<tr></tr>`);
+                let projectLogsCell = $(`<td colspan="3"></td>`);
+                projectLogsCell.append(admin.renderProjectLogsEditor(project));
+
+                projectLogsRow.append(projectLogsCell);
+                projectTable.append(projectLogsRow);
+            }
+        }(this));
+
+        this.projectEditorEl.append(projectTable);
+    }
+
+    renderProjectLogsEditor(project) {
+        let logs = project.getLogs();
+        if (logs !== null && logs.length > 0) {
+            let logsTable = $(`<table>
+                <tr>
+                    <th>Key</th>
+                    <th>Start date</th>
+                    <th>End date</th>
+                    <th>Message</th>
+                </tr>
+            </table>`);
+
+            $.each(logs, function(logIndex, log) {
+                let logRow = $(`<tr>
+                    <td>${log.getKey()}</td>
+                    <td>${Utils.formatDateForEditor(log.getStartDate())}</td>
+                    <td>${Utils.formatDateForEditor(log.getEndDate())}</td>
+                    <td>${log.getMessage()}</td>
+                </tr>`);
+
+                logsTable.append(logRow);
+            });
+
+            return logsTable;
+        }
+
+        return null;
+    }
+
+    destroyProjectEditor() {
+        this.projectEditorEl.empty();
     }
 
     confirmReset() {
@@ -58,6 +126,7 @@ class Admin {
         this.markup.show();
 
         this.adminTimeRibbon.render();
+        this.renderProjectEditor();
     }
 
     hide() {
@@ -65,6 +134,7 @@ class Admin {
         this.markup.hide();
 
         this.adminTimeRibbon.destroy();
+        this.destroyProjectEditor();
     }
 
     exportCSV() {
