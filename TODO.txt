@@ -19,7 +19,7 @@ Admin page
 [X] Create admin page
 [X] Views
 [X] Export CSV
-[ ] Add scroller to admin page
+[X] Add scroller to admin page
 [ ] Delete project with warning if project has logs
 [ ] Edit project background colour
 [ ] Edit logs dates / change project / split logs

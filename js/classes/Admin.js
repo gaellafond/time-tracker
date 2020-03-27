@@ -6,9 +6,13 @@ class Admin {
         this.markup = $(
         `<div class="admin-wrapper">
             <div class="admin">
-                <div style="text-align: right;"><button class="close">X</button></div>
+                <div class="header-buttons">
+                    <button class="close">X</button>
+                </div>
+
                 <div class="time-ribbon"></div>
 
+                <h2>Projects</h2>
                 <div class="project-editor"></div>
 
                 <div class="footer-buttons">
@@ -47,18 +51,18 @@ class Admin {
     renderProjectEditor() {
         const projects = this.timeTracker.getProjects();
 
-        let projectTable = $(`<table>
+        let projectTable = $(`<table class="projects-table">
             <tr>
                 <th>Key</th>
                 <th>Name</th>
-                <th>Colour</th>
+                <th>Colour code</th>
             </tr>
         </table>`);
         $.each(projects, function(admin) {
             return function(projectIndex, project) {
                 let projectTableRow = $(`<tr style="background-color: ${project.getBackgroundColour()}">
-                    <td>${project.getName()}</td>
                     <td>${project.getKey()}</td>
+                    <td class="name">${project.getName()}</td>
                     <td>${project.getBackgroundColourIndex()}</td>
                 </tr>`);
 
@@ -79,7 +83,7 @@ class Admin {
     renderProjectLogsEditor(project) {
         let logs = project.getLogs();
         if (logs !== null && logs.length > 0) {
-            let logsTable = $(`<table>
+            let logsTable = $(`<table class="logs-table">
                 <tr>
                     <th>Key</th>
                     <th>Start date</th>
@@ -123,7 +127,7 @@ class Admin {
 
     show() {
         this.overlayMarkup.show();
-        this.markup.show();
+        this.markup.css("display", "flex");
 
         this.adminTimeRibbon.render();
         this.renderProjectEditor();
