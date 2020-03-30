@@ -37,9 +37,11 @@ class Log extends PersistentObject {
     }
 
     static sort(logArray) {
-        logArray.sort(function (a, b) {
-            return a.getStartDate() - b.getStartDate();
-        });
+        if (logArray) {
+            logArray.sort(function (a, b) {
+                return a.getStartDate() - b.getStartDate();
+            });
+        }
     }
 
     static load(timeTracker, jsonLog) {

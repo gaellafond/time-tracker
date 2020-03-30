@@ -5,6 +5,7 @@ TimeTracker
 [X] Time ribbon hours
 
 TimeRibbon
+[X] Time ribbon do not load when empty (beginning of the day). Page refresh is needed after first log is added
 [ ] Add exception for when log end on next day
 
 Logs
@@ -22,5 +23,7 @@ Admin page
 [X] Add scroller to admin page
 [ ] Delete project with warning if project has logs
 [ ] Edit project background colour
-[ ] Edit logs dates / change project / split logs
+[ ] Edit logs dates (edit text + drag n drop in timeline)
+[ ] Edit logs change project (drag n drop between project list)
+[ ] Split logs
 [ ] Auto-refresh page when admin is closed if something has been modified

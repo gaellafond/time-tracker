@@ -49,21 +49,23 @@ class TimeRibbon {
         let maxSecInDay = null;
         $.each(renderedDates, function(dateIndex, date) {
             let logArray = dates[date];
-            Log.sort(logArray);
+            if (logArray) {
+                Log.sort(logArray);
 
-            let startSecInDay = Utils.getSecondsInDay(logArray[0].getStartDate());
-            if (minSecInDay === null || startSecInDay < minSecInDay) {
-                minSecInDay = startSecInDay;
-            }
+                let startSecInDay = Utils.getSecondsInDay(logArray[0].getStartDate());
+                if (minSecInDay === null || startSecInDay < minSecInDay) {
+                    minSecInDay = startSecInDay;
+                }
 
-            let lastTimestamp = logArray[logArray.length-1].getEndDate();
-            if (lastTimestamp == null) {
-                lastTimestamp = Utils.getCurrentTimestamp();
-            }
+                let lastTimestamp = logArray[logArray.length-1].getEndDate();
+                if (lastTimestamp == null) {
+                    lastTimestamp = Utils.getCurrentTimestamp();
+                }
 
-            let endSecInDay = Utils.getSecondsInDay(lastTimestamp);
-            if (maxSecInDay === null || endSecInDay > maxSecInDay) {
-                maxSecInDay = endSecInDay;
+                let endSecInDay = Utils.getSecondsInDay(lastTimestamp);
+                if (maxSecInDay === null || endSecInDay > maxSecInDay) {
+                    maxSecInDay = endSecInDay;
+                }
             }
         });
 
