@@ -26,8 +26,8 @@ class Project extends PersistentObject {
         return "project";
     }
 
-    static getBackgroundColour(colourIndex) {
-        const colours = [
+    static getBackgroundColours() {
+        return [
             "#ccffff",
             "#ccccff",
             "#ffccff",
@@ -36,7 +36,10 @@ class Project extends PersistentObject {
             "#ccffcc",
             "#cccccc"
         ];
+    }
 
+    static getBackgroundColour(colourIndex) {
+        const colours = Project.getBackgroundColours();
         return colours[colourIndex % colours.length];
     }
 
@@ -254,8 +257,9 @@ class Project extends PersistentObject {
     getBackgroundColourIndex() {
         return this.bgColourIndex;
     }
-    setBackgroundColour(bgColourIndex) {
-        this.bgColourIndex = bgColourIndex;
+    setBackgroundColourIndex(bgColourIndex) {
+        const colours = Project.getBackgroundColours();
+        this.bgColourIndex = bgColourIndex % colours.length;
     }
 
     getBackgroundColour() {

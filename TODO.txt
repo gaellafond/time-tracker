@@ -3,6 +3,7 @@ TimeTracker
 [X] Time ribbon
 [X] Time ribbon auto-refresh 5 minutes
 [X] Time ribbon hours
+[X] Edit name in header (default to "Your name" maybe?)
 
 TimeRibbon
 [X] Time ribbon do not load when empty (beginning of the day). Page refresh is needed after first log is added
@@ -21,9 +22,9 @@ Admin page
 [X] Views
 [X] Export CSV
 [X] Add scroller to admin page
-[ ] Delete project with warning if project has logs
-[ ] Edit project background colour
-[ ] Edit logs dates (edit text + drag n drop in timeline)
+[ ] Delete project (with warning if project has logs)
+[~] Edit project background colour
+[~] Edit logs dates (edit text + drag n drop in timeline)
 [ ] Edit logs change project (drag n drop between project list)
 [ ] Split logs
-[ ] Auto-refresh page when admin is closed if something has been modified
+[X] Auto-refresh page when admin is closed if something has been modified

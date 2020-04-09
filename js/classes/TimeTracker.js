@@ -1,7 +1,20 @@
 class TimeTracker {
 
-    constructor(dashboardEl) {
-        this.dashboardEl = dashboardEl;
+    constructor(timeTrackerEl) {
+        this.load();
+
+        this.checkOutButtonEl = $(`<button style="float: right">Check out</button>`);
+        this.pageTitleEl = $(`<h1 class="pageTitle">${this.getName()}</h1>`);
+        this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
+        this.dashboardEl = $(`<div class="dashboard"></div>`);
+        this.showAdminbuttonEl = $(`<button style="float: right">Admin</button>`);
+
+        timeTrackerEl.append(this.checkOutButtonEl);
+        timeTrackerEl.append(this.pageTitleEl);
+        timeTrackerEl.append(this.todayTimeRibbonEl);
+        timeTrackerEl.append(this.dashboardEl);
+        timeTrackerEl.append(this.showAdminbuttonEl);
+
         this.projectMap = {};
 
         this.runningLog = null;
@@ -35,6 +48,86 @@ class TimeTracker {
 
         this.reloadProjects();
         this.reloadProjectsMarkup();
+
+        this.todayTimeRibbon = new TimeRibbon(this.todayTimeRibbonEl, this);
+        this.todayTimeRibbon.render([Utils.formatDate(Utils.getCurrentTimestamp())]);
+
+        this.addEventListeners();
+    }
+
+    load() {
+        const timeTrackerDataStr = window.localStorage.getItem('timeTrackerData');
+        if (timeTrackerDataStr) {
+            const jsonTimeTrackerData = JSON.parse(timeTrackerDataStr);
+
+            this.name = jsonTimeTrackerData["name"];
+        } else {
+            this.name = "Your name";
+        }
+    }
+    save() {
+        const jsonTimeTrackerData = {
+            "name": this.name
+        };
+
+        window.localStorage.setItem('timeTrackerData', JSON.stringify(jsonTimeTrackerData));
+    }
+
+    getName() {
+        return this.name;
+    }
+    setName(newName) {
+        this.name = newName;
+    }
+
+    addEventListeners() {
+        this.checkOutButtonEl.click(function(timeTracker) {
+            return function() {
+                timeTracker.stopLogCounter();
+            };
+        }(this));
+
+        this.showAdminbuttonEl.click(function(timeTracker) {
+            return function() {
+                timeTracker.showAdmin();
+            };
+        }(this));
+
+        this.pageTitleEl.click(function(timeTracker) {
+            return function() {
+                // Hide the title (it will be replaced with a input field)
+                const titleEl = $(this);
+                titleEl.hide();
+
+                // Create an input field, add it in the markup after the (hidden) title
+                const inputContainerEl = $(`<div class="pageTitle"></div>`);
+                const inputEl = $(`<input type="text" value="${Utils.escapeHTML(timeTracker.getName())}">`);
+                inputContainerEl.append(inputEl);
+                titleEl.after(inputContainerEl);
+                inputEl.select(); // Select the text in the text field
+
+                const changeFunction = function(timeTracker, inputContainerEl, inputEl) {
+                    return function() {
+                        // Get the new project name that was typed
+                        const newName = inputEl.val();
+
+                        // Set the new name on the markup and in the Project object
+                        titleEl.html(Utils.escapeHTML(newName));
+                        timeTracker.setName(newName);
+                        timeTracker.save();
+
+                        // Delete the input field and show the changed title
+                        inputContainerEl.remove();
+                        titleEl.show();
+                    };
+                }(timeTracker, inputContainerEl, inputEl);
+
+                // Update the project name when
+                inputEl.change(changeFunction); // The user tape "enter"
+                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+            };
+        }(this));
+
     }
 
     showAdmin() {

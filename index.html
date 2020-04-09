@@ -17,18 +17,17 @@
     <script src="js/classes/Admin.js"></script>
 
     <link rel="stylesheet" type="text/css" href="css/time-tracker.css" />
-    <script src="js/time-tracker.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            new TimeTracker($("#time-tracker"));
+        });
+    </script>
 </head>
 
 <body>
 
-<button style="float: right" onclick="checkOut()">Check out</button>
-<h1>Gael Lafond</h1>
-
-<div class="time-ribbon" id="time-ribbon"></div>
-<div class="dashboard" id="dashboard"></div>
-
-<button style="float: right" onclick="showAdmin()">Admin</button>
+<div id="time-tracker"></div>
 
 </body>
 

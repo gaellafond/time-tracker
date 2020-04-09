@@ -9,6 +9,17 @@ button {
     font-size: 1.2em;
 }
 
+div.pageTitle {
+    text-align: center;
+    margin: 0.58em 0;
+    font-size: 2em;
+}
+div.pageTitle input {
+    max-width: 100%;
+    text-align: center;
+    font-size: 1em;
+}
+
 .dashboard {
     display: flex;
     flex-wrap: wrap;
@@ -160,7 +171,7 @@ button {
     background-color: #FF0000;
 }
 
-#time-ribbon {
+.today-time-ribbon {
     border: 3px solid #000000;
 }
 

@@ -28,18 +28,30 @@ class Utils {
     }
 
     static formatDate(timestamp) {
+        if (timestamp === null) {
+            return "";
+        }
+
         let date = new Date(timestamp * 1000);
 
         return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate());
     }
 
     static formatDateForFilename(timestamp) {
+        if (timestamp === null) {
+            return "";
+        }
+
         let date = new Date(timestamp * 1000);
 
         return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate());
     }
 
     static formatDateForCSV(timestamp) {
+        if (timestamp === null) {
+            return "";
+        }
+
         let date = new Date(timestamp * 1000);
 
         return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate()) + ' ' +
@@ -47,13 +59,34 @@ class Utils {
     }
 
     static formatDateForEditor(timestamp) {
+        if (timestamp === null) {
+            return "";
+        }
+
         let date = new Date(timestamp * 1000);
 
         return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate()) + ' ' +
             Log.padNumber(date.getHours()) + ':' + Log.padNumber(date.getMinutes()) + ':' + Log.padNumber(date.getSeconds());
     }
 
+    static parseDateFromEditor(dateStr) {
+        if (dateStr === null) {
+            return null;
+        }
+
+        const timestamp = Date.parse(dateStr);
+        if (isNaN(timestamp)) {
+            return null;
+        }
+
+        return timestamp / 1000;
+    }
+
     static getSecondsInDay(timestamp) {
+        if (timestamp === null) {
+            return null;
+        }
+
         let date = new Date(timestamp * 1000);
         return date.getHours() * 60 * 60 +
             date.getMinutes() * 60 +

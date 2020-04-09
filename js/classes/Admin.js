@@ -1,6 +1,8 @@
 class Admin {
 
     constructor(timeTracker) {
+        this.dirty = false;
+
         this.timeTracker = timeTracker;
         this.overlayMarkup = $(`<div class="overlay"></div>`);
         this.markup = $(
@@ -25,6 +27,10 @@ class Admin {
         this.markup.find("button.close").click(function(admin) {
             return function() {
                 admin.hide();
+                if (admin.dirty) {
+                    // The user has changed something. Reload the page
+                    location.reload();
+                }
             };
         }(this));
 
@@ -45,10 +51,12 @@ class Admin {
         body.prepend(this.overlayMarkup);
 
         this.adminTimeRibbon = new TimeRibbon(this.markup.find(".time-ribbon"), this.timeTracker);
+        this.adminTimeRibbon.setDrawTable(true);
         this.projectEditorEl = this.markup.find(".project-editor");
     }
 
     renderProjectEditor() {
+        this.destroyProjectEditor();
         const projects = this.timeTracker.getProjects();
 
         let projectTable = $(`<table class="projects-table">
@@ -62,9 +70,20 @@ class Admin {
             return function(projectIndex, project) {
                 let projectTableRow = $(`<tr style="background-color: ${project.getBackgroundColour()}">
                     <td>${project.getKey()}</td>
-                    <td class="name">${project.getName()}</td>
-                    <td>${project.getBackgroundColourIndex()}</td>
+                    <td class="name">${Utils.escapeHTML(project.getName())}</td>
                 </tr>`);
+
+                let projectColourCellEl = $(`<td>${project.getBackgroundColourIndex()}</td>`);
+                projectColourCellEl.click(function(admin, project) {
+                    return function() {
+                        project.setBackgroundColourIndex(project.getBackgroundColourIndex() + 1);
+                        project.save();
+                        admin.render();
+                        admin.dirty = true;
+                    };
+                }(admin, project));
+
+                projectTableRow.append(projectColourCellEl);
 
                 projectTable.append(projectTableRow);
 
@@ -92,16 +111,142 @@ class Admin {
                 </tr>
             </table>`);
 
-            $.each(logs, function(logIndex, log) {
-                let logRow = $(`<tr>
-                    <td>${log.getKey()}</td>
-                    <td>${Utils.formatDateForEditor(log.getStartDate())}</td>
-                    <td>${Utils.formatDateForEditor(log.getEndDate())}</td>
-                    <td>${log.getMessage()}</td>
-                </tr>`);
+            $.each(logs, function(admin) {
+                return function(logIndex, log) {
+                    let logRow = $(`<tr>
+                        <td>${log.getKey()}</td>
+                    </tr>`);
 
-                logsTable.append(logRow);
-            });
+                    let startDateCellEl = $(`<td></td>`);
+                    let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
+                    startDateCellEl.append(startDateCellDataEl);
+
+                    let endDateCellEl = $(`<td></td>`);
+                    let endDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getEndDate())}</span>`);
+                    endDateCellEl.append(endDateCellDataEl);
+
+                    let messageCellEl = $(`<td></td>`);
+                    let messageCellDataEl = $(`<span>${Utils.escapeHTML(log.getMessage())}</span>`);
+                    messageCellEl.append(messageCellDataEl);
+
+                    logRow.append(startDateCellEl);
+                    logRow.append(endDateCellEl);
+                    logRow.append(messageCellEl);
+
+                    startDateCellDataEl.click(function(admin, log, startDateCellDataEl) {
+                        return function() {
+                            let startDate = log.getStartDate();
+                            if (startDate != null) {
+                                startDateCellDataEl.hide();
+
+                                // Create an input field, add it in the markup after the (hidden) date
+                                const inputEl = $(`<input type="text" value="${Utils.formatDateForEditor(log.getStartDate())}">`);
+                                startDateCellDataEl.after(inputEl);
+                                inputEl.focus(); // Put the cursor in the input field to start editing
+
+                                const changeFunction = function(log, startDateCellDataEl, inputEl) {
+                                    return function() {
+                                        // Get the new project name that was typed
+                                        const newDateStr = inputEl.val();
+                                        const newDate = Utils.parseDateFromEditor(newDateStr);
+
+                                        if (newDate) {
+                                            // Set the new name on the markup and in the Project object
+                                            startDateCellDataEl.html(Utils.escapeHTML(newDateStr));
+                                            log.setStartDate(newDate);
+                                            log.save();
+                                            admin.render();
+                                            admin.dirty = true;
+                                        }
+
+                                        // Delete the input field and show the changed title
+                                        inputEl.remove();
+                                        startDateCellDataEl.show();
+                                    };
+                                }(log, startDateCellDataEl, inputEl);
+
+                                // Update the project name when
+                                inputEl.change(changeFunction); // The user tape "enter"
+                                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+                            }
+                        };
+                    }(admin, log, startDateCellDataEl));
+
+                    endDateCellDataEl.click(function(admin, log, endDateCellDataEl) {
+                        return function() {
+                            let endDate = log.getEndDate();
+                            if (endDate != null) {
+                                endDateCellDataEl.hide();
+
+                                // Create an input field, add it in the markup after the (hidden) date
+                                const inputEl = $(`<input type="text" value="${Utils.formatDateForEditor(log.getEndDate())}">`);
+                                endDateCellDataEl.after(inputEl);
+                                inputEl.focus(); // Put the cursor in the input field to start editing
+
+                                const changeFunction = function(log, endDateCellDataEl, inputEl) {
+                                    return function() {
+                                        // Get the new project name that was typed
+                                        const newDateStr = inputEl.val();
+                                        const newDate = Utils.parseDateFromEditor(newDateStr);
+
+                                        if (newDate) {
+                                            // Set the new name on the markup and in the Project object
+                                            endDateCellDataEl.html(Utils.escapeHTML(newDateStr));
+                                            log.setEndDate(newDate);
+                                            log.save();
+                                            admin.render();
+                                            admin.dirty = true;
+                                        }
+
+                                        // Delete the input field and show the changed title
+                                        inputEl.remove();
+                                        endDateCellDataEl.show();
+                                    };
+                                }(log, endDateCellDataEl, inputEl);
+
+                                // Update the project name when
+                                inputEl.change(changeFunction); // The user tape "enter"
+                                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+                            }
+                        };
+                    }(admin, log, endDateCellDataEl));
+
+                    messageCellDataEl.click(function(admin, log, messageCellDataEl) {
+                        return function() {
+                            messageCellDataEl.hide();
+
+                            // Create an input field, add it in the markup after the (hidden) message
+                            const inputEl = $(`<input type="text" value="${Utils.escapeHTML(log.getMessage())}">`);
+                            messageCellDataEl.after(inputEl);
+                            inputEl.focus(); // Put the cursor in the input field to start editing
+
+                            const changeFunction = function(log, messageCellDataEl, inputEl) {
+                                return function() {
+                                    // Get the new project name that was typed
+                                    const newMessage = inputEl.val();
+
+                                    // Set the new name on the markup and in the Project object
+                                    messageCellDataEl.html(Utils.escapeHTML(newMessage));
+                                    log.setMessage(newMessage);
+                                    log.save();
+                                    admin.render();
+                                    admin.dirty = true;
+
+                                    // Delete the input field and show the changed title
+                                    inputEl.remove();
+                                    messageCellDataEl.show();
+                                };
+                            }(log, messageCellDataEl, inputEl);
+
+                            // Update the project name when
+                            inputEl.change(changeFunction); // The user tape "enter"
+                            inputEl.focusout(changeFunction); // The user click somewhere else in the page
+                        };
+                    }(admin, log, messageCellDataEl));
+
+                    logsTable.append(logRow);
+                };
+            }(this));
 
             return logsTable;
         }
@@ -128,9 +273,7 @@ class Admin {
     show() {
         this.overlayMarkup.show();
         this.markup.css("display", "flex");
-
-        this.adminTimeRibbon.render();
-        this.renderProjectEditor();
+        this.render();
     }
 
     hide() {
@@ -139,6 +282,11 @@ class Admin {
 
         this.adminTimeRibbon.destroy();
         this.destroyProjectEditor();
+    }
+
+    render() {
+        this.adminTimeRibbon.render();
+        this.renderProjectEditor();
     }
 
     exportCSV() {

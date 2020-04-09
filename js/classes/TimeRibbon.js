@@ -3,6 +3,11 @@ class TimeRibbon {
     constructor(timeRibbonEl, timeTracker) {
         this.timeRibbonEl = timeRibbonEl;
         this.timeTracker = timeTracker;
+        this.drawTable = false;
+    }
+
+    setDrawTable(drawTable) {
+        this.drawTable = drawTable;
     }
 
     static drawCell(cellLength, backgroundColour, projectName = "", logMessage = "") {
@@ -82,9 +87,8 @@ class TimeRibbon {
 
 
         // Draw
-        const drawTable = renderedDates.length > 1;
         this.timeRibbonEl.empty(); // Clear
-        if (drawTable) {
+        if (this.drawTable) {
             let tableEl = $(`<table></table>`);
             this.timeRibbonEl.append(tableEl);
 
@@ -111,14 +115,14 @@ class TimeRibbon {
             let scaleCell = $(`<td class="scaleCell"></td>`);
             rowEl.append(scaleCell);
 
-            let scale = timeRibbon.drawScale(dayStart, dayEnd);
+            let scale = this.drawScale(dayStart, dayEnd);
             scaleCell.append(scale);
 
             tableEl.append(rowEl);
         } else {
             $.each(renderedDates, function(timeRibbon) {
                 return function(dateIndex, date) {
-                    if (drawTable) {
+                    if (this.drawTable) {
                         let ribbonHeader = $(`<div class="rowHeader">${date}</div>`);
                         timeRibbon.timeRibbonEl.append(ribbonHeader);
                     }
@@ -148,14 +152,18 @@ class TimeRibbon {
                 if (startSecInDay < lastEndSecInDay) {
                     startSecInDay = lastEndSecInDay;
                 }
-                // White space at the beginning and gap in the logs (white space)
-                if (startSecInDay > lastEndSecInDay) {
-                    ribbonRow.append(TimeRibbon.drawCell(startSecInDay - lastEndSecInDay, "#ffffff"));
-                }
-                // Actual log
-                ribbonRow.append(TimeRibbon.drawCell(endSecInDay - startSecInDay, project.getBackgroundColour(), project.getName(), log.getMessage()));
 
-                lastEndSecInDay = endSecInDay;
+                let cellLength = endSecInDay - startSecInDay;
+                if (cellLength > 0) {
+                    // White space at the beginning and gap in the logs (white space)
+                    if (startSecInDay > lastEndSecInDay) {
+                        ribbonRow.append(TimeRibbon.drawCell(startSecInDay - lastEndSecInDay, "#ffffff"));
+                    }
+                    // Actual log
+                    ribbonRow.append(TimeRibbon.drawCell(cellLength, project.getBackgroundColour(), project.getName(), log.getMessage()));
+
+                    lastEndSecInDay = endSecInDay;
+                }
             };
         }(ribbonRow));
         // White space at the end
