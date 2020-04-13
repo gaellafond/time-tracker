@@ -27,10 +27,6 @@ class Admin {
         this.markup.find("button.close").click(function(admin) {
             return function() {
                 admin.hide();
-                if (admin.dirty) {
-                    // The user has changed something. Reload the page
-                    location.reload();
-                }
             };
         }(this));
 
@@ -277,6 +273,11 @@ class Admin {
     }
 
     hide() {
+        if (this.dirty) {
+            // The user has changed something. Reload the time tracker page
+            this.timeTracker.reload();
+        }
+
         this.overlayMarkup.hide();
         this.markup.hide();
 

@@ -134,6 +134,11 @@ class TimeTracker {
         this.admin.show();
     }
 
+    reload() {
+        this.fixProjectOrder();
+        this.todayTimeRibbon.render([Utils.formatDate(Utils.getCurrentTimestamp())]);
+    }
+
     reloadProjects() {
         let jsonProjects = PersistentObject.getAllJSON(Project.keyPrefix);
         jsonProjects.forEach(jsonProject => {
