@@ -1,5 +1,5 @@
 Compiler
-[ ] Create a compiler which combine all the JS / CSS files into the index.html page, so it can be used without Apache
+[X] Create a compiler which combine all the JS / CSS files into the index.html page, so it can be used without Apache
 
 TimeTracker
 [X] Export logs
