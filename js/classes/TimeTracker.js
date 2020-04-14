@@ -135,11 +135,16 @@ class TimeTracker {
     }
 
     reload() {
-        this.fixProjectOrder();
+        this.reloadProjects();
+        this.reloadProjectsMarkup();
+
         this.todayTimeRibbon.render([Utils.formatDate(Utils.getCurrentTimestamp())]);
+        this.addEventListeners();
     }
 
     reloadProjects() {
+        this.projectMap = {};
+
         let jsonProjects = PersistentObject.getAllJSON(Project.keyPrefix);
         jsonProjects.forEach(jsonProject => {
             this.addProject(Project.load(this, jsonProject));
@@ -218,9 +223,10 @@ class TimeTracker {
     }
 
     startLogCounter(log) {
-        const logEl = log.markup.find(".time");
-
         if (this.runningLog) {
+            if (this.runningLog.getKey() === log.getKey()) {
+                this.runningLog = null;
+            }
             this.stopLogCounter();
         }
         this.runningLog = log;
@@ -228,6 +234,7 @@ class TimeTracker {
 
         this.runningLogInterval = window.setInterval(function(log) {
             return function() {
+                const logEl = log.markup.find(".time");
                 let elapse = Utils.getCurrentTimestamp() - log.getStartDate();
                 logEl.html(Utils.formatTime(elapse));
             };
@@ -235,14 +242,15 @@ class TimeTracker {
     }
 
     stopLogCounter() {
-        this.runningLog.setEndDate(Utils.getCurrentTimestamp());
-        this.runningLog.save();
+        if (this.runningLog != null) {
+            this.runningLog.setEndDate(Utils.getCurrentTimestamp());
+            this.runningLog.save();
+            this.runningLog.getProject().setActive(false);
+            this.runningLog = null;
+        }
 
         // Stop incrementing the counter on the screen
         window.clearInterval(this.runningLogInterval);
         this.runningLogInterval = null;
-
-        this.runningLog.getProject().setActive(false);
-        this.runningLog = null;
     }
 }
