@@ -13,7 +13,7 @@ function substitute_url() {
   #   <link type="text/css" href="..." \> OR <link href="..." type="text/css" \>
   elif [[ "$1" =~ ^[[:space:]]*\<link\ .*type=\"text/css\".*href=\"(.*)\".*/\>$ || "$1" =~ ^[[:space:]]*\<link\ .*href=\"(.*)\".*type=\"text/css\".*/\>$ ]]; then
     echo "<style>"
-    echo "<!-- FILE: ${BASH_REMATCH[1]} -->"
+    echo "/* FILE: ${BASH_REMATCH[1]} */"
     cat "${BASH_REMATCH[1]}"
     echo "</style>"
 
