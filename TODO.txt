@@ -26,8 +26,9 @@ Admin page
 [X] Export CSV
 [X] Add scroller to admin page
 [ ] Delete project (with warning if project has logs)
+[X] Delete logs
 [~] Edit project background colour
 [~] Edit logs dates (edit text + drag n drop in timeline)
 [ ] Edit logs change project (drag n drop between project list)
-[ ] Split logs
+[ ] Split logs (or add logs from admin)
 [X] Auto-refresh page when admin is closed if something has been modified

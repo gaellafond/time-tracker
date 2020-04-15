@@ -104,6 +104,7 @@ class Admin {
                     <th>Start date</th>
                     <th>End date</th>
                     <th>Message</th>
+                    <th>X</th>
                 </tr>
             </table>`);
 
@@ -125,9 +126,14 @@ class Admin {
                     let messageCellDataEl = $(`<span>${Utils.escapeHTML(log.getMessage())}</span>`);
                     messageCellEl.append(messageCellDataEl);
 
+                    let deleteCellEl = $(`<td></td>`);
+                    let deleteCellButtonEl = $(`<button class="delete">X</button>`);
+                    deleteCellEl.append(deleteCellButtonEl);
+
                     logRow.append(startDateCellEl);
                     logRow.append(endDateCellEl);
                     logRow.append(messageCellEl);
+                    logRow.append(deleteCellEl);
 
                     startDateCellDataEl.click(function(admin, log, startDateCellDataEl) {
                         return function() {
@@ -239,6 +245,23 @@ class Admin {
                             inputEl.focusout(changeFunction); // The user click somewhere else in the page
                         };
                     }(admin, log, messageCellDataEl));
+
+                    deleteCellButtonEl.click(function(admin, log) {
+                        return function() {
+                            // NOTE: No character need escaping in a "confirm" window
+                            const warningMessage =
+                                "Are you sure you want to delete this log?\n" +
+                                "    Log: " + log.getMessage() + "\n" +
+                                "    Project: " + log.getProject().getName()
+                            if (window.confirm(warningMessage)) {
+                                // TODO Remove log from markup (reload)
+                                log.delete();
+                                admin.timeTracker.reload();
+                                admin.render();
+                                admin.dirty = true;
+                            }
+                        };
+                    }(admin, log));
 
                     logsTable.append(logRow);
                 };
