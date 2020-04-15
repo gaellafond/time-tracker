@@ -109,6 +109,45 @@ class Utils {
             date.getMinutes() * 60 +
             date.getSeconds();
     }
+
+    static getWeekday(timestamp, abbreviation = false) {
+        // https://www.w3schools.com/jsref/jsref_getday.asp
+        // Sunday is 0, Monday is 1, and so on.
+        const weekdays = [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+        ];
+        const abbreviatedWeekdays = [
+            "Sun",
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat"
+        ];
+
+        if (timestamp === null) {
+            return null;
+        }
+
+        const date = new Date(timestamp * 1000);
+        if (!date) {
+            return null;
+        }
+
+        const weekdayInt = date.getDay();
+        if (weekdayInt < 0 || weekdayInt > 6) {
+            return null;
+        }
+
+        return abbreviation ? abbreviatedWeekdays[weekdayInt] : weekdays[weekdayInt];
+    }
 }
 </script>
 <script>
@@ -174,6 +213,10 @@ class PersistentObject {
 
     save() {
         window.localStorage.setItem(this.getKey(), JSON.stringify(this.toJson()));
+    }
+
+    delete() {
+        window.localStorage.removeItem(this.getKey());
     }
 }
 </script>
@@ -893,6 +936,9 @@ class TimeRibbon {
     }
 
     _render(renderedDates = null) {
+        // dates = Map object
+        //   Key: Formatted date (used to group logs per date, sort and display)
+        //   Value: Array of log objects for that date
         let dates = {};
 
         // Collect all logs from all projects
@@ -961,22 +1007,28 @@ class TimeRibbon {
 
             $.each(renderedDates, function(timeRibbon) {
                 return function(dateIndex, date) {
+                    let logs = dates[date];
+                    let weekday = Utils.getWeekday(logs[0].getStartDate(), true);
+
                     let rowEl = $(`<tr></tr>`);
                     tableEl.append(rowEl);
 
-                    let ribbonHeader = $(`<td class="rowHeader">${date}</td>`);
-                    rowEl.append(ribbonHeader);
+                    let ribbonHeaderWeekday = $(`<td class="rowHeader">${weekday}</td>`);
+                    rowEl.append(ribbonHeaderWeekday);
+
+                    let ribbonHeaderDate = $(`<td class="rowHeader">${date}</td>`);
+                    rowEl.append(ribbonHeaderDate);
 
                     let ribbonCell = $(`<td class="ribbonCell"></td>`);
                     rowEl.append(ribbonCell);
 
-                    let ribbon = timeRibbon.drawRibbon(dates[date], dayStart, dayEnd);
+                    let ribbon = timeRibbon.drawRibbon(logs, dayStart, dayEnd);
                     ribbonCell.append(ribbon);
                 };
             }(this));
 
             let rowEl = $(`<tr class="scale"></tr>`);
-            let scaleHeader = $(`<td class="rowHeader"></td>`);
+            let scaleHeader = $(`<td class="rowHeader" colspan="2"></td>`);
             rowEl.append(scaleHeader);
 
             let scaleCell = $(`<td class="scaleCell"></td>`);
@@ -1165,6 +1217,7 @@ class Admin {
                     <th>Start date</th>
                     <th>End date</th>
                     <th>Message</th>
+                    <th>X</th>
                 </tr>
             </table>`);
 
@@ -1186,9 +1239,14 @@ class Admin {
                     let messageCellDataEl = $(`<span>${Utils.escapeHTML(log.getMessage())}</span>`);
                     messageCellEl.append(messageCellDataEl);
 
+                    let deleteCellEl = $(`<td></td>`);
+                    let deleteCellButtonEl = $(`<button class="delete">X</button>`);
+                    deleteCellEl.append(deleteCellButtonEl);
+
                     logRow.append(startDateCellEl);
                     logRow.append(endDateCellEl);
                     logRow.append(messageCellEl);
+                    logRow.append(deleteCellEl);
 
                     startDateCellDataEl.click(function(admin, log, startDateCellDataEl) {
                         return function() {
@@ -1300,6 +1358,23 @@ class Admin {
                             inputEl.focusout(changeFunction); // The user click somewhere else in the page
                         };
                     }(admin, log, messageCellDataEl));
+
+                    deleteCellButtonEl.click(function(admin, log) {
+                        return function() {
+                            // NOTE: No character need escaping in a "confirm" window
+                            const warningMessage =
+                                "Are you sure you want to delete this log?\n" +
+                                "    Log: " + log.getMessage() + "\n" +
+                                "    Project: " + log.getProject().getName()
+                            if (window.confirm(warningMessage)) {
+                                // TODO Remove log from markup (reload)
+                                log.delete();
+                                admin.timeTracker.reload();
+                                admin.render();
+                                admin.dirty = true;
+                            }
+                        };
+                    }(admin, log));
 
                     logsTable.append(logRow);
                 };
@@ -1560,6 +1635,16 @@ div.pageTitle input {
 .admin .project-editor table.logs-table td,
 .admin .project-editor table.logs-table th {
     width: 25%;
+}
+
+.admin .logs-table button {
+    padding: 0 0.2em;
+    margin: 0;
+    font-weight: normal;
+    font-size: 1em;
+}
+.admin .logs-table button.delete {
+    background-color: #FF0000;
 }
 
 .admin .header-buttons {
