@@ -139,7 +139,6 @@ class TimeTracker {
         this.reloadProjectsMarkup();
 
         this.todayTimeRibbon.render([Utils.formatDate(Utils.getCurrentTimestamp())]);
-        this.addEventListeners();
     }
 
     reloadProjects() {
