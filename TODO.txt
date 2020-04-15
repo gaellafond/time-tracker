@@ -25,6 +25,9 @@ Admin page
 [X] Views
 [X] Export CSV
 [X] Add scroller to admin page
+[~] Add week day in logs
+[ ] Add elapsed time in logs
+[ ] Add total elapsed time in logs (per weeks)
 [ ] Delete project (with warning if project has logs)
 [X] Delete logs
 [~] Edit project background colour

@@ -26,6 +26,9 @@ class TimeRibbon {
     }
 
     _render(renderedDates = null) {
+        // dates = Map object
+        //   Key: Formatted date (used to group logs per date, sort and display)
+        //   Value: Array of log objects for that date
         let dates = {};
 
         // Collect all logs from all projects
@@ -94,22 +97,28 @@ class TimeRibbon {
 
             $.each(renderedDates, function(timeRibbon) {
                 return function(dateIndex, date) {
+                    let logs = dates[date];
+                    let weekday = Utils.getWeekday(logs[0].getStartDate(), true);
+
                     let rowEl = $(`<tr></tr>`);
                     tableEl.append(rowEl);
 
-                    let ribbonHeader = $(`<td class="rowHeader">${date}</td>`);
-                    rowEl.append(ribbonHeader);
+                    let ribbonHeaderWeekday = $(`<td class="rowHeader">${weekday}</td>`);
+                    rowEl.append(ribbonHeaderWeekday);
+
+                    let ribbonHeaderDate = $(`<td class="rowHeader">${date}</td>`);
+                    rowEl.append(ribbonHeaderDate);
 
                     let ribbonCell = $(`<td class="ribbonCell"></td>`);
                     rowEl.append(ribbonCell);
 
-                    let ribbon = timeRibbon.drawRibbon(dates[date], dayStart, dayEnd);
+                    let ribbon = timeRibbon.drawRibbon(logs, dayStart, dayEnd);
                     ribbonCell.append(ribbon);
                 };
             }(this));
 
             let rowEl = $(`<tr class="scale"></tr>`);
-            let scaleHeader = $(`<td class="rowHeader"></td>`);
+            let scaleHeader = $(`<td class="rowHeader" colspan="2"></td>`);
             rowEl.append(scaleHeader);
 
             let scaleCell = $(`<td class="scaleCell"></td>`);

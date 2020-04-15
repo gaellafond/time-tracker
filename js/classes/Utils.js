@@ -92,4 +92,43 @@ class Utils {
             date.getMinutes() * 60 +
             date.getSeconds();
     }
+
+    static getWeekday(timestamp, abbreviation = false) {
+        // https://www.w3schools.com/jsref/jsref_getday.asp
+        // Sunday is 0, Monday is 1, and so on.
+        const weekdays = [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday"
+        ];
+        const abbreviatedWeekdays = [
+            "Sun",
+            "Mon",
+            "Tue",
+            "Wed",
+            "Thu",
+            "Fri",
+            "Sat"
+        ];
+
+        if (timestamp === null) {
+            return null;
+        }
+
+        const date = new Date(timestamp * 1000);
+        if (!date) {
+            return null;
+        }
+
+        const weekdayInt = date.getDay();
+        if (weekdayInt < 0 || weekdayInt > 6) {
+            return null;
+        }
+
+        return abbreviation ? abbreviatedWeekdays[weekdayInt] : weekdays[weekdayInt];
+    }
 }
