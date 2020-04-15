@@ -318,6 +318,7 @@ class Admin {
         if (this.dirty) {
             // The user has changed something. Reload the time tracker page
             this.timeTracker.reload();
+            this.dirty = false;
         }
 
         this.overlayMarkup.hide();
