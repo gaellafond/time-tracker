@@ -60,6 +60,7 @@ class Admin {
                 <th>Key</th>
                 <th>Name</th>
                 <th>Colour code</th>
+                <th class="delete-column">X</th>
             </tr>
         </table>`);
         $.each(projects, function(admin) {
@@ -78,13 +79,32 @@ class Admin {
                         admin.dirty = true;
                     };
                 }(admin, project));
-
                 projectTableRow.append(projectColourCellEl);
+
+                let deleteCellEl = $(`<td class="delete-column"></td>`);
+                let deleteCellButtonEl = $(`<button class="delete">X</button>`);
+                deleteCellEl.append(deleteCellButtonEl);
+                projectTableRow.append(deleteCellEl);
+
+                deleteCellButtonEl.click(function(admin, project) {
+                    return function() {
+                        // NOTE: No character need escaping in a "confirm" window
+                        const warningMessage =
+                            "Are you sure you want to delete this project?\n" +
+                            "    Project: " + project.getName()
+                        if (window.confirm(warningMessage)) {
+                            project.delete();
+                            admin.timeTracker.reload();
+                            admin.render();
+                            admin.dirty = true;
+                        }
+                    };
+                }(admin, project));
 
                 projectTable.append(projectTableRow);
 
                 let projectLogsRow = $(`<tr></tr>`);
-                let projectLogsCell = $(`<td colspan="3"></td>`);
+                let projectLogsCell = $(`<td colspan="4"></td>`);
                 projectLogsCell.append(admin.renderProjectLogsEditor(project));
 
                 projectLogsRow.append(projectLogsCell);
@@ -104,7 +124,7 @@ class Admin {
                     <th>Start date</th>
                     <th>End date</th>
                     <th>Message</th>
-                    <th>X</th>
+                    <th class="delete-column">X</th>
                 </tr>
             </table>`);
 
@@ -126,7 +146,7 @@ class Admin {
                     let messageCellDataEl = $(`<span>${Utils.escapeHTML(log.getMessage())}</span>`);
                     messageCellEl.append(messageCellDataEl);
 
-                    let deleteCellEl = $(`<td></td>`);
+                    let deleteCellEl = $(`<td class="delete-column"></td>`);
                     let deleteCellButtonEl = $(`<button class="delete">X</button>`);
                     deleteCellEl.append(deleteCellButtonEl);
 
@@ -254,7 +274,6 @@ class Admin {
                                 "    Log: " + log.getMessage() + "\n" +
                                 "    Project: " + log.getProject().getName()
                             if (window.confirm(warningMessage)) {
-                                // TODO Remove log from markup (reload)
                                 log.delete();
                                 admin.timeTracker.reload();
                                 admin.render();

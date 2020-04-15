@@ -281,4 +281,12 @@ class Project extends PersistentObject {
             "order": this.order
         }
     }
+
+    // Override
+    delete() {
+        $.each(this.logs, function(index, log) {
+            log.delete();
+        });
+        super.delete();
+    }
 }

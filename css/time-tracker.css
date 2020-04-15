@@ -157,14 +157,19 @@ div.pageTitle input {
     width: 25%;
 }
 
-.admin .logs-table button {
+.admin .projects-table button {
     padding: 0 0.2em;
     margin: 0;
     font-weight: normal;
     font-size: 1em;
 }
-.admin .logs-table button.delete {
+.admin .projects-table button.delete {
     background-color: #FF0000;
+}
+
+.admin .projects-table .delete-column {
+    width: 36px;
+    text-align: center;
 }
 
 .admin .header-buttons {

@@ -28,7 +28,7 @@ Admin page
 [~] Add week day in logs
 [ ] Add elapsed time in logs
 [ ] Add total elapsed time in logs (per weeks)
-[ ] Delete project (with warning if project has logs)
+[X] Delete project (with warning if project has logs)
 [X] Delete logs
 [~] Edit project background colour
 [~] Edit logs dates (edit text + drag n drop in timeline)
