@@ -135,7 +135,6 @@ class TimeTracker {
     }
 
     reload() {
-console.log("RELOAD");
         this.reloadProjects();
         this.reloadProjectsMarkup();
 
