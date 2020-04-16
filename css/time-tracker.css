@@ -154,7 +154,29 @@ div.pageTitle input {
 
 .admin .project-editor table.logs-table td,
 .admin .project-editor table.logs-table th {
-    width: 25%;
+    width: 20%;
+}
+
+.admin .project-editor table.logs-table tr.header,
+.admin .project-editor table.logs-table tr.total {
+    background-color: #EEEEEE;
+}
+
+.admin .project-editor table.logs-table tr.total th,
+.admin .project-editor table.logs-table tr.total td {
+    font-weight: bold;
+    text-align: left;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+/*
+ * Hide the key column.
+ * This column can be useful for debugging, but it's useless for most users.
+ * If needed, it can be activated using the developer tool in the browser.
+ */
+.admin .projects-table .key {
+    display: none;
 }
 
 .admin .projects-table button {

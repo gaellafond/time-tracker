@@ -131,4 +131,12 @@ class Utils {
 
         return abbreviation ? abbreviatedWeekdays[weekdayInt] : weekdays[weekdayInt];
     }
+
+    // Found here:
+    //     https://stackoverflow.com/questions/6117814/get-week-of-year-in-javascript-like-in-php
+    static getWeekNumber(timestamp) {
+        let date = new Date(timestamp * 1000);
+        let onejan = new Date(date.getFullYear(), 0, 1);
+        return Math.ceil( (((date.getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7 );
+    }
 }

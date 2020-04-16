@@ -56,8 +56,8 @@ class Admin {
         const projects = this.timeTracker.getProjects();
 
         let projectTable = $(`<table class="projects-table">
-            <tr>
-                <th>Key</th>
+            <tr class="header">
+                <th class="key">Key</th>
                 <th>Name</th>
                 <th>Colour code</th>
                 <th class="delete-column">X</th>
@@ -66,7 +66,7 @@ class Admin {
         $.each(projects, function(admin) {
             return function(projectIndex, project) {
                 let projectTableRow = $(`<tr style="background-color: ${project.getBackgroundColour()}">
-                    <td>${project.getKey()}</td>
+                    <td class="key">${project.getKey()}</td>
                     <td class="name">${Utils.escapeHTML(project.getName())}</td>
                 </tr>`);
 
@@ -103,8 +103,8 @@ class Admin {
 
                 projectTable.append(projectTableRow);
 
-                let projectLogsRow = $(`<tr></tr>`);
-                let projectLogsCell = $(`<td colspan="4"></td>`);
+                let projectLogsRow = $(`<tr><td class="key"></td></tr>`);
+                let projectLogsCell = $(`<td colspan="3"></td>`);
                 projectLogsCell.append(admin.renderProjectLogsEditor(project));
 
                 projectLogsRow.append(projectLogsCell);
@@ -115,24 +115,65 @@ class Admin {
         this.projectEditorEl.append(projectTable);
     }
 
+    _getTotalRow(total) {
+        let totalRow = $(`<tr class="total">
+            <td class="key"></td>
+            <th colspan="3">TOTAL</th>
+        </tr>`);
+
+        let totalCellEl = $(`<td></td>`);
+        let totalCellDataEl = $(`<span>${Utils.formatTime(total)}</span>`);
+        totalCellEl.append(totalCellDataEl);
+
+        totalRow.append(totalCellEl);
+
+        // Filler
+        totalRow.append(`<td colspan="2"></td>`);
+
+        return totalRow;
+    }
+
     renderProjectLogsEditor(project) {
         let logs = project.getLogs();
         if (logs !== null && logs.length > 0) {
             let logsTable = $(`<table class="logs-table">
-                <tr>
-                    <th>Key</th>
+                <tr class="header">
+                    <th class="key">Key</th>
+                    <th>Weekday</th>
                     <th>Start date</th>
                     <th>End date</th>
+                    <th>Time</th>
                     <th>Message</th>
                     <th class="delete-column">X</th>
                 </tr>
             </table>`);
 
+            let lastWeekNumber = null, currentWeekNumber = null;
+            let lastTotalWeekNumber = null;
+            let totalTime = 0;
             $.each(logs, function(admin) {
                 return function(logIndex, log) {
+                    if (lastWeekNumber === null) {
+                        lastWeekNumber = Utils.getWeekNumber(log.getStartDate());
+                    }
+                    currentWeekNumber = Utils.getWeekNumber(log.getStartDate());
+
+                    if (lastWeekNumber !== currentWeekNumber) {
+                        logsTable.append(admin._getTotalRow(totalTime));
+                        totalTime = 0;
+                        lastTotalWeekNumber = lastWeekNumber;
+                    }
+
+                    let elapseTime = log.getElapseTime();
+                    totalTime += elapseTime;
+
                     let logRow = $(`<tr>
-                        <td>${log.getKey()}</td>
+                        <td class="key">${log.getKey()}</td>
                     </tr>`);
+
+                    let weekdayCellEl = $(`<td></td>`);
+                    let weekdayCellDataEl = $(`<span>${Utils.getWeekday(log.getStartDate())}</span>`);
+                    weekdayCellEl.append(weekdayCellDataEl);
 
                     let startDateCellEl = $(`<td></td>`);
                     let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
@@ -142,6 +183,10 @@ class Admin {
                     let endDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getEndDate())}</span>`);
                     endDateCellEl.append(endDateCellDataEl);
 
+                    let elapseTimeCellEl = $(`<td></td>`);
+                    let elapseTimeCellDataEl = $(`<span>${Utils.formatTime(elapseTime)}</span>`);
+                    elapseTimeCellEl.append(elapseTimeCellDataEl);
+
                     let messageCellEl = $(`<td></td>`);
                     let messageCellDataEl = $(`<span>${Utils.escapeHTML(log.getMessage())}</span>`);
                     messageCellEl.append(messageCellDataEl);
@@ -150,8 +195,10 @@ class Admin {
                     let deleteCellButtonEl = $(`<button class="delete">X</button>`);
                     deleteCellEl.append(deleteCellButtonEl);
 
+                    logRow.append(weekdayCellEl);
                     logRow.append(startDateCellEl);
                     logRow.append(endDateCellEl);
+                    logRow.append(elapseTimeCellEl);
                     logRow.append(messageCellEl);
                     logRow.append(deleteCellEl);
 
@@ -283,8 +330,14 @@ class Admin {
                     }(admin, log));
 
                     logsTable.append(logRow);
+
+                    lastWeekNumber = currentWeekNumber;
                 };
             }(this));
+
+            if (lastTotalWeekNumber !== currentWeekNumber) {
+                logsTable.append(this._getTotalRow(totalTime));
+            }
 
             return logsTable;
         }

@@ -11,7 +11,7 @@ class Log extends PersistentObject {
         this.startDate = startDate;
         this.endDate = endDate;
 
-        const elapse = (this.endDate ? this.endDate : Utils.getCurrentTimestamp()) - this.startDate;
+        const elapse = this.getElapseTime();
         this.markup = $(`
             <div>
                 <span class="time" data-logkey="${this.getKey()}">${Utils.formatTime(elapse)}</span> - <span class="message">${Utils.escapeHTML(this.getMessage())}</span>
@@ -123,6 +123,10 @@ class Log extends PersistentObject {
     }
     setEndDate(endDate) {
         this.endDate = endDate;
+    }
+
+    getElapseTime() {
+        return (this.endDate ? this.endDate : Utils.getCurrentTimestamp()) - this.startDate;
     }
 
     toJson() {
