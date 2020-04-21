@@ -7,9 +7,14 @@ TimeTracker
 [X] Time ribbon auto-refresh 5 minutes
 [X] Time ribbon hours
 [X] Edit name in header (default to "Your name" maybe?)
+[ ] Show remaining space left on LocalStorage
+    let usedBytes = JSON.stringify(window.localStorage).length * 2; // *2 because JS store strings as UTF16
+    // ITEMS: 35'817
+    // USAGE: 12'061'386 <= Use 10 MB as limit? You will still have about 2MB left when it shows "100%"
 
 TimeRibbon
 [X] Time ribbon do not load when empty (beginning of the day). Page refresh is needed after first log is added
+[ ] Add elapse time on mouse over (hint)
 [ ] Add exception for when log end on next day
 
 Logs
@@ -29,6 +34,7 @@ Admin page
 [X] Add elapsed time in logs
 [ ] Adjust elapsed time when dates changes
 [X] Add total elapsed time in logs (per weeks)
+[ ] Add week separation in the summary (time ribbons)
 [X] Delete project (with warning if project has logs)
 [X] Delete logs
 [~] Edit project background colour

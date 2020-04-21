@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FILL STORAGE</title>
+
+    <script>
+
+        function fillLocalStorage() {
+            let timestamp = Math.floor(new Date() / 1000);
+            let i=0;
+            try {
+                while (true) {
+                    i++;
+                    let item = {
+                        "key": "log_project2_" + i,
+                        "project": "project2",
+                        "startdate": timestamp,
+                        "enddate": timestamp,
+                        "message": "Get to know each others"
+                    };
+                    window.localStorage.setItem(item.key, JSON.stringify(item));
+
+                    if (i%1000 === 0) {
+                        console.log(JSON.stringify(window.localStorage).length * 2);
+                    }
+                }
+            } catch(ex) {
+                console.log(ex);
+            }
+            console.log("ITEMS: " + i);
+        }
+
+    </script>
+</head>
+
+<body>
+
+    OPEN JS CONSOLE
+
+    <script>
+        if (window.confirm("Are you running in incognito?\nThis will completely FILL your local storage. Run it in Incognito to avoid problems")) {
+            fillLocalStorage();
+
+            console.log("USAGE:");
+            // ITEMS: 35'817
+            // USAGE: 12'061'386 <= Use 10 MB as limit?
+            console.log(JSON.stringify(window.localStorage).length * 2);
+        }
+    </script>
+</body>
+
+</html>
