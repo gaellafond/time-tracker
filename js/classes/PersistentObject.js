@@ -59,9 +59,11 @@ class PersistentObject {
 
     save() {
         window.localStorage.setItem(this.getKey(), JSON.stringify(this.toJson()));
+        Utils.notifyLocalStorageChange();
     }
 
     delete() {
         window.localStorage.removeItem(this.getKey());
+        Utils.notifyLocalStorageChange();
     }
 }

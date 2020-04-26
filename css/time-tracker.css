@@ -9,15 +9,34 @@ button {
     font-size: 1.2em;
 }
 
+div.header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    height: 4em;
+}
+
+h1.pageTitle {
+    margin: 0;
+    flex-grow: 1;
+}
 div.pageTitle {
     text-align: center;
-    margin: 0.58em 0;
     font-size: 2em;
+    flex-grow: 1;
 }
 div.pageTitle input {
     max-width: 100%;
     text-align: center;
     font-size: 1em;
+}
+
+div.spaceLeft span::before {
+    content: "Space left: ";
+}
+div.spaceLeft span::after {
+    content: " MB";
 }
 
 .dashboard {

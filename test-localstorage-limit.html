@@ -42,8 +42,15 @@
         if (window.confirm("Are you running in incognito?\nThis will completely FILL your local storage. Run it in Incognito to avoid problems")) {
             fillLocalStorage();
 
-            // ITEMS: 35'817
-            // USAGE: 12'061'386 <= Use 10 MB as limit?
+            // Desktop:
+            //     ITEMS: 35'817
+            //     USAGE: 12'061'386
+            //
+            // Mobile:
+            //     ITEMS: 35'817
+            //     USAGE: 12'061'386
+            //
+            // Use 10 MB as limit?
             document.write("<p>USAGE: " + (JSON.stringify(window.localStorage).length * 2) + "</p>");
         }
     </script>

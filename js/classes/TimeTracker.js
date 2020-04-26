@@ -3,14 +3,24 @@ class TimeTracker {
     constructor(timeTrackerEl) {
         this.load();
 
-        this.checkOutButtonEl = $(`<button style="float: right">Check out</button>`);
+        this.headerEl = $(`<div class="header"></div>`);
+
+        this.spaceLeftContainerEl = $(`<div class="spaceLeft"></div>`);
+        this.spaceLeftEl = $(`<span>?</span>`);
+        this.spaceLeftContainerEl.append(this.spaceLeftEl);
+
         this.pageTitleEl = $(`<h1 class="pageTitle">${this.getName()}</h1>`);
+        this.checkOutButtonEl = $(`<button>Check out</button>`);
+
+        this.headerEl.append(this.spaceLeftContainerEl);
+        this.headerEl.append(this.pageTitleEl);
+        this.headerEl.append(this.checkOutButtonEl);
+
         this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
         this.dashboardEl = $(`<div class="dashboard"></div>`);
         this.showAdminbuttonEl = $(`<button style="float: right">Admin</button>`);
 
-        timeTrackerEl.append(this.checkOutButtonEl);
-        timeTrackerEl.append(this.pageTitleEl);
+        timeTrackerEl.append(this.headerEl);
         timeTrackerEl.append(this.todayTimeRibbonEl);
         timeTrackerEl.append(this.dashboardEl);
         timeTrackerEl.append(this.showAdminbuttonEl);
@@ -52,6 +62,7 @@ class TimeTracker {
         this.todayTimeRibbon = new TimeRibbon(this.todayTimeRibbonEl, this);
         this.todayTimeRibbon.render([Utils.formatDate(Utils.getCurrentTimestamp())]);
 
+        this.updateSpaceLeft();
         this.addEventListeners();
     }
 
@@ -71,6 +82,7 @@ class TimeTracker {
         };
 
         window.localStorage.setItem('timeTrackerData', JSON.stringify(jsonTimeTrackerData));
+        Utils.notifyLocalStorageChange();
     }
 
     getName() {
@@ -80,7 +92,19 @@ class TimeTracker {
         this.name = newName;
     }
 
+    updateSpaceLeft() {
+        const bytesLeft = Utils.getLocalStorageRemainingSpace();
+        const mbLeft = bytesLeft / (1024 * 1024);
+        this.spaceLeftEl.html((mbLeft).toFixed(2));
+    }
+
     addEventListeners() {
+        $(window).on("localStorageChange", function(timeTracker) {
+            return function(event) {
+                timeTracker.updateSpaceLeft();
+            };
+        }(this));
+
         this.checkOutButtonEl.click(function(timeTracker) {
             return function() {
                 timeTracker.stopLogCounter();

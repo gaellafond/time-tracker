@@ -139,4 +139,30 @@ class Utils {
         let onejan = new Date(date.getFullYear(), 0, 1);
         return Math.ceil( (((date.getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7 );
     }
+
+    static notifyLocalStorageChange() {
+        if (!window.storageEvent) {
+            window.storageEvent = new Event("localStorageChange");
+        }
+
+        window.dispatchEvent(window.storageEvent);
+    }
+
+    // Approximate local storage usage, in bytes
+    static getLocalStorageUsedBytes() {
+        // x2 because JS store strings as UTF16
+        return JSON.stringify(window.localStorage).length * 2;
+    }
+
+    // Approximate space left on local storage, in bytes
+    static getLocalStorageRemainingSpace() {
+        // NOTE: IE has a window.localStorage.remainingSpace property, but other browsers do not yet have it.
+        if (window.localStorage.hasOwnProperty("remainingSpace")) {
+            return window.localStorage.remainingSpace;
+        }
+
+        // Approximate total space on local storage (10MB)
+        const totalStorage = 10 * 1024 * 1024;
+        return Math.max(0, totalStorage - Utils.getLocalStorageUsedBytes());
+    }
 }

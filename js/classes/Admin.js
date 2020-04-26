@@ -358,6 +358,7 @@ class Admin {
 
     _reset() {
         window.localStorage.clear();
+        Utils.notifyLocalStorageChange();
         location.reload();
     }
 
