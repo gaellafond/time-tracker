@@ -32,6 +32,18 @@ class Utils {
         return Math.floor(new Date() / 1000);
     }
 
+    static getCurrentWeekStart() {
+        const weekStart = new Date();
+        weekStart.setMilliseconds(0);
+        weekStart.setSeconds(0);
+        weekStart.setMinutes(0);
+        weekStart.setHours(0);
+        // getDay(): Sunday = 0, Saturday = 6
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+
+        return Math.floor(weekStart.getTime() / 1000);
+    }
+
     // Pad to 2 or 3 digits, default is 2
     static padNumber(n, z) {
         z = z || 2;
@@ -477,8 +489,19 @@ class Project extends PersistentObject {
         }
     }
 
-    getLogs() {
-        return this.logs;
+    getLogs(logFilter) {
+        if (!logFilter) {
+            return this.logs;
+        }
+
+        const filteredLogs = [];
+        $.each(this.logs, function(logIndex, log) {
+            if (logFilter.filter(log)) {
+                filteredLogs.push(log);
+            }
+        });
+
+        return filteredLogs;
     }
 
     getMarkup() {
@@ -702,7 +725,9 @@ class LogFilter {
     }
 
     filter(log) {
-        // TODO Return true if log is between startDate and endDate
+        // Return true if log is between startDate and endDate
+        return (log.getStartDate() < this.endDate && log.getStartDate() >= this.startDate) ||
+            (log.getEndDate() <= this.endDate && log.getEndDate() > this.startDate);
     }
 }
 </script>
@@ -1009,6 +1034,7 @@ class TimeRibbon {
         return `<div class="log" style="flex-grow:${cellLength}; background-color:${backgroundColour};" title="${Utils.escapeHTML(logMessage)}"><div class=message>${message}</div></div>`;
     }
 
+    // TODO Filter instead of renderedDates
     render(renderedDates) {
         this._render(renderedDates);
 
@@ -1029,6 +1055,7 @@ class TimeRibbon {
         // and store them in an array per date
         const projectMap = this.timeTracker.getProjectMap();
         $.each(projectMap, function(projectKey, project) {
+            // TODO project.getLogs(filter)
             $.each(project.getLogs(), function(logIndex, log) {
                 let date = Utils.formatDate(log.getStartDate())
 
@@ -1279,10 +1306,8 @@ class Admin {
     }
 
     setLogFilter(filterStr) {
-console.log("SET FILTER: " + filterStr);
-        if (!filterStr) {
-            this.filter = null;
-        } else {
+        this.filter = null;
+        if (filterStr) {
             const filterStrParts = filterStr.split("-");
              // filterType = week, month, year
             const filterType = filterStrParts[0];
@@ -1293,24 +1318,54 @@ console.log("SET FILTER: " + filterStr);
                 filterNumber = parseInt(filterNumberStr);
             } catch(err) {
                 console.error("Unsupported filter number: " + filterNumberStr);
-                this.filter = null;
                 return;
             }
 
             if (filterType === "week") {
-console.log("- WEEK: " + filterNumber);
+                const oneWeek = 7 * 24 * 60 * 60;
+                const startDate = Utils.getCurrentWeekStart() - (filterNumber * oneWeek);
+                const endDate = startDate + oneWeek;
+
+                this.filter = new LogFilter(startDate, endDate);
+
             } else if (filterType === "month") {
-console.log("- MONTH: " + filterNumber);
+                const monthStart = new Date();
+                monthStart.setMilliseconds(0);
+                monthStart.setSeconds(0);
+                monthStart.setMinutes(0);
+                monthStart.setHours(0);
+                monthStart.setDate(1);
+
+                const month = monthStart.getMonth() - filterNumber;
+                monthStart.setMonth(month);
+                const startDate = Math.floor(monthStart.getTime() / 1000);
+
+                monthStart.setMonth(month+1);
+                const endDate = Math.floor(monthStart.getTime() / 1000);
+
+                this.filter = new LogFilter(startDate, endDate);
+
             } else if (filterType === "year") {
-console.log("- YEAR: " + filterNumber);
+                const yearStart = new Date();
+                yearStart.setMilliseconds(0);
+                yearStart.setSeconds(0);
+                yearStart.setMinutes(0);
+                yearStart.setHours(0);
+                yearStart.setDate(1);
+                yearStart.setMonth(0);
+
+                const year = yearStart.getFullYear() - filterNumber;
+                yearStart.setFullYear(year);
+                const startDate = Math.floor(yearStart.getTime() / 1000);
+
+                yearStart.setFullYear(year+1);
+                const endDate = Math.floor(yearStart.getTime() / 1000);
+
+                this.filter = new LogFilter(startDate, endDate);
+
             } else {
                 console.error("Unsupported filter type: " + filterType);
-                this.filter = null;
-                return;
             }
-
-            // TODO Set startDate, endDate. When selecting, pass parameter filter. Each records goes through filter to know if they are selected or not.
-            this.filter = new LogFilter();
         }
     }
 
@@ -1397,7 +1452,7 @@ console.log("- YEAR: " + filterNumber);
     }
 
     renderProjectLogsEditor(project) {
-        let logs = project.getLogs(); // TODO Use filter here!
+        let logs = project.getLogs(this.filter);
         if (logs !== null && logs.length > 0) {
             let logsTable = $(`<table class="logs-table">
                 <tr class="header">
