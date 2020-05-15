@@ -10,22 +10,20 @@ class TimeTracker {
         this.spaceLeftContainerEl.append(this.spaceLeftEl);
 
         this.pageTitleEl = $(`<h1 class="pageTitle">${this.getName()}</h1>`);
-        this.checkOutButtonEl = $(`<button>Stop timer</button>`);
-		this.showAdminbuttonEl = $(`<button style="float: right">Admin</button>`);
-		
+        this.checkOutButtonEl = $(`<button>Check out</button>`);
+
         this.headerEl.append(this.spaceLeftContainerEl);
         this.headerEl.append(this.pageTitleEl);
         this.headerEl.append(this.checkOutButtonEl);
-		this.headerEl.append(this.showAdminbuttonEl);
 
         this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
         this.dashboardEl = $(`<div class="dashboard"></div>`);
-        
+        this.showAdminbuttonEl = $(`<button style="float: right">Admin</button>`);
 
         timeTrackerEl.append(this.headerEl);
         timeTrackerEl.append(this.todayTimeRibbonEl);
         timeTrackerEl.append(this.dashboardEl);
-
+        timeTrackerEl.append(this.showAdminbuttonEl);
 
         this.projectMap = {};
 
