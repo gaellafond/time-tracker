@@ -111,7 +111,7 @@ div.spaceLeft span::after {
 }
 
 .dashboard .new-project {
-    min-height: 267px;
+    min-height: 220px;
     justify-content: center;
     align-items: center;
     background-color: transparent;
