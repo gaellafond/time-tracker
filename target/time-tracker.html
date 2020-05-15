@@ -707,20 +707,22 @@ class TimeTracker {
         this.spaceLeftContainerEl.append(this.spaceLeftEl);
 
         this.pageTitleEl = $(`<h1 class="pageTitle">${this.getName()}</h1>`);
-        this.checkOutButtonEl = $(`<button>Check out</button>`);
-
+        this.checkOutButtonEl = $(`<button>Stop timer</button>`);
+		this.showAdminbuttonEl = $(`<button style="float: right">Admin</button>`);
+		
         this.headerEl.append(this.spaceLeftContainerEl);
         this.headerEl.append(this.pageTitleEl);
         this.headerEl.append(this.checkOutButtonEl);
+		this.headerEl.append(this.showAdminbuttonEl);
 
         this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
         this.dashboardEl = $(`<div class="dashboard"></div>`);
-        this.showAdminbuttonEl = $(`<button style="float: right">Admin</button>`);
+        
 
         timeTrackerEl.append(this.headerEl);
         timeTrackerEl.append(this.todayTimeRibbonEl);
         timeTrackerEl.append(this.dashboardEl);
-        timeTrackerEl.append(this.showAdminbuttonEl);
+
 
         this.projectMap = {};
 
@@ -1625,6 +1627,10 @@ h1 {
     text-align: center;
 }
 
+body {
+	font-family: Helvetica, Arial, sans-serif;
+}
+
 button {
     padding: 0.5em 1em;
     margin: 0 1em;
@@ -1670,35 +1676,40 @@ div.spaceLeft span::after {
 .dashboard .project,
 .dashboard .new-project {
     width: 250px;
-    min-height: 300px;
+    /*min-height: 300px;*/
     background-color: #9999FF;
-    margin: 1em;
-    padding: 1em;
-    border: 5px solid black;
-    border-radius: 25px;
-    box-shadow: 5px 5px 5px #999999;
+	/* Use pixels so that it is easier to adjust to match the the active border */
+    margin: 12px; 
+    padding: 0.5em;
+    border: 1px solid #00000030;
+    border-radius: 10px;
+    box-shadow: 5px 5px 10px #dddddd;
 }
 
 .dashboard .project.active {
-    border-color: #00FF00;
+    /* border-color: #00FF00;*/
+	border: 6px solid #faff26;
+	/* Shrink the border when active to allow room for the thicker border */
+	margin: 6px;
+	
 }
 
 .dashboard .project .title {
-    white-space: nowrap;
+    /*white-space: nowrap;*/
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;
-    font-size: 2em;
+    font-size: 1.5em;
     max-width: 100%;
     margin: 0;
 }
 
 .dashboard .project .logs {
     background-color: #FFFFFF;
-    border: 3px solid black;
-    height: 180px;
+    border: 1px solid #a2a2a2;
+    height: 130px;
     overflow: auto;
-    margin: 1em 0;
+    margin: 0.5em 0;
     padding: 2px 5px;
 }
 .dashboard .project .logs div {
