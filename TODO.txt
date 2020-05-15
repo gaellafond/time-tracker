@@ -14,7 +14,7 @@ TimeTracker
 
 TimeRibbon
 [X] Time ribbon do not load when empty (beginning of the day). Page refresh is needed after first log is added
-[ ] Use canvas
+[ ] Use inline SVG (not canvas)
 [ ] Add elapse time on mouse over (hint)
 [ ] Add exception for when log end on next day
 

@@ -15,6 +15,12 @@ class Utils {
         return Math.floor(new Date() / 1000);
     }
 
+    // Pad to 2 or 3 digits, default is 2
+    static padNumber(n, z) {
+        z = z || 2;
+        return ('00' + n).slice(-z);
+    };
+
     static formatTime(elapseSeconds) {
         // https://stackoverflow.com/questions/9763441/milliseconds-to-time-in-javascript
 
@@ -24,7 +30,7 @@ class Utils {
         let mins = elapseSeconds % 60;
         let hrs = Math.floor(elapseSeconds / 60);
 
-        return hrs + ':' + Log.padNumber(mins) + ':' + Log.padNumber(secs);
+        return hrs + ':' + Utils.padNumber(mins) + ':' + Utils.padNumber(secs);
     }
 
     static formatDate(timestamp) {
@@ -34,7 +40,7 @@ class Utils {
 
         let date = new Date(timestamp * 1000);
 
-        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate());
+        return date.getFullYear() + '-' + Utils.padNumber(date.getMonth()+1) + '-' + Utils.padNumber(date.getDate());
     }
 
     static formatDateForFilename(timestamp) {
@@ -44,7 +50,7 @@ class Utils {
 
         let date = new Date(timestamp * 1000);
 
-        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate());
+        return date.getFullYear() + '-' + Utils.padNumber(date.getMonth()+1) + '-' + Utils.padNumber(date.getDate());
     }
 
     static formatDateForCSV(timestamp) {
@@ -54,8 +60,8 @@ class Utils {
 
         let date = new Date(timestamp * 1000);
 
-        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate()) + ' ' +
-            Log.padNumber(date.getHours()) + ':' + Log.padNumber(date.getMinutes()) + ':' + Log.padNumber(date.getSeconds());
+        return date.getFullYear() + '-' + Utils.padNumber(date.getMonth()+1) + '-' + Utils.padNumber(date.getDate()) + ' ' +
+            Utils.padNumber(date.getHours()) + ':' + Utils.padNumber(date.getMinutes()) + ':' + Utils.padNumber(date.getSeconds());
     }
 
     static formatDateForEditor(timestamp) {
@@ -65,8 +71,8 @@ class Utils {
 
         let date = new Date(timestamp * 1000);
 
-        return date.getFullYear() + '-' + Log.padNumber(date.getMonth()+1) + '-' + Log.padNumber(date.getDate()) + ' ' +
-            Log.padNumber(date.getHours()) + ':' + Log.padNumber(date.getMinutes()) + ':' + Log.padNumber(date.getSeconds());
+        return date.getFullYear() + '-' + Utils.padNumber(date.getMonth()+1) + '-' + Utils.padNumber(date.getDate()) + ' ' +
+            Utils.padNumber(date.getHours()) + ':' + Utils.padNumber(date.getMinutes()) + ':' + Utils.padNumber(date.getSeconds());
     }
 
     static parseDateFromEditor(dateStr) {
@@ -79,7 +85,7 @@ class Utils {
             return null;
         }
 
-        return timestamp / 1000;
+        return Math.floor(timestamp / 1000);
     }
 
     static getSecondsInDay(timestamp) {

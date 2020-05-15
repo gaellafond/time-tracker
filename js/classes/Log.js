@@ -54,12 +54,6 @@ class Log extends PersistentObject {
         );
     }
 
-    // Pad to 2 or 3 digits, default is 2
-    static padNumber(n, z) {
-        z = z || 2;
-        return ('00' + n).slice(-z);
-    };
-
     addEventListeners() {
         // Add click event on log name (edit)
         this.markup.find("span.message").click(function(log) {

@@ -1,5 +1,3 @@
-// TODO Handle Key already exists...
-
 class PersistentObject {
 
     constructor(key, load=false) {
