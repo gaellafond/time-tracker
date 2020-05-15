@@ -15,6 +15,7 @@ class TimeRibbon {
         return `<div class="log" style="flex-grow:${cellLength}; background-color:${backgroundColour};" title="${Utils.escapeHTML(logMessage)}"><div class=message>${message}</div></div>`;
     }
 
+    // TODO Filter instead of renderedDates
     render(renderedDates) {
         this._render(renderedDates);
 
@@ -35,6 +36,7 @@ class TimeRibbon {
         // and store them in an array per date
         const projectMap = this.timeTracker.getProjectMap();
         $.each(projectMap, function(projectKey, project) {
+            // TODO project.getLogs(filter)
             $.each(project.getLogs(), function(logIndex, log) {
                 let date = Utils.formatDate(log.getStartDate())
 

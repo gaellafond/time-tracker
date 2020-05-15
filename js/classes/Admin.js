@@ -82,10 +82,8 @@ class Admin {
     }
 
     setLogFilter(filterStr) {
-console.log("SET FILTER: " + filterStr);
-        if (!filterStr) {
-            this.filter = null;
-        } else {
+        this.filter = null;
+        if (filterStr) {
             const filterStrParts = filterStr.split("-");
              // filterType = week, month, year
             const filterType = filterStrParts[0];
@@ -96,24 +94,54 @@ console.log("SET FILTER: " + filterStr);
                 filterNumber = parseInt(filterNumberStr);
             } catch(err) {
                 console.error("Unsupported filter number: " + filterNumberStr);
-                this.filter = null;
                 return;
             }
 
             if (filterType === "week") {
-console.log("- WEEK: " + filterNumber);
+                const oneWeek = 7 * 24 * 60 * 60;
+                const startDate = Utils.getCurrentWeekStart() - (filterNumber * oneWeek);
+                const endDate = startDate + oneWeek;
+
+                this.filter = new LogFilter(startDate, endDate);
+
             } else if (filterType === "month") {
-console.log("- MONTH: " + filterNumber);
+                const monthStart = new Date();
+                monthStart.setMilliseconds(0);
+                monthStart.setSeconds(0);
+                monthStart.setMinutes(0);
+                monthStart.setHours(0);
+                monthStart.setDate(1);
+
+                const month = monthStart.getMonth() - filterNumber;
+                monthStart.setMonth(month);
+                const startDate = Math.floor(monthStart.getTime() / 1000);
+
+                monthStart.setMonth(month+1);
+                const endDate = Math.floor(monthStart.getTime() / 1000);
+
+                this.filter = new LogFilter(startDate, endDate);
+
             } else if (filterType === "year") {
-console.log("- YEAR: " + filterNumber);
+                const yearStart = new Date();
+                yearStart.setMilliseconds(0);
+                yearStart.setSeconds(0);
+                yearStart.setMinutes(0);
+                yearStart.setHours(0);
+                yearStart.setDate(1);
+                yearStart.setMonth(0);
+
+                const year = yearStart.getFullYear() - filterNumber;
+                yearStart.setFullYear(year);
+                const startDate = Math.floor(yearStart.getTime() / 1000);
+
+                yearStart.setFullYear(year+1);
+                const endDate = Math.floor(yearStart.getTime() / 1000);
+
+                this.filter = new LogFilter(startDate, endDate);
+
             } else {
                 console.error("Unsupported filter type: " + filterType);
-                this.filter = null;
-                return;
             }
-
-            // TODO Set startDate, endDate. When selecting, pass parameter filter. Each records goes through filter to know if they are selected or not.
-            this.filter = new LogFilter();
         }
     }
 
@@ -200,7 +228,7 @@ console.log("- YEAR: " + filterNumber);
     }
 
     renderProjectLogsEditor(project) {
-        let logs = project.getLogs(); // TODO Use filter here!
+        let logs = project.getLogs(this.filter);
         if (logs !== null && logs.length > 0) {
             let logsTable = $(`<table class="logs-table">
                 <tr class="header">

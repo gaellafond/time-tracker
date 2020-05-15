@@ -27,6 +27,10 @@ Projects
 [X] Auto-scroll when log is added
 
 Admin page
+[~] Add date filter dropdown
+[ ] Add project view dropdown:
+    - by project (current)
+    - by day (more useful for time sheet, editing, etc. Should be default)
 [X] Create admin page
 [X] Views
 [X] Export CSV

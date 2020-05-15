@@ -15,6 +15,18 @@ class Utils {
         return Math.floor(new Date() / 1000);
     }
 
+    static getCurrentWeekStart() {
+        const weekStart = new Date();
+        weekStart.setMilliseconds(0);
+        weekStart.setSeconds(0);
+        weekStart.setMinutes(0);
+        weekStart.setHours(0);
+        // getDay(): Sunday = 0, Saturday = 6
+        weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+
+        return Math.floor(weekStart.getTime() / 1000);
+    }
+
     // Pad to 2 or 3 digits, default is 2
     static padNumber(n, z) {
         z = z || 2;

@@ -5,6 +5,8 @@ class LogFilter {
     }
 
     filter(log) {
-        // TODO Return true if log is between startDate and endDate
+        // Return true if log is between startDate and endDate
+        return (log.getStartDate() < this.endDate && log.getStartDate() >= this.startDate) ||
+            (log.getEndDate() <= this.endDate && log.getEndDate() > this.startDate);
     }
 }

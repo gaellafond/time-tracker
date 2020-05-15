@@ -213,8 +213,19 @@ class Project extends PersistentObject {
         }
     }
 
-    getLogs() {
-        return this.logs;
+    getLogs(logFilter) {
+        if (!logFilter) {
+            return this.logs;
+        }
+
+        const filteredLogs = [];
+        $.each(this.logs, function(logIndex, log) {
+            if (logFilter.filter(log)) {
+                filteredLogs.push(log);
+            }
+        });
+
+        return filteredLogs;
     }
 
     getMarkup() {
