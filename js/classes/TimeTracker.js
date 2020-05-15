@@ -11,12 +11,12 @@ class TimeTracker {
 
         this.pageTitleEl = $(`<h1 class="pageTitle">${this.getName()}</h1>`);
         this.checkOutButtonEl = $(`<button>Stop timer</button>`);
-		this.showAdminbuttonEl = $(`<button style="float: right">Admin</button>`);
-		
+        this.showAdminButtonEl = $(`<button>Admin</button>`);
+
         this.headerEl.append(this.spaceLeftContainerEl);
         this.headerEl.append(this.pageTitleEl);
         this.headerEl.append(this.checkOutButtonEl);
-		this.headerEl.append(this.showAdminbuttonEl);
+        this.headerEl.append(this.showAdminButtonEl);
 
         this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
         this.dashboardEl = $(`<div class="dashboard"></div>`);
@@ -113,7 +113,7 @@ class TimeTracker {
             };
         }(this));
 
-        this.showAdminbuttonEl.click(function(timeTracker) {
+        this.showAdminButtonEl.click(function(timeTracker) {
             return function() {
                 timeTracker.showAdmin();
             };
