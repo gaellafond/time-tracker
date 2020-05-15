@@ -5,10 +5,33 @@ class Admin {
 
         this.timeTracker = timeTracker;
         this.overlayMarkup = $(`<div class="overlay"></div>`);
+        this.setLogFilter("week-0");
         this.markup = $(
         `<div class="admin-wrapper">
             <div class="admin">
                 <div class="header-buttons">
+                    <div>
+                        <select class="filter">
+                            <optgroup label="Week">
+                                <option value="week-0" selected="selected">Current week</option>
+                                <option value="week-1">Last week</option>
+                                <option value="week-2">2 weeks ago</option>
+                            </optgroup>
+                            <optgroup label="Month">
+                                <option value="month-0">Current month</option>
+                                <option value="month-1">Last month</option>
+                                <option value="month-2">2 months ago</option>
+                            </optgroup>
+                            <optgroup label="Year">
+                                <option value="year-0">Current year</option>
+                                <option value="year-1">Last year</option>
+                                <option value="year-2">2 years ago</option>
+                            </optgroup>
+                            <optgroup label="No filter">
+                                <option value="">Show all</option>
+                            </optgroup>
+                        </select>
+                    </div>
                     <button class="close">X</button>
                 </div>
 
@@ -23,6 +46,13 @@ class Admin {
                 </div>
             </div>
         </div>`);
+
+        this.markup.find("select.filter").change(function(admin) {
+            return function() {
+                admin.setLogFilter($(this).val());
+                admin.render();
+            };
+        }(this));
 
         this.markup.find("button.close").click(function(admin) {
             return function() {
@@ -49,6 +79,42 @@ class Admin {
         this.adminTimeRibbon = new TimeRibbon(this.markup.find(".time-ribbon"), this.timeTracker);
         this.adminTimeRibbon.setDrawTable(true);
         this.projectEditorEl = this.markup.find(".project-editor");
+    }
+
+    setLogFilter(filterStr) {
+console.log("SET FILTER: " + filterStr);
+        if (!filterStr) {
+            this.filter = null;
+        } else {
+            const filterStrParts = filterStr.split("-");
+             // filterType = week, month, year
+            const filterType = filterStrParts[0];
+            const filterNumberStr = filterStrParts[1];
+
+            let filterNumber = 0;
+            try {
+                filterNumber = parseInt(filterNumberStr);
+            } catch(err) {
+                console.error("Unsupported filter number: " + filterNumberStr);
+                this.filter = null;
+                return;
+            }
+
+            if (filterType === "week") {
+console.log("- WEEK: " + filterNumber);
+            } else if (filterType === "month") {
+console.log("- MONTH: " + filterNumber);
+            } else if (filterType === "year") {
+console.log("- YEAR: " + filterNumber);
+            } else {
+                console.error("Unsupported filter type: " + filterType);
+                this.filter = null;
+                return;
+            }
+
+            // TODO Set startDate, endDate. When selecting, pass parameter filter. Each records goes through filter to know if they are selected or not.
+            this.filter = new LogFilter();
+        }
     }
 
     renderProjectEditor() {
@@ -134,7 +200,7 @@ class Admin {
     }
 
     renderProjectLogsEditor(project) {
-        let logs = project.getLogs();
+        let logs = project.getLogs(); // TODO Use filter here!
         if (logs !== null && logs.length > 0) {
             let logsTable = $(`<table class="logs-table">
                 <tr class="header">

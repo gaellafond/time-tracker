@@ -33,13 +33,13 @@ Admin page
 [X] Add scroller to admin page
 [X] Add week day in logs
 [X] Add elapsed time in logs
-[ ] Adjust elapsed time when dates changes
+[X] Adjust elapsed time when dates changes
 [X] Add total elapsed time in logs (per weeks)
 [ ] Add week separation in the summary (time ribbons)
 [X] Delete project (with warning if project has logs)
 [X] Delete logs
 [~] Edit project background colour
 [~] Edit logs dates (edit text + drag n drop in timeline)
-[ ] Edit logs change project (drag n drop between project list)
+[ ] Edit logs change project (drag n drop log between project list)
 [ ] Split logs (or add logs from admin)
 [X] Auto-refresh page when admin is closed if something has been modified
