@@ -477,7 +477,7 @@ class Admin {
     }
 
     render() {
-        this.adminTimeRibbon.render();
+        this.adminTimeRibbon.render(this.filter);
         this.renderProjectEditor();
     }
 

@@ -16,17 +16,17 @@ class TimeRibbon {
     }
 
     // TODO Filter instead of renderedDates
-    render(renderedDates) {
-        this._render(renderedDates);
+    render(filter) {
+        this._render(filter);
 
-        this.refreshInterval = window.setInterval(function(timeRibbon, renderedDates) {
+        this.refreshInterval = window.setInterval(function(timeRibbon, filter) {
             return function() {
-                timeRibbon._render(renderedDates);
+                timeRibbon._render(filter);
             };
-        }(this, renderedDates), 60 * 1000);
+        }(this, filter), 60 * 1000);
     }
 
-    _render(renderedDates = null) {
+    _render(filter = null) { // FILTER
         // dates = Map object
         //   Key: Formatted date (used to group logs per date, sort and display)
         //   Value: Array of log objects for that date
@@ -37,7 +37,7 @@ class TimeRibbon {
         const projectMap = this.timeTracker.getProjectMap();
         $.each(projectMap, function(projectKey, project) {
             // TODO project.getLogs(filter)
-            $.each(project.getLogs(), function(logIndex, log) {
+            $.each(project.getLogs(filter), function(logIndex, log) {
                 let date = Utils.formatDate(log.getStartDate())
 
                 if (!dates[date]) {
@@ -48,10 +48,8 @@ class TimeRibbon {
         });
 
         // Get the list of dates and sort them
-        if (renderedDates === null) {
-            renderedDates = Object.keys(dates);
-            renderedDates.sort();
-        }
+        const renderedDates = Object.keys(dates);
+        renderedDates.sort();
 
         // Sort the logs in the arrays
         // and collect the min / max timestamp
@@ -131,17 +129,17 @@ class TimeRibbon {
 
             tableEl.append(rowEl);
         } else {
-            $.each(renderedDates, function(timeRibbon) {
-                return function(dateIndex, date) {
-                    if (this.drawTable) {
-                        let ribbonHeader = $(`<div class="rowHeader">${date}</div>`);
-                        timeRibbon.timeRibbonEl.append(ribbonHeader);
-                    }
-
-                    let ribbonRow = timeRibbon.drawRibbon(dates[date], dayStart, dayEnd);
-                    timeRibbon.timeRibbonEl.append(ribbonRow);
-                };
-            }(this));
+            if (!renderedDates || renderedDates.length <= 0) {
+                let ribbonRow = this.drawRibbon([], dayStart, dayEnd);
+                this.timeRibbonEl.append(ribbonRow);
+            } else {
+                $.each(renderedDates, function(timeRibbon) {
+                    return function(dateIndex, date) {
+                        let ribbonRow = timeRibbon.drawRibbon(dates[date], dayStart, dayEnd);
+                        timeRibbon.timeRibbonEl.append(ribbonRow);
+                    };
+                }(this));
+            }
         }
     }
 
