@@ -14,6 +14,13 @@ select {
     font-size: 1.2em;
 }
 
+.viewSelector {
+    margin: 1em 0;
+}
+.viewSelector h2 {
+    display: inline;
+}
+
 div.header {
     display: flex;
     flex-wrap: wrap;
@@ -159,15 +166,23 @@ div.spaceLeft span::after {
     border-collapse: collapse;
 }
 
+.admin .project-editor table.dates-table td.name,
 .admin .project-editor table.projects-table td.name {
     font-weight: bold;
 }
 
+.admin .project-editor table.dates-table,
+.admin .project-editor table.dates-table td,
+.admin .project-editor table.dates-table th,
 .admin .project-editor table.projects-table,
 .admin .project-editor table.projects-table td,
 .admin .project-editor table.projects-table th {
     border: 3px solid #999999;
     padding: 10px;
+}
+
+.admin .project-editor table.dates-table .weekday {
+    width: 10%;
 }
 
 .admin .project-editor table.logs-table {
@@ -204,20 +219,24 @@ div.spaceLeft span::after {
  * This column can be useful for debugging, but it's useless for most users.
  * If needed, it can be activated using the developer tool in the browser.
  */
+.admin .dates-table .key,
 .admin .projects-table .key {
     display: none;
 }
 
+.admin .dates-table button,
 .admin .projects-table button {
     padding: 0 0.2em;
     margin: 0;
     font-weight: normal;
     font-size: 1em;
 }
+.admin .dates-table button.delete,
 .admin .projects-table button.delete {
     background-color: #FF0000;
 }
 
+.admin .dates-table .delete-column,
 .admin .projects-table .delete-column {
     width: 36px;
     text-align: center;

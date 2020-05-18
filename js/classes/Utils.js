@@ -97,7 +97,7 @@ class Utils {
             Utils.padNumber(date.getHours()) + ':' + Utils.padNumber(date.getMinutes()) + ':' + Utils.padNumber(date.getSeconds());
     }
 
-    static parseDateFromEditor(dateStr) {
+    static parseDate(dateStr) {
         if (dateStr === null) {
             return null;
         }

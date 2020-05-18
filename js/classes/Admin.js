@@ -42,7 +42,13 @@ class Admin {
 
                 <div class="time-ribbon"></div>
 
-                <h2>Projects</h2>
+                <div class="viewSelector">
+                    <h2>View</h2>
+                    <select class="view">
+                        <option value="date" selected="selected">By date</option>
+                        <option value="project">By project</option>
+                    </select>
+                </div>
                 <div class="project-editor"></div>
 
                 <div class="footer-buttons">
@@ -55,6 +61,13 @@ class Admin {
         this.markup.find("select.filter").change(function(admin) {
             return function() {
                 admin.setLogFilter($(this).val());
+                admin.render();
+            };
+        }(this));
+
+        this.markup.find("select.view").change(function(admin) {
+            return function() {
+                admin.setView($(this).val());
                 admin.render();
             };
         }(this));
@@ -166,9 +179,25 @@ class Admin {
         }
     }
 
+    setView(view) {
+        this.view = view;
+    }
+
     renderProjectEditor() {
         this.destroyProjectEditor();
+
+        if (this.view === "project") {
+            this.renderProjectEditorByProjects();
+        } else {
+            this.renderProjectEditorByDates();
+        }
+    }
+
+    renderProjectEditorByProjects() {
         const projects = this.timeTracker.getProjects();
+        if (!projects || projects.length <= 0) {
+            return;
+        }
 
         let projectTable = $(`<table class="projects-table">
             <tr class="header">
@@ -220,7 +249,7 @@ class Admin {
 
                 let projectLogsRow = $(`<tr><td class="key"></td></tr>`);
                 let projectLogsCell = $(`<td colspan="3" style="background-color: ${project.getBackgroundColour()}"></td>`);
-                projectLogsCell.append(admin.renderProjectLogsEditor(project));
+                projectLogsCell.append(admin.renderProjectLogsEditorByProjects(project));
 
                 projectLogsRow.append(projectLogsCell);
                 projectTable.append(projectLogsRow);
@@ -230,25 +259,73 @@ class Admin {
         this.projectEditorEl.append(projectTable);
     }
 
-    _getTotalRow(total) {
-        let totalRow = $(`<tr class="total">
-            <td class="key"></td>
-            <th colspan="3">TOTAL</th>
-        </tr>`);
+    renderProjectEditorByDates() {
+        const projects = this.timeTracker.getProjects();
+        if (!projects || projects.length <= 0) {
+            return;
+        }
 
-        let totalCellEl = $(`<td></td>`);
-        let totalCellDataEl = $(`<span>${Utils.formatTime(total)}</span>`);
-        totalCellEl.append(totalCellDataEl);
+        let datesTable = $(`<table class="dates-table">
+            <tr class="header">
+                <th class="weekday">Weekday</th>
+                <th>Date</th>
+            </tr>
+        </table>`);
 
-        totalRow.append(totalCellEl);
+        const dates = {};
+        $.each(projects, function(admin) {
+            return function(projectIndex, project) {
+                let logs = project.getLogs(admin.filter);
+                if (logs !== null && logs.length > 0) {
+                    $.each(logs, function(logIndex, log) {
+                        const logDate = Utils.formatDate(log.getStartDate());
+                        if (!dates[logDate]) {
+                            dates[logDate] = {};
+                        }
+                        if (!dates[logDate][project.getKey()]) {
+                            dates[logDate][project.getKey()] = [];
+                        }
+                        dates[logDate][project.getKey()].push(log);
+                    });
+                }
+            };
+        }(this));
 
-        // Filler
-        totalRow.append(`<td colspan="2"></td>`);
+        const sortedDates = Object.keys(dates);
+        sortedDates.sort();
+        $.each(sortedDates, function(admin) {
+            return function(dateIndex, dateStr) {
+                const date = Utils.parseDate(dateStr);
 
-        return totalRow;
+                const dateRow = $(`<tr></tr>`);
+
+                let weekdayCellEl = $(`<td></td>`);
+                let weekdayCellDataEl = $(`<span>${Utils.getWeekday(date)}</span>`);
+                weekdayCellEl.append(weekdayCellDataEl);
+
+                let dateCellEl = $(`<td></td>`);
+                let dateCellDataEl = $(`<span>${dateStr}</span>`);
+                dateCellEl.append(dateCellDataEl);
+
+                dateRow.append(weekdayCellEl);
+                dateRow.append(dateCellEl);
+
+                datesTable.append(dateRow);
+
+                const logRow = $(`<tr></tr>`);
+                let logCellEl = $(`<td colspan="2"></td>`);
+                let logCellDataEl = admin.renderProjectLogsEditorByDates(dates[dateStr], projects);
+                logCellEl.append(logCellDataEl);
+                logRow.append(logCellEl);
+
+                datesTable.append(logRow);
+            };
+        }(this));
+
+        this.projectEditorEl.append(datesTable);
     }
 
-    renderProjectLogsEditor(project) {
+    renderProjectLogsEditorByProjects(project) {
         let logs = project.getLogs(this.filter);
         if (logs !== null && logs.length > 0) {
             let logsTable = $(`<table class="logs-table">
@@ -332,7 +409,7 @@ class Admin {
                                     return function() {
                                         // Get the new project name that was typed
                                         const newDateStr = inputEl.val();
-                                        const newDate = Utils.parseDateFromEditor(newDateStr);
+                                        const newDate = Utils.parseDate(newDateStr);
 
                                         if (newDate) {
                                             // Set the new name on the markup and in the Project object
@@ -371,7 +448,7 @@ class Admin {
                                     return function() {
                                         // Get the new project name that was typed
                                         const newDateStr = inputEl.val();
-                                        const newDate = Utils.parseDateFromEditor(newDateStr);
+                                        const newDate = Utils.parseDate(newDateStr);
 
                                         if (newDate) {
                                             // Set the new name on the markup and in the Project object
@@ -458,6 +535,85 @@ class Admin {
         }
 
         return null;
+    }
+
+    _getTotalRow(total) {
+        let totalRow = $(`<tr class="total">
+            <td class="key"></td>
+            <th colspan="3">TOTAL</th>
+        </tr>`);
+
+        let totalCellEl = $(`<td></td>`);
+        let totalCellDataEl = $(`<span>${Utils.formatTime(total)}</span>`);
+        totalCellEl.append(totalCellDataEl);
+
+        totalRow.append(totalCellEl);
+
+        // Filler
+        totalRow.append(`<td colspan="2"></td>`);
+
+        return totalRow;
+    }
+
+    // Key: projectKey
+    // Value: array of Log
+    renderProjectLogsEditorByDates(logMap, projects) {
+        if (!logMap) {
+            return "";
+        }
+
+        const projectKeys = Object.keys(logMap);
+        if (projectKeys.length <= 0) {
+            return "";
+        }
+
+        const logsTable = $(`<table class="logs-table">
+            <tr class="header">
+                <th class="key">Key</th>
+                <th>Project</th>
+                <th>Start date</th>
+                <th>End date</th>
+                <th>Time</th>
+                <th>Message</th>
+                <th class="delete-column">X</th>
+            </tr>
+        </table>`);
+
+        $.each(projects, function(admin) {
+            return function(projectIndex, project) {
+                const logList = logMap[project.getKey()];
+                const projectColor = project.getBackgroundColour();
+                if (logList) {
+                    let total = 0;
+                    $.each(logList, function(logIndex, log) {
+                        const elapse = log.getElapseTime();
+                        total += elapse;
+                        const logRow = $(`<tr style="background-color: ${projectColor}">
+                            <td class="key">${Utils.escapeHTML(log.getKey())}</td>
+                            <td>${Utils.escapeHTML(project.getName())}</td>
+                            <td>${Utils.formatDateForEditor(log.getStartDate())}</td>
+                            <td>${Utils.formatDateForEditor(log.getEndDate())}</td>
+                            <td>${Utils.formatTime(elapse)}</td>
+                            <td>${Utils.escapeHTML(log.getMessage())}</td>
+                            <td class="delete-column"><button class="delete">X</button></td>
+                        </tr>`);
+
+                        logsTable.append(logRow);
+                    });
+
+                    const totalRow = $(`<tr class="total" style="background-color: ${projectColor}">
+                        <td class="key"></td>
+                        <th colspan="3">TOTAL</th>
+                        <td>${Utils.formatTime(total)}</td>
+                        <td colspan="2"></td>
+                    </tr>`);
+
+                    logsTable.append(totalRow);
+                }
+            };
+        }(this));
+
+        return logsTable;
     }
 
     destroyProjectEditor() {

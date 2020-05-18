@@ -34,9 +34,10 @@ Admin page
     - cancel event listener before creating a new one
     - add day filter
     - change "Current X" with "This X" (example: "Current week" => "This week")
-[ ] Add project view dropdown:
-    - by project (current)
-    - by day (more useful for time sheet, editing, etc. Should be default)
+[~] Add project view dropdown:
+    - by projects (current)
+    - by days (more useful for time sheet, editing, etc. Should be default)
+    - add evenListeners to "by days" view
 [X] Create admin page
 [X] Views
 [X] Export CSV
