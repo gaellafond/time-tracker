@@ -34,7 +34,19 @@ class Project extends PersistentObject {
             "#ffcccc",
             "#ffffcc",
             "#ccffcc",
-            "#cccccc"
+            "#cccccc",
+            "#e6ffff",
+            "#e6ccff",
+            "#e6cccc",
+            "#e6ffcc",
+            "#ffe6ff",
+            "#cce6ff",
+            "#cce6cc",
+            "#ffe6cc",
+            "#ffffe6",
+            "#ccffe6",
+            "#cccce6",
+            "#ffcce6"
         ];
     }
 

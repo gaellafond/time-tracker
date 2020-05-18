@@ -320,7 +320,19 @@ class Project extends PersistentObject {
             "#ffcccc",
             "#ffffcc",
             "#ccffcc",
-            "#cccccc"
+            "#cccccc",
+            "#e6ffff",
+            "#e6ccff",
+            "#e6cccc",
+            "#e6ffcc",
+            "#ffe6ff",
+            "#cce6ff",
+            "#cce6cc",
+            "#ffe6cc",
+            "#ffffe6",
+            "#ccffe6",
+            "#cccce6",
+            "#ffcce6"
         ];
     }
 
@@ -1051,6 +1063,10 @@ class TimeRibbon {
     render(filter) {
         this._render(filter);
 
+        if (this.refreshInterval) {
+            window.clearInterval(this.refreshInterval);
+        }
+
         this.refreshInterval = window.setInterval(function(timeRibbon, filter) {
             return function() {
                 timeRibbon._render(filter);
@@ -1226,7 +1242,9 @@ class TimeRibbon {
     }
 
     destroy() {
-        window.clearInterval(this.refreshInterval);
+        if (this.refreshInterval) {
+            window.clearInterval(this.refreshInterval);
+        }
         this.timeRibbonEl.empty();
     }
 }
@@ -1433,7 +1451,7 @@ class Admin {
                 projectTable.append(projectTableRow);
 
                 let projectLogsRow = $(`<tr><td class="key"></td></tr>`);
-                let projectLogsCell = $(`<td colspan="3"></td>`);
+                let projectLogsCell = $(`<td colspan="3" style="background-color: ${project.getBackgroundColour()}"></td>`);
                 projectLogsCell.append(admin.renderProjectLogsEditor(project));
 
                 projectLogsRow.append(projectLogsCell);
@@ -1938,6 +1956,10 @@ div.spaceLeft span::after {
 .admin .project-editor table.projects-table th {
     border: 3px solid #999999;
     padding: 10px;
+}
+
+.admin .project-editor table.logs-table {
+    background-color: #FFFFFF;
 }
 
 .admin .project-editor table.logs-table,

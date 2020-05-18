@@ -19,6 +19,10 @@ class TimeRibbon {
     render(filter) {
         this._render(filter);
 
+        if (this.refreshInterval) {
+            window.clearInterval(this.refreshInterval);
+        }
+
         this.refreshInterval = window.setInterval(function(timeRibbon, filter) {
             return function() {
                 timeRibbon._render(filter);
@@ -194,7 +198,9 @@ class TimeRibbon {
     }
 
     destroy() {
-        window.clearInterval(this.refreshInterval);
+        if (this.refreshInterval) {
+            window.clearInterval(this.refreshInterval);
+        }
         this.timeRibbonEl.empty();
     }
 }

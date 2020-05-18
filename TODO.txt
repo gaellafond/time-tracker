@@ -11,6 +11,7 @@ TimeTracker
     let usedBytes = JSON.stringify(window.localStorage).length * 2; // *2 because JS store strings as UTF16
     // ITEMS: 35'817
     // USAGE: 12'061'386 <= Use 10 MB as limit? You will still have about 2MB left when it shows "100%"
+[ ] Add active project to page title (to see what is active by looking at tab)
 
 TimeRibbon
 [X] Time ribbon do not load when empty (beginning of the day). Page refresh is needed after first log is added
@@ -28,6 +29,9 @@ Projects
 
 Admin page
 [~] Add date filter dropdown
+    - cancel event listener before creating a new one
+    - add day filter
+    - change "Current X" with "This X" (example: "Current week" => "This week")
 [ ] Add project view dropdown:
     - by project (current)
     - by day (more useful for time sheet, editing, etc. Should be default)

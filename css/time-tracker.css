@@ -170,6 +170,10 @@ div.spaceLeft span::after {
     padding: 10px;
 }
 
+.admin .project-editor table.logs-table {
+    background-color: #FFFFFF;
+}
+
 .admin .project-editor table.logs-table,
 .admin .project-editor table.logs-table td,
 .admin .project-editor table.logs-table th {

@@ -198,7 +198,7 @@ class Admin {
                 projectTable.append(projectTableRow);
 
                 let projectLogsRow = $(`<tr><td class="key"></td></tr>`);
-                let projectLogsCell = $(`<td colspan="3"></td>`);
+                let projectLogsCell = $(`<td colspan="3" style="background-color: ${project.getBackgroundColour()}"></td>`);
                 projectLogsCell.append(admin.renderProjectLogsEditor(project));
 
                 projectLogsRow.append(projectLogsCell);
