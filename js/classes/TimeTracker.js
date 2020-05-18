@@ -259,6 +259,7 @@ class TimeTracker {
         }
         this.runningLog = log;
         log.project.setActive(true);
+        this.changePageTitle(log.project.getName());
 
         this.runningLogInterval = window.setInterval(function(log) {
             return function() {
@@ -270,6 +271,7 @@ class TimeTracker {
     }
 
     stopLogCounter() {
+        this.changePageTitle();
         if (this.runningLog != null) {
             this.runningLog.setEndDate(Utils.getCurrentTimestamp());
             this.runningLog.save();
@@ -280,5 +282,13 @@ class TimeTracker {
         // Stop incrementing the counter on the screen
         window.clearInterval(this.runningLogInterval);
         this.runningLogInterval = null;
+    }
+
+    changePageTitle(subTitle) {
+        if (subTitle) {
+            document.title = "[" + Utils.escapeHTML(subTitle) + "] - Time Tracker";
+        } else {
+            document.title = "Time Tracker";
+        }
     }
 }
