@@ -12,18 +12,23 @@ class Admin {
                 <div class="header-buttons">
                     <div>
                         <select class="filter">
+                            <optgroup label="Day">
+                                <option value="day-0" selected="selected">Today</option>
+                                <option value="day-1">Yesterday</option>
+                                <option value="day-2">2 days ago</option>
+                            </optgroup>
                             <optgroup label="Week">
-                                <option value="week-0" selected="selected">Current week</option>
+                                <option value="week-0" selected="selected">This week</option>
                                 <option value="week-1">Last week</option>
                                 <option value="week-2">2 weeks ago</option>
                             </optgroup>
                             <optgroup label="Month">
-                                <option value="month-0">Current month</option>
+                                <option value="month-0">This month</option>
                                 <option value="month-1">Last month</option>
                                 <option value="month-2">2 months ago</option>
                             </optgroup>
                             <optgroup label="Year">
-                                <option value="year-0">Current year</option>
+                                <option value="year-0">This year</option>
                                 <option value="year-1">Last year</option>
                                 <option value="year-2">2 years ago</option>
                             </optgroup>
@@ -85,7 +90,7 @@ class Admin {
         this.filter = null;
         if (filterStr) {
             const filterStrParts = filterStr.split("-");
-             // filterType = week, month, year
+             // filterType = day, week, month, year
             const filterType = filterStrParts[0];
             const filterNumberStr = filterStrParts[1];
 
@@ -97,7 +102,23 @@ class Admin {
                 return;
             }
 
-            if (filterType === "week") {
+            if (filterType === "day") {
+                const dayStart = new Date();
+                dayStart.setMilliseconds(0);
+                dayStart.setSeconds(0);
+                dayStart.setMinutes(0);
+                dayStart.setHours(0);
+
+                const day = dayStart.getDate() - filterNumber;
+                dayStart.setDate(day);
+                const startDate = Math.floor(dayStart.getTime() / 1000);
+
+                dayStart.setDate(day+1);
+                const endDate = Math.floor(dayStart.getTime() / 1000);
+
+                this.filter = new LogFilter(startDate, endDate);
+
+            } else if (filterType === "week") {
                 const oneWeek = 7 * 24 * 60 * 60;
                 const startDate = Utils.getCurrentWeekStart() - (filterNumber * oneWeek);
                 const endDate = startDate + oneWeek;

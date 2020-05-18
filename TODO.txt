@@ -12,6 +12,8 @@ TimeTracker
     // ITEMS: 35'817
     // USAGE: 12'061'386 <= Use 10 MB as limit? You will still have about 2MB left when it shows "100%"
 [X] Add active project to page title (to see what is active by looking at tab)
+[~] Drag n drop project with long list of log cause visual glitches
+    - The bug only happen on Chromium and Google Chrome. I could not find a way to fix it. It's only visual, it doesn't prevent it from working.
 
 TimeRibbon
 [X] Time ribbon do not load when empty (beginning of the day). Page refresh is needed after first log is added
@@ -28,7 +30,7 @@ Projects
 [X] Auto-scroll when log is added
 
 Admin page
-[~] Add date filter dropdown
+[X] Add date filter dropdown
     - cancel event listener before creating a new one
     - add day filter
     - change "Current X" with "This X" (example: "Current week" => "This week")
