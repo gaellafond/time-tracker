@@ -6,7 +6,7 @@ class Admin {
         this.timeTracker = timeTracker;
         this.overlayMarkup = $(`<div class="overlay"></div>`);
         this.setLogFilter("week-0");
-        this.setView("project");
+        this.setView("date");
         this.markup = $(
         `<div class="admin-wrapper">
             <div class="admin">
@@ -46,8 +46,8 @@ class Admin {
                 <div class="viewSelector">
                     <h2>View</h2>
                     <select class="view">
-                        <option value="date">By dates (readonly)</option>
-                        <option value="project" selected="selected">By projects</option>
+                        <option value="date" selected="selected">By dates</option>
+                        <option value="project">By projects</option>
                     </select>
                 </div>
                 <div class="project-editor"></div>
@@ -513,17 +513,91 @@ class Admin {
                 if (logList) {
                     let total = 0;
                     $.each(logList, function(logIndex, log) {
-                        const elapse = log.getElapseTime();
-                        total += elapse;
+                        const elapseTime = log.getElapseTime();
+                        total += elapseTime;
                         const logRow = $(`<tr>
                             <td class="key">${Utils.escapeHTML(log.getKey())}</td>
                             <td style="background-color: ${projectColor}">${Utils.escapeHTML(project.getName())}</td>
-                            <td>${Utils.formatDateForEditor(log.getStartDate())}</td>
-                            <td>${Utils.formatDateForEditor(log.getEndDate())}</td>
-                            <td>${Utils.formatTime(elapse)}</td>
-                            <td>${Utils.escapeHTML(log.getMessage())}</td>
-                            <td class="delete-column"><button class="delete">X</button></td>
                         </tr>`);
+
+                        let startDateCellEl = $(`<td></td>`);
+                        let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
+                        startDateCellEl.append(startDateCellDataEl);
+
+                        let endDateCellEl = $(`<td></td>`);
+                        let endDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getEndDate())}</span>`);
+                        endDateCellEl.append(endDateCellDataEl);
+
+                        let elapseTimeCellEl = $(`<td></td>`);
+                        let elapseTimeCellDataEl = $(`<span>${Utils.formatTime(elapseTime)}</span>`);
+                        elapseTimeCellEl.append(elapseTimeCellDataEl);
+
+                        let messageCellEl = $(`<td></td>`);
+                        let messageCellDataEl = $(`<span>${Utils.escapeHTML(log.getMessage())}</span>`);
+                        messageCellEl.append(messageCellDataEl);
+
+                        let deleteCellEl = $(`<td class="delete-column"></td>`);
+                        let deleteCellButtonEl = $(`<button class="delete">X</button>`);
+                        deleteCellEl.append(deleteCellButtonEl);
+
+                        logRow.append(startDateCellEl);
+                        logRow.append(endDateCellEl);
+                        logRow.append(elapseTimeCellEl);
+                        logRow.append(messageCellEl);
+                        logRow.append(deleteCellEl);
+
+                        new EditableString(startDateCellDataEl, function(admin, log) {
+                            return function(newValue) {
+                                const newDate = Utils.parseDate(newValue);
+                                if (newDate) {
+                                    log.setStartDate(newDate);
+                                    log.save();
+                                    admin.render();
+                                    admin.dirty = true;
+                                } else {
+                                    return false;
+                                }
+                            }
+                        }(admin, log));
+
+                        new EditableString(endDateCellDataEl, function(admin, log) {
+                            return function(newValue) {
+                                const newDate = Utils.parseDate(newValue);
+                                if (newDate) {
+                                    log.setEndDate(newDate);
+                                    log.save();
+                                    admin.render();
+                                    admin.dirty = true;
+                                } else {
+                                    return false;
+                                }
+                            }
+                        }(admin, log));
+
+                        new EditableString(messageCellDataEl, function(admin, log) {
+                            return function(newValue) {
+                                log.setMessage(newValue);
+                                log.save();
+                                admin.render();
+                                admin.dirty = true;
+                            }
+                        }(admin, log));
+
+                        deleteCellButtonEl.click(function(admin, log) {
+                            return function() {
+                                // NOTE: No character need escaping in a "confirm" window
+                                const warningMessage =
+                                    "Are you sure you want to delete this log?\n" +
+                                    "    Log: " + log.getMessage() + "\n" +
+                                    "    Project: " + log.getProject().getName()
+                                if (window.confirm(warningMessage)) {
+                                    log.delete();
+                                    admin.timeTracker.reload();
+                                    admin.render();
+                                    admin.dirty = true;
+                                }
+                            };
+                        }(admin, log));
 
                         logsTable.append(logRow);
                     });

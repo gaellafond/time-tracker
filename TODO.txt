@@ -35,11 +35,11 @@ Admin page
     - add day filter
     - change "Current X" with "This X" (example: "Current week" => "This week")
 [~] Add project view dropdown:
-    - by projects (current)
-    - by days (more useful for time sheet, editing, etc. Should be default)
-    - add evenListeners to "by days" view
-    - "by days" add total for the day
-    - Move views into separate classes
+    [X] by projects (current)
+    [X] by days (more useful for time sheet, editing, etc. Should be default)
+    [X] add evenListeners to "by days" view
+    [ ] "by days" add total for the day
+    [ ] Move views into separate classes
 [X] Create admin page
 [X] Views
 [X] Export CSV
