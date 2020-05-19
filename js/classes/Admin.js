@@ -6,6 +6,7 @@ class Admin {
         this.timeTracker = timeTracker;
         this.overlayMarkup = $(`<div class="overlay"></div>`);
         this.setLogFilter("week-0");
+        this.setView("project");
         this.markup = $(
         `<div class="admin-wrapper">
             <div class="admin">
@@ -45,8 +46,8 @@ class Admin {
                 <div class="viewSelector">
                     <h2>View</h2>
                     <select class="view">
-                        <option value="date" selected="selected">By date</option>
-                        <option value="project">By project</option>
+                        <option value="date">By dates (readonly)</option>
+                        <option value="project" selected="selected">By projects</option>
                     </select>
                 </div>
                 <div class="project-editor"></div>
@@ -588,9 +589,9 @@ class Admin {
                     $.each(logList, function(logIndex, log) {
                         const elapse = log.getElapseTime();
                         total += elapse;
-                        const logRow = $(`<tr style="background-color: ${projectColor}">
+                        const logRow = $(`<tr>
                             <td class="key">${Utils.escapeHTML(log.getKey())}</td>
-                            <td>${Utils.escapeHTML(project.getName())}</td>
+                            <td style="background-color: ${projectColor}">${Utils.escapeHTML(project.getName())}</td>
                             <td>${Utils.formatDateForEditor(log.getStartDate())}</td>
                             <td>${Utils.formatDateForEditor(log.getEndDate())}</td>
                             <td>${Utils.formatTime(elapse)}</td>
@@ -601,9 +602,10 @@ class Admin {
                         logsTable.append(logRow);
                     });
 
-                    const totalRow = $(`<tr class="total" style="background-color: ${projectColor}">
+                    const totalRow = $(`<tr class="total">
                         <td class="key"></td>
-                        <th colspan="3">TOTAL</th>
+                        <th style="background-color: ${projectColor}">TOTAL</th>
+                        <th colspan="2"></th>
                         <td>${Utils.formatTime(total)}</td>
                         <td colspan="2"></td>
                     </tr>`);

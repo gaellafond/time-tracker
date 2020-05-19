@@ -38,6 +38,8 @@ Admin page
     - by projects (current)
     - by days (more useful for time sheet, editing, etc. Should be default)
     - add evenListeners to "by days" view
+    - "by days" add total for the day
+    - Move views into separate classes
 [X] Create admin page
 [X] Views
 [X] Export CSV
