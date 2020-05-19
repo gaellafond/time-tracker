@@ -56,38 +56,14 @@ class Log extends PersistentObject {
 
     addEventListeners() {
         // Add click event on log name (edit)
-        this.markup.find("span.message").click(function(log) {
-            return function() {
-                // Hide the title (it will be replaced with a input field)
-                const messageEl = $(this);
-                messageEl.hide();
-
-                // Create an input field, add it in the markup after the (hidden) title
-                const inputEl = $(`<input class="message" type="text" value="${Utils.escapeHTML(log.getMessage())}">`);
-                messageEl.after(inputEl);
-                inputEl.select(); // Select the text in the text field
-
-                const changeFunction = function(log, inputEl) {
-                    return function() {
-                        // Get the new project name that was typed
-                        const newMessage = inputEl.val();
-
-                        // Set the new name on the markup and in the Project object
-                        messageEl.html(Utils.escapeHTML(newMessage));
-                        log.setMessage(newMessage);
-                        log.save();
-
-                        // Delete the input field and show the changed title
-                        inputEl.remove();
-                        messageEl.show();
-                    };
-                }(log, inputEl);
-
-                // Update the project name when
-                inputEl.change(changeFunction); // The user tape "enter"
-                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+        const editableLogMessage = new EditableString(this.markup.find("span.message"), function(log) {
+            return function(newValue) {
+                log.setMessage(newValue);
+                log.save();
             };
         }(this));
+        editableLogMessage.setAutoSelect(true);
+        editableLogMessage.setInputCssClass("message");
     }
 
     getMarkup() {

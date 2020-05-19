@@ -395,116 +395,42 @@ class Admin {
                     logRow.append(messageCellEl);
                     logRow.append(deleteCellEl);
 
-                    startDateCellDataEl.click(function(admin, log, startDateCellDataEl) {
-                        return function() {
-                            let startDate = log.getStartDate();
-                            if (startDate != null) {
-                                startDateCellDataEl.hide();
-
-                                // Create an input field, add it in the markup after the (hidden) date
-                                const inputEl = $(`<input type="text" value="${Utils.formatDateForEditor(log.getStartDate())}">`);
-                                startDateCellDataEl.after(inputEl);
-                                inputEl.focus(); // Put the cursor in the input field to start editing
-
-                                const changeFunction = function(log, startDateCellDataEl, inputEl) {
-                                    return function() {
-                                        // Get the new project name that was typed
-                                        const newDateStr = inputEl.val();
-                                        const newDate = Utils.parseDate(newDateStr);
-
-                                        if (newDate) {
-                                            // Set the new name on the markup and in the Project object
-                                            startDateCellDataEl.html(Utils.escapeHTML(newDateStr));
-                                            log.setStartDate(newDate);
-                                            log.save();
-                                            admin.render();
-                                            admin.dirty = true;
-                                        }
-
-                                        // Delete the input field and show the changed title
-                                        inputEl.remove();
-                                        startDateCellDataEl.show();
-                                    };
-                                }(log, startDateCellDataEl, inputEl);
-
-                                // Update the project name when
-                                inputEl.change(changeFunction); // The user tape "enter"
-                                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+                    new EditableString(startDateCellDataEl, function(admin, log) {
+                        return function(newValue) {
+                            const newDate = Utils.parseDate(newValue);
+                            if (newDate) {
+                                log.setStartDate(newDate);
+                                log.save();
+                                admin.render();
+                                admin.dirty = true;
+                            } else {
+                                return false;
                             }
-                        };
-                    }(admin, log, startDateCellDataEl));
+                        }
+                    }(admin, log));
 
-                    endDateCellDataEl.click(function(admin, log, endDateCellDataEl) {
-                        return function() {
-                            let endDate = log.getEndDate();
-                            if (endDate != null) {
-                                endDateCellDataEl.hide();
-
-                                // Create an input field, add it in the markup after the (hidden) date
-                                const inputEl = $(`<input type="text" value="${Utils.formatDateForEditor(log.getEndDate())}">`);
-                                endDateCellDataEl.after(inputEl);
-                                inputEl.focus(); // Put the cursor in the input field to start editing
-
-                                const changeFunction = function(log, endDateCellDataEl, inputEl) {
-                                    return function() {
-                                        // Get the new project name that was typed
-                                        const newDateStr = inputEl.val();
-                                        const newDate = Utils.parseDate(newDateStr);
-
-                                        if (newDate) {
-                                            // Set the new name on the markup and in the Project object
-                                            endDateCellDataEl.html(Utils.escapeHTML(newDateStr));
-                                            log.setEndDate(newDate);
-                                            log.save();
-                                            admin.render();
-                                            admin.dirty = true;
-                                        }
-
-                                        // Delete the input field and show the changed title
-                                        inputEl.remove();
-                                        endDateCellDataEl.show();
-                                    };
-                                }(log, endDateCellDataEl, inputEl);
-
-                                // Update the project name when
-                                inputEl.change(changeFunction); // The user tape "enter"
-                                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+                    new EditableString(endDateCellDataEl, function(admin, log) {
+                        return function(newValue) {
+                            const newDate = Utils.parseDate(newValue);
+                            if (newDate) {
+                                log.setEndDate(newDate);
+                                log.save();
+                                admin.render();
+                                admin.dirty = true;
+                            } else {
+                                return false;
                             }
-                        };
-                    }(admin, log, endDateCellDataEl));
+                        }
+                    }(admin, log));
 
-                    messageCellDataEl.click(function(admin, log, messageCellDataEl) {
-                        return function() {
-                            messageCellDataEl.hide();
-
-                            // Create an input field, add it in the markup after the (hidden) message
-                            const inputEl = $(`<input type="text" value="${Utils.escapeHTML(log.getMessage())}">`);
-                            messageCellDataEl.after(inputEl);
-                            inputEl.focus(); // Put the cursor in the input field to start editing
-
-                            const changeFunction = function(log, messageCellDataEl, inputEl) {
-                                return function() {
-                                    // Get the new project name that was typed
-                                    const newMessage = inputEl.val();
-
-                                    // Set the new name on the markup and in the Project object
-                                    messageCellDataEl.html(Utils.escapeHTML(newMessage));
-                                    log.setMessage(newMessage);
-                                    log.save();
-                                    admin.render();
-                                    admin.dirty = true;
-
-                                    // Delete the input field and show the changed title
-                                    inputEl.remove();
-                                    messageCellDataEl.show();
-                                };
-                            }(log, messageCellDataEl, inputEl);
-
-                            // Update the project name when
-                            inputEl.change(changeFunction); // The user tape "enter"
-                            inputEl.focusout(changeFunction); // The user click somewhere else in the page
-                        };
-                    }(admin, log, messageCellDataEl));
+                    new EditableString(messageCellDataEl, function(admin, log) {
+                        return function(newValue) {
+                            log.setMessage(newValue);
+                            log.save();
+                            admin.render();
+                            admin.dirty = true;
+                        }
+                    }(admin, log));
 
                     deleteCellButtonEl.click(function(admin, log) {
                         return function() {

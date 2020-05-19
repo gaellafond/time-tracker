@@ -265,11 +265,13 @@ class EditableString {
             // Get the new value from the input field
             const newValue = this.inputEl.val();
 
-            // Set the new name on the markup and in the Project object
-            this.spanEl.html(Utils.escapeHTML(newValue));
-
             // Call the callback, to save the value to the Database
-            this.onChangeCallback(newValue);
+            const success = this.onChangeCallback(newValue);
+
+            // Set the new value in the html element, unless the callback explicitly returns false
+            if (success !== false) {
+                this.spanEl.html(Utils.escapeHTML(newValue));
+            }
 
             // Delete the input field and show the changed element
             this.inputEl.remove();
@@ -704,38 +706,14 @@ class Log extends PersistentObject {
 
     addEventListeners() {
         // Add click event on log name (edit)
-        this.markup.find("span.message").click(function(log) {
-            return function() {
-                // Hide the title (it will be replaced with a input field)
-                const messageEl = $(this);
-                messageEl.hide();
-
-                // Create an input field, add it in the markup after the (hidden) title
-                const inputEl = $(`<input class="message" type="text" value="${Utils.escapeHTML(log.getMessage())}">`);
-                messageEl.after(inputEl);
-                inputEl.select(); // Select the text in the text field
-
-                const changeFunction = function(log, inputEl) {
-                    return function() {
-                        // Get the new project name that was typed
-                        const newMessage = inputEl.val();
-
-                        // Set the new name on the markup and in the Project object
-                        messageEl.html(Utils.escapeHTML(newMessage));
-                        log.setMessage(newMessage);
-                        log.save();
-
-                        // Delete the input field and show the changed title
-                        inputEl.remove();
-                        messageEl.show();
-                    };
-                }(log, inputEl);
-
-                // Update the project name when
-                inputEl.change(changeFunction); // The user tape "enter"
-                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+        const editableLogMessage = new EditableString(this.markup.find("span.message"), function(log) {
+            return function(newValue) {
+                log.setMessage(newValue);
+                log.save();
             };
         }(this));
+        editableLogMessage.setAutoSelect(true);
+        editableLogMessage.setInputCssClass("message");
     }
 
     getMarkup() {
@@ -810,12 +788,15 @@ class TimeTracker {
         this.spaceLeftEl = $(`<span>?</span>`);
         this.spaceLeftContainerEl.append(this.spaceLeftEl);
 
-        this.pageTitleEl = $(`<h1 class="pageTitle">${this.getName()}</h1>`);
+        this.pageTitleContainerEl = $(`<div class="pageTitle"></div>`);
+        this.pageTitleEl = $(`<h1>${this.getName()}</h1>`);
+        this.pageTitleContainerEl.append(this.pageTitleEl);
+
         this.checkOutButtonEl = $(`<button>Stop timer</button>`);
         this.showAdminButtonEl = $(`<button>Admin</button>`);
 
         this.headerEl.append(this.spaceLeftContainerEl);
-        this.headerEl.append(this.pageTitleEl);
+        this.headerEl.append(this.pageTitleContainerEl);
         this.headerEl.append(this.checkOutButtonEl);
         this.headerEl.append(this.showAdminButtonEl);
 
@@ -923,41 +904,13 @@ class TimeTracker {
             };
         }(this));
 
-        this.pageTitleEl.click(function(timeTracker) {
-            return function() {
-                // Hide the title (it will be replaced with a input field)
-                const titleEl = $(this);
-                titleEl.hide();
-
-                // Create an input field, add it in the markup after the (hidden) title
-                const inputContainerEl = $(`<div class="pageTitle"></div>`);
-                const inputEl = $(`<input type="text" value="${Utils.escapeHTML(timeTracker.getName())}">`);
-                inputContainerEl.append(inputEl);
-                titleEl.after(inputContainerEl);
-                inputEl.select(); // Select the text in the text field
-
-                const changeFunction = function(timeTracker, inputContainerEl, inputEl) {
-                    return function() {
-                        // Get the new project name that was typed
-                        const newName = inputEl.val();
-
-                        // Set the new name on the markup and in the Project object
-                        titleEl.html(Utils.escapeHTML(newName));
-                        timeTracker.setName(newName);
-                        timeTracker.save();
-
-                        // Delete the input field and show the changed title
-                        inputContainerEl.remove();
-                        titleEl.show();
-                    };
-                }(timeTracker, inputContainerEl, inputEl);
-
-                // Update the project name when
-                inputEl.change(changeFunction); // The user tape "enter"
-                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+        const editablePageTitle = new EditableString(this.pageTitleEl, function(timeTracker) {
+            return function(newValue) {
+                timeTracker.setName(newValue);
+                timeTracker.save();
             };
         }(this));
-
+        editablePageTitle.setAutoSelect(true);
     }
 
     showAdmin() {
@@ -1702,116 +1655,42 @@ class Admin {
                     logRow.append(messageCellEl);
                     logRow.append(deleteCellEl);
 
-                    startDateCellDataEl.click(function(admin, log, startDateCellDataEl) {
-                        return function() {
-                            let startDate = log.getStartDate();
-                            if (startDate != null) {
-                                startDateCellDataEl.hide();
-
-                                // Create an input field, add it in the markup after the (hidden) date
-                                const inputEl = $(`<input type="text" value="${Utils.formatDateForEditor(log.getStartDate())}">`);
-                                startDateCellDataEl.after(inputEl);
-                                inputEl.focus(); // Put the cursor in the input field to start editing
-
-                                const changeFunction = function(log, startDateCellDataEl, inputEl) {
-                                    return function() {
-                                        // Get the new project name that was typed
-                                        const newDateStr = inputEl.val();
-                                        const newDate = Utils.parseDate(newDateStr);
-
-                                        if (newDate) {
-                                            // Set the new name on the markup and in the Project object
-                                            startDateCellDataEl.html(Utils.escapeHTML(newDateStr));
-                                            log.setStartDate(newDate);
-                                            log.save();
-                                            admin.render();
-                                            admin.dirty = true;
-                                        }
-
-                                        // Delete the input field and show the changed title
-                                        inputEl.remove();
-                                        startDateCellDataEl.show();
-                                    };
-                                }(log, startDateCellDataEl, inputEl);
-
-                                // Update the project name when
-                                inputEl.change(changeFunction); // The user tape "enter"
-                                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+                    new EditableString(startDateCellDataEl, function(admin, log) {
+                        return function(newValue) {
+                            const newDate = Utils.parseDate(newValue);
+                            if (newDate) {
+                                log.setStartDate(newDate);
+                                log.save();
+                                admin.render();
+                                admin.dirty = true;
+                            } else {
+                                return false;
                             }
-                        };
-                    }(admin, log, startDateCellDataEl));
+                        }
+                    }(admin, log));
 
-                    endDateCellDataEl.click(function(admin, log, endDateCellDataEl) {
-                        return function() {
-                            let endDate = log.getEndDate();
-                            if (endDate != null) {
-                                endDateCellDataEl.hide();
-
-                                // Create an input field, add it in the markup after the (hidden) date
-                                const inputEl = $(`<input type="text" value="${Utils.formatDateForEditor(log.getEndDate())}">`);
-                                endDateCellDataEl.after(inputEl);
-                                inputEl.focus(); // Put the cursor in the input field to start editing
-
-                                const changeFunction = function(log, endDateCellDataEl, inputEl) {
-                                    return function() {
-                                        // Get the new project name that was typed
-                                        const newDateStr = inputEl.val();
-                                        const newDate = Utils.parseDate(newDateStr);
-
-                                        if (newDate) {
-                                            // Set the new name on the markup and in the Project object
-                                            endDateCellDataEl.html(Utils.escapeHTML(newDateStr));
-                                            log.setEndDate(newDate);
-                                            log.save();
-                                            admin.render();
-                                            admin.dirty = true;
-                                        }
-
-                                        // Delete the input field and show the changed title
-                                        inputEl.remove();
-                                        endDateCellDataEl.show();
-                                    };
-                                }(log, endDateCellDataEl, inputEl);
-
-                                // Update the project name when
-                                inputEl.change(changeFunction); // The user tape "enter"
-                                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+                    new EditableString(endDateCellDataEl, function(admin, log) {
+                        return function(newValue) {
+                            const newDate = Utils.parseDate(newValue);
+                            if (newDate) {
+                                log.setEndDate(newDate);
+                                log.save();
+                                admin.render();
+                                admin.dirty = true;
+                            } else {
+                                return false;
                             }
-                        };
-                    }(admin, log, endDateCellDataEl));
+                        }
+                    }(admin, log));
 
-                    messageCellDataEl.click(function(admin, log, messageCellDataEl) {
-                        return function() {
-                            messageCellDataEl.hide();
-
-                            // Create an input field, add it in the markup after the (hidden) message
-                            const inputEl = $(`<input type="text" value="${Utils.escapeHTML(log.getMessage())}">`);
-                            messageCellDataEl.after(inputEl);
-                            inputEl.focus(); // Put the cursor in the input field to start editing
-
-                            const changeFunction = function(log, messageCellDataEl, inputEl) {
-                                return function() {
-                                    // Get the new project name that was typed
-                                    const newMessage = inputEl.val();
-
-                                    // Set the new name on the markup and in the Project object
-                                    messageCellDataEl.html(Utils.escapeHTML(newMessage));
-                                    log.setMessage(newMessage);
-                                    log.save();
-                                    admin.render();
-                                    admin.dirty = true;
-
-                                    // Delete the input field and show the changed title
-                                    inputEl.remove();
-                                    messageCellDataEl.show();
-                                };
-                            }(log, messageCellDataEl, inputEl);
-
-                            // Update the project name when
-                            inputEl.change(changeFunction); // The user tape "enter"
-                            inputEl.focusout(changeFunction); // The user click somewhere else in the page
-                        };
-                    }(admin, log, messageCellDataEl));
+                    new EditableString(messageCellDataEl, function(admin, log) {
+                        return function(newValue) {
+                            log.setMessage(newValue);
+                            log.save();
+                            admin.render();
+                            admin.dirty = true;
+                        }
+                    }(admin, log));
 
                     deleteCellButtonEl.click(function(admin, log) {
                         return function() {
@@ -2050,19 +1929,18 @@ div.header {
     margin: 1em 0;
 }
 
-h1.pageTitle {
+div.pageTitle h1 {
     margin: 0;
     flex-grow: 1;
 }
 div.pageTitle {
     text-align: center;
-    font-size: 2em;
     flex-grow: 1;
 }
 div.pageTitle input {
     max-width: 100%;
     text-align: center;
-    font-size: 1em;
+    font-size: 2em;
 }
 
 div.spaceLeft span::before {

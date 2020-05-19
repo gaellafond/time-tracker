@@ -9,12 +9,15 @@ class TimeTracker {
         this.spaceLeftEl = $(`<span>?</span>`);
         this.spaceLeftContainerEl.append(this.spaceLeftEl);
 
-        this.pageTitleEl = $(`<h1 class="pageTitle">${this.getName()}</h1>`);
+        this.pageTitleContainerEl = $(`<div class="pageTitle"></div>`);
+        this.pageTitleEl = $(`<h1>${this.getName()}</h1>`);
+        this.pageTitleContainerEl.append(this.pageTitleEl);
+
         this.checkOutButtonEl = $(`<button>Stop timer</button>`);
         this.showAdminButtonEl = $(`<button>Admin</button>`);
 
         this.headerEl.append(this.spaceLeftContainerEl);
-        this.headerEl.append(this.pageTitleEl);
+        this.headerEl.append(this.pageTitleContainerEl);
         this.headerEl.append(this.checkOutButtonEl);
         this.headerEl.append(this.showAdminButtonEl);
 
@@ -122,41 +125,13 @@ class TimeTracker {
             };
         }(this));
 
-        this.pageTitleEl.click(function(timeTracker) {
-            return function() {
-                // Hide the title (it will be replaced with a input field)
-                const titleEl = $(this);
-                titleEl.hide();
-
-                // Create an input field, add it in the markup after the (hidden) title
-                const inputContainerEl = $(`<div class="pageTitle"></div>`);
-                const inputEl = $(`<input type="text" value="${Utils.escapeHTML(timeTracker.getName())}">`);
-                inputContainerEl.append(inputEl);
-                titleEl.after(inputContainerEl);
-                inputEl.select(); // Select the text in the text field
-
-                const changeFunction = function(timeTracker, inputContainerEl, inputEl) {
-                    return function() {
-                        // Get the new project name that was typed
-                        const newName = inputEl.val();
-
-                        // Set the new name on the markup and in the Project object
-                        titleEl.html(Utils.escapeHTML(newName));
-                        timeTracker.setName(newName);
-                        timeTracker.save();
-
-                        // Delete the input field and show the changed title
-                        inputContainerEl.remove();
-                        titleEl.show();
-                    };
-                }(timeTracker, inputContainerEl, inputEl);
-
-                // Update the project name when
-                inputEl.change(changeFunction); // The user tape "enter"
-                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+        const editablePageTitle = new EditableString(this.pageTitleEl, function(timeTracker) {
+            return function(newValue) {
+                timeTracker.setName(newValue);
+                timeTracker.save();
             };
         }(this));
-
+        editablePageTitle.setAutoSelect(true);
     }
 
     showAdmin() {

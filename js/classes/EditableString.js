@@ -49,11 +49,13 @@ class EditableString {
             // Get the new value from the input field
             const newValue = this.inputEl.val();
 
-            // Set the new name on the markup and in the Project object
-            this.spanEl.html(Utils.escapeHTML(newValue));
-
             // Call the callback, to save the value to the Database
-            this.onChangeCallback(newValue);
+            const success = this.onChangeCallback(newValue);
+
+            // Set the new value in the html element, unless the callback explicitly returns false
+            if (success !== false) {
+                this.spanEl.html(Utils.escapeHTML(newValue));
+            }
 
             // Delete the input field and show the changed element
             this.inputEl.remove();
