@@ -122,38 +122,14 @@ class Project extends PersistentObject {
         }(this));
 
         // Add click event on title (edit)
-        this.markup.find("h2.title").click(function(project) {
-            return function() {
-                // Hide the title (it will be replaced with a input field)
-                const titleEl = $(this);
-                titleEl.hide();
-
-                // Create an input field, add it in the markup after the (hidden) title
-                const inputEl = $(`<input class="title" type="text" value="${Utils.escapeHTML(project.getName())}">`);
-                titleEl.after(inputEl);
-                inputEl.select(); // Select the text in the text field
-
-                const changeFunction = function(project, inputEl) {
-                    return function() {
-                        // Get the new project name that was typed
-                        const newName = inputEl.val();
-
-                        // Set the new name on the markup and in the Project object
-                        titleEl.html(Utils.escapeHTML(newName));
-                        project.setName(newName);
-                        project.save();
-
-                        // Delete the input field and show the changed title
-                        inputEl.remove();
-                        titleEl.show();
-                    };
-                }(project, inputEl);
-
-                // Update the project name when
-                inputEl.change(changeFunction); // The user tape "enter"
-                inputEl.focusout(changeFunction); // The user click somewhere else in the page
+        const editableProjectTitle = new EditableString(this.markup.find("h2.title"), function(project) {
+            return function(newValue) {
+                project.setName(newValue);
+                project.save();
             };
         }(this));
+        editableProjectTitle.setAutoSelect(true);
+        editableProjectTitle.setInputCssClass("title");
 
         $.each(this.logs, function(index, log) {
             log.addEventListeners();
