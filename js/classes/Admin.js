@@ -506,6 +506,7 @@ class Admin {
             </tr>
         </table>`);
 
+        let dayTotal = 0;
         $.each(projects, function(admin) {
             return function(projectIndex, project) {
                 const logList = logMap[project.getKey()];
@@ -610,10 +611,20 @@ class Admin {
                         <td colspan="2"></td>
                     </tr>`);
 
+                    dayTotal += total;
                     logsTable.append(totalRow);
                 }
             };
         }(this));
+
+        const dayTotalRow = $(`<tr class="total">
+            <td class="key"></td>
+            <th>TOTAL FOR THE DAY</th>
+            <th colspan="2"></th>
+            <td>${Utils.formatTime(dayTotal)}</td>
+            <td colspan="2"></td>
+        </tr>`);
+        logsTable.append(dayTotalRow);
 
         return logsTable;
     }
