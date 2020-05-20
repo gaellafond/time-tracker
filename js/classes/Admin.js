@@ -343,7 +343,9 @@ class Admin {
 
             let lastWeekNumber = null, currentWeekNumber = null;
             let lastTotalWeekNumber = null;
+            let grandTotalTime = 0;
             let totalTime = 0;
+            let totalRowCount = 0; // Number of "total" row shown
             $.each(logs, function(admin) {
                 return function(logIndex, log) {
                     if (lastWeekNumber === null) {
@@ -353,11 +355,13 @@ class Admin {
 
                     if (lastWeekNumber !== currentWeekNumber) {
                         logsTable.append(admin._getTotalRow(totalTime));
+                        totalRowCount++;
                         totalTime = 0;
                         lastTotalWeekNumber = lastWeekNumber;
                     }
 
                     let elapseTime = log.getElapseTime();
+                    grandTotalTime += elapseTime;
                     totalTime += elapseTime;
 
                     let logRow = $(`<tr>
@@ -456,6 +460,17 @@ class Admin {
 
             if (lastTotalWeekNumber !== currentWeekNumber) {
                 logsTable.append(this._getTotalRow(totalTime));
+                totalRowCount++;
+            }
+
+            if (totalRowCount > 1) {
+                const spacerRow = $(`<tr class="spacer">
+                    <td class="key"></td>
+                    <th colspan="6"></th>
+                </tr>`);
+                logsTable.append(spacerRow);
+
+                logsTable.append(this._getTotalRow(grandTotalTime, "GRAND TOTAL"));
             }
 
             return logsTable;
@@ -464,10 +479,12 @@ class Admin {
         return null;
     }
 
-    _getTotalRow(total) {
+    _getTotalRow(total, label) {
+        label = label ? label : "TOTAL";
+
         let totalRow = $(`<tr class="total">
             <td class="key"></td>
-            <th colspan="3">TOTAL</th>
+            <th colspan="3">${label}</th>
         </tr>`);
 
         let totalCellEl = $(`<td></td>`);
@@ -512,6 +529,13 @@ class Admin {
                 const logList = logMap[project.getKey()];
                 const projectColor = project.getBackgroundColour();
                 if (logList) {
+
+                    const spacerRow = $(`<tr class="spacer">
+                        <td class="key"></td>
+                        <th colspan="6"></th>
+                    </tr>`);
+                    logsTable.append(spacerRow);
+
                     let total = 0;
                     $.each(logList, function(logIndex, log) {
                         const elapseTime = log.getElapseTime();
@@ -617,9 +641,15 @@ class Admin {
             };
         }(this));
 
+        const spacerRow = $(`<tr class="spacer">
+            <td class="key"></td>
+            <th colspan="6"></th>
+        </tr>`);
+        logsTable.append(spacerRow);
+
         const dayTotalRow = $(`<tr class="total">
             <td class="key"></td>
-            <th>TOTAL FOR THE DAY</th>
+            <th>GRAND TOTAL</th>
             <th colspan="2"></th>
             <td>${Utils.formatTime(dayTotal)}</td>
             <td colspan="2"></td>
