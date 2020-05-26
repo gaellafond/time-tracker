@@ -56,3 +56,6 @@ Admin page
 [ ] Edit logs change project (drag n drop log between project list)
 [ ] Split logs (or add logs from admin)
 [X] Auto-refresh page when admin is closed if something has been modified
+
+EditableString
+[X] BUG: Empty strings are not editable - Fixed by putting text in the markup when the string is empty, and not allow editable string to be set to empty string

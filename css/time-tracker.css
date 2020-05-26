@@ -14,6 +14,10 @@ select {
     font-size: 1.2em;
 }
 
+.editableString .empty {
+    color: #999999;
+}
+
 .viewSelector {
     margin: 1em 0;
 }
