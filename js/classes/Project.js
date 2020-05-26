@@ -1,5 +1,5 @@
 class Project extends PersistentObject {
-    constructor(timeTracker, name, bgColourIndex, order, key=null) {
+    constructor(timeTracker, name, colourIndex, order, key=null) {
         if (key === null) {
             super(Project.keyPrefix, false);
         } else {
@@ -8,7 +8,7 @@ class Project extends PersistentObject {
 
         this.timeTracker = timeTracker;
         this.name = name;
-        this.bgColourIndex = bgColourIndex;
+        this.colourIndex = colourIndex;
         this.order = order;
         this.logs = [];
 
@@ -26,40 +26,85 @@ class Project extends PersistentObject {
         return "project";
     }
 
-    static getBackgroundColours() {
+    static getProjectColours() {
+        // Colour names inspired from:
+        //     https://www.htmlcsscolor.com/
         return [
-            "#ccffff",
-            "#ccccff",
-            "#ffccff",
-            "#ffcccc",
-            "#ffffcc",
-            "#ccffcc",
-            "#cccccc",
-            "#e6ffff",
-            "#e6ccff",
-            "#e6cccc",
-            "#e6ffcc",
-            "#ffe6ff",
-            "#cce6ff",
-            "#cce6cc",
-            "#ffe6cc",
-            "#ffffe6",
-            "#ccffe6",
-            "#cccce6",
-            "#ffcce6"
+            {
+                "backgroundColour": "#ccffff",
+                "label": "Cyan"
+            }, {
+                "backgroundColour": "#ccccff",
+                "label": "Lavender"
+            }, {
+                "backgroundColour": "#ffccff",
+                "label": "Snuff"
+            }, {
+                "backgroundColour": "#ffcccc",
+                "label": "Cosmos"
+            }, {
+                "backgroundColour": "#ffffcc",
+                "label": "Cream"
+            }, {
+                "backgroundColour": "#ccffcc",
+                "label": "Green"
+            }, {
+                "backgroundColour": "#cccccc",
+                "label": "Grey"
+            }, {
+                "backgroundColour": "#e6ffff",
+                "label": "Light Cyan"
+            }, {
+                "backgroundColour": "#e6ccff",
+                "label": "Blue Chalk"
+            }, {
+                "backgroundColour": "#e6cccc",
+                "label": "Vanilla Ice"
+            }, {
+                "backgroundColour": "#e6ffcc",
+                "label": "Snow Flurry"
+            }, {
+                "backgroundColour": "#ffe6ff",
+                "label": "Selago"
+            }, {
+                "backgroundColour": "#cce6ff",
+                "label": "Pattens Blue"
+            }, {
+                "backgroundColour": "#cce6cc",
+                "label": "Granny Apple"
+            }, {
+                "backgroundColour": "#ffe6cc",
+                "label": "Bisque"
+            }, {
+                "backgroundColour": "#ffffe6",
+                "label": "Light Yellow"
+            }, {
+                "backgroundColour": "#ccffe6",
+                "label": "White Ice"
+            }, {
+                "backgroundColour": "#cccce6",
+                "label": "Quartz"
+            }, {
+                "backgroundColour": "#ffcce6",
+                "label": "Classic Rose"
+            }
         ];
     }
 
-    static getBackgroundColour(colourIndex) {
-        const colours = Project.getBackgroundColours();
+    static getProjectColour(colourIndex) {
+        const colours = Project.getProjectColours();
         return colours[colourIndex % colours.length];
+    }
+
+    static getBackgroundColour(colourIndex) {
+        return Project.getProjectColour(colourIndex).backgroundColour;
     }
 
     static load(timeTracker, jsonProject) {
         return new Project(
             timeTracker,
             jsonProject.name,
-            jsonProject.bgColourIndex,
+            jsonProject.colourIndex !== undefined ? jsonProject.colourIndex : jsonProject.bgColourIndex,
             jsonProject.order,
             jsonProject.key
         );
@@ -253,16 +298,19 @@ class Project extends PersistentObject {
         return this.name;
     }
 
-    getBackgroundColourIndex() {
-        return this.bgColourIndex;
+    getColourIndex() {
+        return this.colourIndex;
     }
-    setBackgroundColourIndex(bgColourIndex) {
-        const colours = Project.getBackgroundColours();
-        this.bgColourIndex = bgColourIndex % colours.length;
+    getColour() {
+        return Project.getProjectColour(this.colourIndex);
+    }
+    setColourIndex(colourIndex) {
+        const colours = Project.getProjectColours();
+        this.colourIndex = colourIndex % colours.length;
     }
 
     getBackgroundColour() {
-        return Project.getBackgroundColour(this.bgColourIndex);
+        return Project.getBackgroundColour(this.colourIndex);
     }
 
     getOrder() {
@@ -276,7 +324,7 @@ class Project extends PersistentObject {
         return {
             "key": this.getKey(),
             "name": this.name,
-            "bgColourIndex": this.bgColourIndex,
+            "colourIndex": this.colourIndex,
             "order": this.order
         }
     }

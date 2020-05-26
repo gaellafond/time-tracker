@@ -204,7 +204,7 @@ class Admin {
             <tr class="header">
                 <th class="key">Key</th>
                 <th>Name</th>
-                <th>Colour code</th>
+                <th>Colour</th>
                 <th class="delete-column">X</th>
             </tr>
         </table>`);
@@ -215,10 +215,17 @@ class Admin {
                     <td class="name">${Utils.escapeHTML(project.getName())}</td>
                 </tr>`);
 
-                let projectColourCellEl = $(`<td>${project.getBackgroundColourIndex()}</td>`);
-                projectColourCellEl.click(function(admin, project) {
+                let projectColourCellEl = $(`<td></td>`);
+                let projectColourSelect = $(`<select class="projectColour"></select>`);
+                $.each(Project.getProjectColours(), function(index, colour) {
+                    const selected = index === project.getColourIndex();
+                    projectColourSelect.append($(`<option value="${index}" style="background-color: ${colour.backgroundColour}" ${selected ? "selected=\"selected\"" : ""}>${colour.label}</option>`));
+                });
+                projectColourCellEl.append(projectColourSelect);
+
+                projectColourSelect.change(function(admin, project) {
                     return function() {
-                        project.setBackgroundColourIndex(project.getBackgroundColourIndex() + 1);
+                        project.setColourIndex($(this).val());
                         project.save();
                         admin.render();
                         admin.dirty = true;
