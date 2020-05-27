@@ -41,6 +41,11 @@ class Admin {
                     <button class="close">X</button>
                 </div>
 
+                <div class="project-filter-container">
+                    <h2>Project filter:</h2>
+                    <div class="project-filter"></div>
+                </div>
+
                 <div class="time-ribbon"></div>
 
                 <div class="viewSelector">
@@ -99,6 +104,37 @@ class Admin {
         this.adminTimeRibbon = new TimeRibbon(this.markup.find(".time-ribbon"), this.timeTracker);
         this.adminTimeRibbon.setDrawTable(true);
         this.projectEditorEl = this.markup.find(".project-editor");
+    }
+
+    renderProjectFilter() {
+        const projectFilterEl = this.markup.find("div.project-filter");
+        projectFilterEl.empty();
+
+        const projects = this.timeTracker.getProjects();
+        if (projects) {
+            $.each(projects, function(admin) {
+                return function(projectIndex, project) {
+                    const projectCheckboxDiv = $(`<div style="background-color: ${project.getBackgroundColour()}"></div>`);
+                    const projectCheckbox = $(`
+                        <input type="checkbox" ${project.isSelected() ? "checked=\"checked\"" : ""} id="${project.getKey()}" name="projectFilter" value="${project.getKey()}">
+                        <label for="${project.getKey()}">${project.getName()}</label>
+                    `);
+
+                    projectCheckbox.change(function(admin, project) {
+                        return function() {
+                            const checkbox = $(this);
+                            project.setSelected(checkbox.is(":checked"));
+                            project.save();
+                            admin.render();
+                            admin.dirty = true;
+                        };
+                    }(admin, project));
+
+                    projectCheckboxDiv.append(projectCheckbox);
+                    projectFilterEl.append(projectCheckboxDiv);
+                };
+            }(this));
+        }
     }
 
     setLogFilter(filterStr) {
@@ -198,7 +234,7 @@ class Admin {
     }
 
     renderProjectEditorByProjects() {
-        const projects = this.timeTracker.getProjects();
+        const projects = this.timeTracker.getSelectedProjects();
         if (!projects || projects.length <= 0) {
             return;
         }
@@ -271,7 +307,7 @@ class Admin {
     }
 
     renderProjectEditorByDates() {
-        const projects = this.timeTracker.getProjects();
+        const projects = this.timeTracker.getSelectedProjects();
         if (!projects || projects.length <= 0) {
             return;
         }
@@ -337,7 +373,7 @@ class Admin {
     }
 
     renderProjectEditorByDatesChronological() {
-        const projects = this.timeTracker.getProjects();
+        const projects = this.timeTracker.getSelectedProjects();
         if (!projects || projects.length <= 0) {
             return;
         }
@@ -901,6 +937,7 @@ class Admin {
 
     render() {
         this.adminTimeRibbon.render(this.filter);
+        this.renderProjectFilter();
         this.renderProjectEditor();
     }
 
@@ -942,7 +979,7 @@ class Admin {
             ["project_key", "project_name", "log_key", "log_startdate", "log_enddate", "log_message"]
         );
 
-        $.each(this.timeTracker.getProjects(), function(projectIndex, project) {
+        $.each(this.timeTracker.getSelectedProjects(), function(projectIndex, project) {
             $.each(project.logs, function(logIndex, log) {
                 dataArray.push(
                     [project.getKey(), project.getName(), log.getKey(), Utils.formatDateForCSV(log.getStartDate()), Utils.formatDateForCSV(log.getEndDate()), log.getMessage()]

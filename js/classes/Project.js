@@ -1,5 +1,5 @@
 class Project extends PersistentObject {
-    constructor(timeTracker, name, colourIndex, order, key=null) {
+    constructor(timeTracker, name, colourIndex, order, selected, key=null) {
         if (key === null) {
             super(Project.keyPrefix, false);
         } else {
@@ -10,6 +10,8 @@ class Project extends PersistentObject {
         this.name = name;
         this.colourIndex = colourIndex;
         this.order = order;
+        // Set to false to ignore in the admin
+        this.selected = selected;
         this.logs = [];
 
         // Create the JQuery element
@@ -106,6 +108,7 @@ class Project extends PersistentObject {
             jsonProject.name,
             jsonProject.colourIndex !== undefined ? jsonProject.colourIndex : jsonProject.bgColourIndex,
             jsonProject.order,
+            jsonProject.selected === undefined ? true : jsonProject.selected,
             jsonProject.key
         );
     }
@@ -320,12 +323,20 @@ class Project extends PersistentObject {
         this.order = order;
     }
 
+    isSelected() {
+        return this.selected;
+    }
+    setSelected(selected) {
+        this.selected = selected;
+    }
+
     toJson() {
         return {
             "key": this.getKey(),
             "name": this.name,
             "colourIndex": this.colourIndex,
-            "order": this.order
+            "order": this.order,
+            "selected": this.selected
         }
     }
 

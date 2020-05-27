@@ -30,7 +30,7 @@ class TimeRibbon {
         }(this, filter), 60 * 1000);
     }
 
-    _render(filter = null) { // FILTER
+    _render(filter = null) {
         // dates = Map object
         //   Key: Formatted date (used to group logs per date, sort and display)
         //   Value: Array of log objects for that date
@@ -40,7 +40,6 @@ class TimeRibbon {
         // and store them in an array per date
         const projectMap = this.timeTracker.getProjectMap();
         $.each(projectMap, function(projectKey, project) {
-            // TODO project.getLogs(filter)
             $.each(project.getLogs(filter), function(logIndex, log) {
                 let date = Utils.formatDate(log.getStartDate())
 

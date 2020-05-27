@@ -52,7 +52,7 @@ class TimeTracker {
                     colourIndex = projects.length + 1;
                     projectOrder = lastProject.getOrder() + 1;
                 }
-                let newProject = new Project(timeTracker, "New project", colourIndex, projectOrder);
+                let newProject = new Project(timeTracker, "New project", colourIndex, projectOrder, true);
                 newProject.save();
                 timeTracker.addProject(newProject);
                 timeTracker.reloadProjectsMarkup();
@@ -166,8 +166,21 @@ class TimeTracker {
 
     getProjects() {
         // Return an array of projects, ordered my "order"
-        const projects = Object.values(this.projectMap);
+        return this._sortProjectArray(Object.values(this.projectMap));
+    }
 
+    getSelectedProjects() {
+        // Return an array of selected projects, ordered my "order"
+        const projects = [];
+        $.each(this.projectMap, function(projectKey, project) {
+            if (project.isSelected()) {
+                projects.push(project);
+            }
+        });
+        return this._sortProjectArray(projects);
+    }
+
+    _sortProjectArray(projects) {
         // Sort projects by order
         projects.sort(function (a, b) {
             return a.getOrder() - b.getOrder();

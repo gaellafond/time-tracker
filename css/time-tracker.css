@@ -20,6 +20,30 @@ select.projectColour {
     font-size: 1em;
 }
 
+.project-filter {
+    border: 1px solid #00000030;
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 1em;
+}
+
+.project-filter div {
+    width: 12em;
+    margin: 0.5em;
+
+    display: flex;
+}
+
+.project-filter input[type='checkbox'] {
+    flex-shrink: 0;
+    width: 2em;
+    height: 2em;
+}
+
+.project-filter label {
+    margin: 0.5em;
+}
+
 .editableString .empty {
     color: #999999;
 }
