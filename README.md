@@ -51,8 +51,8 @@ on the [Apache Server on Windows](https://httpd.apache.org/docs/current/platform
 In this case I will install from `ApacheHaus` as their download just installs Apache server and not
 other unwanted code as with `XAMPP`.
 2. **Install Apache**. In the `ApacheHaus` there is a `readme_first.html` that contains installation instructions. I will 
-cover them very briefly here. Unzip the download to `C:\\Apache24`. 
-3. **Start apache** by running `C:\\Apache24\\bin\\httpd.exe`. This displayed a 
+cover them very briefly here. Unzip the download to `C:\Apache24`. 
+3. **Start apache** by running `C:\Apache24\bin\httpd.exe`. This displayed a 
 _Windows protected your PC_ notification warning that the _Mircosoft Defender SmartScreen_ prevented
 the app from running. Trigger it to _Run Anyway_. This then triggered a _Windows Defender Firewall_ 
 message indicating that it had blocked some features of this app. However things seemed to still work.
@@ -60,7 +60,7 @@ message indicating that it had blocked some features of this app. However things
 5. **Setup VirtualHost**. Point web hosting to the Time Tracker app so that it will come up when you
 go to `localhost`.
 
-Add the following to the end of `C:\\Apache24\\conf\\httpd.conf`:
+Add the following to the end of `C:\Apache24\conf\httpd.conf`:
 ```
 # Setup hosting of the Time Tracker for development.
 <VirtualHost *:80>
@@ -74,7 +74,7 @@ Add the following to the end of `C:\\Apache24\\conf\\httpd.conf`:
 </VirtualHost>
 ```
 
-Note that the path needs to have slashes in the Unix direction `/` instead of `\\` and if your
+Note that the path needs to have slashes in the Unix direction `/` instead of `\` and if your
 path has spaces in it the path must have quotes `""` around it.
 
 If `httpd.exe` fails to start then there might be an error in the config file. To see this 
