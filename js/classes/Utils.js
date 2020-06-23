@@ -193,4 +193,25 @@ class Utils {
         const totalStorage = 10 * 1024 * 1024;
         return Math.max(0, totalStorage - Utils.getLocalStorageUsedBytes());
     }
+
+    // Trigger a file download
+    static download(content, filename) {
+        // NOTE: Use Blob object instead of encoded URL (encodeURI) to not be restricted by URL max length (about 20kB)
+        //     https://developer.mozilla.org/en-US/docs/Web/API/Blob
+        // Blob max size seems to be in order of GB, which should never be an issue with this application
+        // since localstorage is limited to 10MB.
+        const blob = new Blob([content], {type : 'application/json'});
+        const url = URL.createObjectURL(blob);
+
+        // Create a link to the CSV and put it in the page markup
+        let link = $(`<a download="${filename}"></a>`);
+        link.attr("href", url);
+        $("body").append(link);
+
+        // Simulate a click on the link to trigger the file download
+        link[0].click();
+
+        // Remove the link from the page
+        link.remove();
+    }
 }

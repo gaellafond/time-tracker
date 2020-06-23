@@ -32,10 +32,30 @@ class PersistentObject {
     static getAllJSON(keyPrefix) {
         let jsonObjs = [];
         for (let key in window.localStorage){
-            if (window.localStorage.hasOwnProperty(key) && key.startsWith(keyPrefix)) {
+            if (window.localStorage.hasOwnProperty(key)) {
+                let selected = true;
+                if (keyPrefix) {
+                    selected = key.startsWith(keyPrefix);
+                }
+                if (selected) {
+                    let jsonObj = PersistentObject.load(key);
+                    if (jsonObj !== null) {
+                        jsonObjs.push(jsonObj);
+                    }
+                }
+            }
+        }
+
+        return jsonObjs;
+    }
+
+    static getDBBackup() {
+        let jsonObjs = {};
+        for (let key in window.localStorage){
+            if (window.localStorage.hasOwnProperty(key)) {
                 let jsonObj = PersistentObject.load(key);
                 if (jsonObj !== null) {
-                    jsonObjs.push(jsonObj);
+                    jsonObjs[key] = jsonObj;
                 }
             }
         }

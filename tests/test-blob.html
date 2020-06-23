@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="../js/jquery_3-4-1/jquery-3.4.1.min.js"></script>
+
+    <script>
+        function getDBBackup() {
+            let jsonObjs = {};
+            for (let key in window.localStorage){
+                if (window.localStorage.hasOwnProperty(key)) {
+                    const jsonStr = window.localStorage.getItem(key)
+                    const jsonObj = JSON.parse(jsonStr);
+                    if (jsonObj !== null) {
+                        jsonObjs[key] = jsonObj;
+                    }
+                }
+            }
+
+            return jsonObjs;
+        }
+
+
+        function downloadLargeFile() {
+            const jsonDB = getDBBackup();
+            const textDB = JSON.stringify(jsonDB);
+
+            download(textDB, "backup.json");
+        }
+
+        function download(content, filename) {
+            const blob = new Blob([content], {type : 'application/json'});
+            const url = URL.createObjectURL(blob);
+
+            // Create a link to the CSV and put it in the page markup
+            let link = $(`<a download="${filename}"></a>`);
+            link.attr("href", url);
+            $("body").append(link);
+
+            // Simulate a click on the link to trigger the file download
+            link[0].click();
+
+            // Remove the link from the page
+            link.remove();
+        }
+    </script>
+</head>
+
+<body>
+    <button id="button" onclick="downloadLargeFile()">Download</button>
+</body>
+
+</html>

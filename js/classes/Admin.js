@@ -65,7 +65,11 @@ class Admin {
 
                 <div class="footer-buttons">
                     <button class="reset">RESET</button>
-                    <button class="exportCSV">Export CSV</button>
+                    <div>
+                        <button class="backup">Backup</button>
+                        <button class="restore">Restore</button>
+                        <button class="exportCSV">Export CSV</button>
+                    </div>
                 </div>
             </div>
         </div>`);
@@ -93,6 +97,18 @@ class Admin {
         this.markup.find("button.reset").click(function(admin) {
             return function() {
                 admin.confirmReset();
+            };
+        }(this));
+
+        this.markup.find("button.backup").click(function(admin) {
+            return function() {
+                admin.backup();
+            };
+        }(this));
+
+        this.markup.find("button.restore").click(function(admin) {
+            return function() {
+                admin.restore();
             };
         }(this));
 
@@ -972,6 +988,16 @@ class Admin {
         this.renderProjectEditor();
     }
 
+    backup() {
+        const jsonDB = PersistentObject.getDBBackup();
+        const dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
+        Utils.download(JSON.stringify(jsonDB, null, 4), "time-tracker_backup_" + dateStr + ".json");
+    }
+
+    restore() {
+        alert("Restore JSON DB backup. Not yet implemented.");
+    }
+
     exportCSV() {
         // CSV content, starting with URI header
         let csvContent = "data:text/csv;charset=utf-8,";
@@ -988,19 +1014,9 @@ class Admin {
             });
             csvContent += rowStr + "\r\n";
         });
-        // Encode the URI to put it in a HREF
-        const encodedUri = encodeURI(csvContent);
 
-        // Create a link to the CSV and put it in the page markup
-        let dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
-        let link = $(`<a href="${encodedUri}" download="time-tracker_export_${dateStr}.csv"></a>`);
-        $("body").append(link);
-
-        // Simulate a click on the link to trigger the file download
-        link[0].click();
-
-        // Remove the link from the page
-        link.remove();
+        const dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
+        Utils.download(csvContent, "time-tracker_export_" + dateStr + ".csv");
     }
 
     // Generate an array of data used to generate a CSV file

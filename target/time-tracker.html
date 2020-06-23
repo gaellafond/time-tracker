@@ -210,6 +210,27 @@ class Utils {
         const totalStorage = 10 * 1024 * 1024;
         return Math.max(0, totalStorage - Utils.getLocalStorageUsedBytes());
     }
+
+    // Trigger a file download
+    static download(content, filename) {
+        // NOTE: Use Blob object instead of encoded URL to not be restricted by URL max length (about 20kB)
+        //     https://developer.mozilla.org/en-US/docs/Web/API/Blob
+        // Blob max size seems to be in order of GB, which should never be an issue with this application
+        // since localstorage is limited to 10MB.
+        const blob = new Blob([content], {type : 'application/json'});
+        const url = URL.createObjectURL(blob);
+
+        // Create a link to the CSV and put it in the page markup
+        let link = $(`<a download="${filename}"></a>`);
+        link.attr("href", url);
+        $("body").append(link);
+
+        // Simulate a click on the link to trigger the file download
+        link[0].click();
+
+        // Remove the link from the page
+        link.remove();
+    }
 }
 </script>
 <script>
@@ -331,10 +352,30 @@ class PersistentObject {
     static getAllJSON(keyPrefix) {
         let jsonObjs = [];
         for (let key in window.localStorage){
-            if (window.localStorage.hasOwnProperty(key) && key.startsWith(keyPrefix)) {
+            if (window.localStorage.hasOwnProperty(key)) {
+                let selected = true;
+                if (keyPrefix) {
+                    selected = key.startsWith(keyPrefix);
+                }
+                if (selected) {
+                    let jsonObj = PersistentObject.load(key);
+                    if (jsonObj !== null) {
+                        jsonObjs.push(jsonObj);
+                    }
+                }
+            }
+        }
+
+        return jsonObjs;
+    }
+
+    static getDBBackup() {
+        let jsonObjs = {};
+        for (let key in window.localStorage){
+            if (window.localStorage.hasOwnProperty(key)) {
                 let jsonObj = PersistentObject.load(key);
                 if (jsonObj !== null) {
-                    jsonObjs.push(jsonObj);
+                    jsonObjs[key] = jsonObj;
                 }
             }
         }
@@ -1409,7 +1450,11 @@ class Admin {
 
                 <div class="footer-buttons">
                     <button class="reset">RESET</button>
-                    <button class="exportCSV">Export CSV</button>
+                    <div>
+                        <button class="backup">Backup</button>
+                        <button class="restore">Restore</button>
+                        <button class="exportCSV">Export CSV</button>
+                    </div>
                 </div>
             </div>
         </div>`);
@@ -1437,6 +1482,18 @@ class Admin {
         this.markup.find("button.reset").click(function(admin) {
             return function() {
                 admin.confirmReset();
+            };
+        }(this));
+
+        this.markup.find("button.backup").click(function(admin) {
+            return function() {
+                admin.backup();
+            };
+        }(this));
+
+        this.markup.find("button.restore").click(function(admin) {
+            return function() {
+                admin.restore();
             };
         }(this));
 
@@ -2316,6 +2373,16 @@ class Admin {
         this.renderProjectEditor();
     }
 
+    backup() {
+        const jsonDB = PersistentObject.getDBBackup();
+        const dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
+        Utils.download(JSON.stringify(jsonDB, null, 4), "time-tracker_backup_" + dateStr + ".json");
+    }
+
+    restore() {
+        alert("Restore JSON DB backup. Not yet implemented.");
+    }
+
     exportCSV() {
         // CSV content, starting with URI header
         let csvContent = "data:text/csv;charset=utf-8,";
@@ -2332,6 +2399,10 @@ class Admin {
             });
             csvContent += rowStr + "\r\n";
         });
+
+        const dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
+        Utils.download(csvContent, "time-tracker_export_" + dateStr + ".csv");
+/*
         // Encode the URI to put it in a HREF
         const encodedUri = encodeURI(csvContent);
 
@@ -2345,6 +2416,7 @@ class Admin {
 
         // Remove the link from the page
         link.remove();
+*/
     }
 
     // Generate an array of data used to generate a CSV file
