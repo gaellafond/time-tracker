@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="../js/jquery_3-4-1/jquery-3.4.1.min.js"></script>
+
+    <script>
+        // https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
+
+        function upload(callback) {
+            const uploadFile = $(`<input type="file" id="upload" accept="application/json">`);
+
+            uploadFile.on("change", function(uploadFile) {
+                return function() {
+                    const selectedFile = uploadFile[0].files[0];
+
+                    const reader = new FileReader();
+                    reader.onload = function() {
+                        return function(e) {
+                            callback(e.target.result);
+                        };
+                    }();
+                    reader.readAsText(selectedFile);
+                };
+            }(uploadFile));
+
+            uploadFile.trigger('click');
+        }
+    </script>
+</head>
+
+<body>
+    <button id="button" onclick="upload(function(content) { console.log(content); })">Upload</button>
+</body>
+
+</html>

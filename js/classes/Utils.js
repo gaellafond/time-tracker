@@ -214,11 +214,29 @@ class Utils {
 
         // Remove the link from the page
         link.remove();
+
+        URL.revokeObjectURL(url);
     }
 
     // Upload a file from the user's computer
     //     restore backup, etc
-    static upload() {
+    static upload(type, callback) {
+        const uploadFile = $(`<input type="file" id="upload" accept="${type}">`);
 
+        uploadFile.on("change", function(uploadFile) {
+            return function() {
+                const selectedFile = uploadFile[0].files[0];
+
+                const reader = new FileReader();
+                reader.onload = function() {
+                    return function(e) {
+                        callback(e.target.result);
+                    };
+                }();
+                reader.readAsText(selectedFile);
+            };
+        }(uploadFile));
+
+        uploadFile.trigger('click');
     }
 }

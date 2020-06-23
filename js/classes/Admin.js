@@ -957,8 +957,7 @@ class Admin {
     }
 
     _reset() {
-        window.localStorage.clear();
-        Utils.notifyLocalStorageChange();
+        PersistentObject.reset();
         location.reload();
     }
 
@@ -995,11 +994,21 @@ class Admin {
     }
 
     restore() {
-        alert("Restore JSON DB backup. Not yet implemented.");
-        const jsonStr = Utils.upload();
-
-        // TODO
-
+        const jsonStr = Utils.upload('application/json', function(jsonStr) {
+            try {
+                const jsonDB = JSON.parse(jsonStr);
+                const nbElements = Object.keys(jsonDB).length;
+                if (confirm("Are you sure you want to replace the entire content of this Time Tracker with those " + nbElements + " entries?")) {
+                    PersistentObject.restoreDBBackup(jsonDB);
+                    alert("Backup successfully restored");
+                    location.reload();
+                } else {
+                    alert("Backup restore aborted");
+                }
+            } catch(err) {
+                alert("Invalid JSON:\n" + err);
+            }
+        });
     }
 
     exportCSV() {

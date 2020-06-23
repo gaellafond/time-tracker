@@ -63,6 +63,26 @@ class PersistentObject {
         return jsonObjs;
     }
 
+    static reset() {
+        PersistentObject._reset();
+        Utils.notifyLocalStorageChange();
+    }
+
+    static _reset() {
+        window.localStorage.clear();
+    }
+
+    static restoreDBBackup(jsonDB) {
+        PersistentObject._reset();
+        for (let key in jsonDB) {
+            if (jsonDB.hasOwnProperty(key)) {
+                let jsonObj = jsonDB[key];
+                window.localStorage.setItem(key, JSON.stringify(jsonObj));
+            }
+        }
+        Utils.notifyLocalStorageChange();
+    }
+
     static load(key) {
         let jsonStr = window.localStorage.getItem(key);
         return jsonStr === null ? null : JSON.parse(jsonStr);

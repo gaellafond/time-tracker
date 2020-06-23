@@ -231,12 +231,30 @@ class Utils {
 
         // Remove the link from the page
         link.remove();
+
+        URL.revokeObjectURL(url);
     }
 
     // Upload a file from the user's computer
     //     restore backup, etc
-    static upload() {
+    static upload(type, callback) {
+        const uploadFile = $(`<input type="file" id="upload" accept="${type}">`);
 
+        uploadFile.on("change", function(uploadFile) {
+            return function() {
+                const selectedFile = uploadFile[0].files[0];
+
+                const reader = new FileReader();
+                reader.onload = function() {
+                    return function(e) {
+                        callback(e.target.result);
+                    };
+                }();
+                reader.readAsText(selectedFile);
+            };
+        }(uploadFile));
+
+        uploadFile.trigger('click');
     }
 }
 </script>
@@ -388,6 +406,26 @@ class PersistentObject {
         }
 
         return jsonObjs;
+    }
+
+    static reset() {
+        PersistentObject._reset();
+        Utils.notifyLocalStorageChange();
+    }
+
+    static _reset() {
+        window.localStorage.clear();
+    }
+
+    static restoreDBBackup(jsonDB) {
+        PersistentObject._reset();
+        for (let key in jsonDB) {
+            if (jsonDB.hasOwnProperty(key)) {
+                let jsonObj = jsonDB[key];
+                window.localStorage.setItem(key, JSON.stringify(jsonObj));
+            }
+        }
+        Utils.notifyLocalStorageChange();
     }
 
     static load(key) {
@@ -2349,8 +2387,7 @@ class Admin {
     }
 
     _reset() {
-        window.localStorage.clear();
-        Utils.notifyLocalStorageChange();
+        PersistentObject.reset();
         location.reload();
     }
 
@@ -2387,11 +2424,21 @@ class Admin {
     }
 
     restore() {
-        alert("Restore JSON DB backup. Not yet implemented.");
-        const jsonStr = Utils.upload();
-
-        // TODO
-
+        const jsonStr = Utils.upload('application/json', function(jsonStr) {
+            try {
+                const jsonDB = JSON.parse(jsonStr);
+                const nbElements = Object.keys(jsonDB).length;
+                if (confirm("Are you sure you want to replace the entire content of this Time Tracker with those " + nbElements + " entries?")) {
+                    PersistentObject.restoreDBBackup(jsonDB);
+                    alert("Backup successfully restored");
+                    location.reload();
+                } else {
+                    alert("Backup restore aborted");
+                }
+            } catch(err) {
+                alert("Invalid JSON:\n" + err);
+            }
+        });
     }
 
     exportCSV() {

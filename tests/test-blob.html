@@ -22,7 +22,7 @@
 
         function downloadLargeFile() {
             const jsonDB = getDBBackup();
-            const textDB = JSON.stringify(jsonDB);
+            const textDB = JSON.stringify(jsonDB, null, 4);
 
             download(textDB, "backup.json");
         }
@@ -41,6 +41,8 @@
 
             // Remove the link from the page
             link.remove();
+
+            URL.revokeObjectURL(url);
         }
     </script>
 </head>
