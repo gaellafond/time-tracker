@@ -1377,6 +1377,11 @@ class Admin {
                                 <option value="year-1">Last year</option>
                                 <option value="year-2">2 years ago</option>
                             </optgroup>
+                            <optgroup label="Financial Year">
+                                <option value="finyear-0">This financial year</option>
+                                <option value="finyear-1">Last financial year</option>
+                                <option value="finyear-2">2 financial years ago</option>
+                            </optgroup>
                             <optgroup label="No filter">
                                 <option value="">Show all</option>
                             </optgroup>
@@ -1485,7 +1490,7 @@ class Admin {
         this.filter = null;
         if (filterStr) {
             const filterStrParts = filterStr.split("-");
-             // filterType = day, week, month, year
+             // filterType = day, week, month, year, finyear
             const filterType = filterStrParts[0];
             const filterNumberStr = filterStrParts[1];
 
@@ -1547,6 +1552,32 @@ class Admin {
                 yearStart.setMonth(0);
 
                 const year = yearStart.getFullYear() - filterNumber;
+                yearStart.setFullYear(year);
+                const startDate = Math.floor(yearStart.getTime() / 1000);
+
+                yearStart.setFullYear(year+1);
+                const endDate = Math.floor(yearStart.getTime() / 1000);
+
+                this.filter = new LogFilter(startDate, endDate);
+
+            } else if (filterType === "finyear") {
+                // 1 July to 30 June
+                const yearStart = new Date();
+                // Determine if we have started the new financial year
+                // NOTE: Month is 0-indexed
+                const newFinYear = yearStart.getMonth() >= 6;
+
+                yearStart.setMilliseconds(0);
+                yearStart.setSeconds(0);
+                yearStart.setMinutes(0);
+                yearStart.setHours(0);
+                yearStart.setDate(1);
+                yearStart.setMonth(6); // July, 0-indexed
+
+                let year = yearStart.getFullYear() - filterNumber;
+                if (!newFinYear) {
+                    year--;
+                }
                 yearStart.setFullYear(year);
                 const startDate = Math.floor(yearStart.getTime() / 1000);
 
