@@ -211,13 +211,14 @@ class Utils {
         return Math.max(0, totalStorage - Utils.getLocalStorageUsedBytes());
     }
 
-    // Trigger a file download
-    static download(content, filename) {
-        // NOTE: Use Blob object instead of encoded URL to not be restricted by URL max length (about 20kB)
+    // Create a file on the user's computer
+    //     create backup, save CSV, etc
+    static download(content, filename, type) {
+        // NOTE: Use Blob object instead of encoded URL (encodeURI) to not be restricted by URL max length (about 20kB)
         //     https://developer.mozilla.org/en-US/docs/Web/API/Blob
         // Blob max size seems to be in order of GB, which should never be an issue with this application
         // since localstorage is limited to 10MB.
-        const blob = new Blob([content], {type : 'application/json'});
+        const blob = new Blob([content], {type : type});
         const url = URL.createObjectURL(blob);
 
         // Create a link to the CSV and put it in the page markup
@@ -230,6 +231,12 @@ class Utils {
 
         // Remove the link from the page
         link.remove();
+    }
+
+    // Upload a file from the user's computer
+    //     restore backup, etc
+    static upload() {
+
     }
 }
 </script>
@@ -2376,11 +2383,15 @@ class Admin {
     backup() {
         const jsonDB = PersistentObject.getDBBackup();
         const dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
-        Utils.download(JSON.stringify(jsonDB, null, 4), "time-tracker_backup_" + dateStr + ".json");
+        Utils.download(JSON.stringify(jsonDB, null, 4), "time-tracker_backup_" + dateStr + ".json", 'application/json');
     }
 
     restore() {
         alert("Restore JSON DB backup. Not yet implemented.");
+        const jsonStr = Utils.upload();
+
+        // TODO
+
     }
 
     exportCSV() {
@@ -2401,22 +2412,7 @@ class Admin {
         });
 
         const dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
-        Utils.download(csvContent, "time-tracker_export_" + dateStr + ".csv");
-/*
-        // Encode the URI to put it in a HREF
-        const encodedUri = encodeURI(csvContent);
-
-        // Create a link to the CSV and put it in the page markup
-        let dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
-        let link = $(`<a href="${encodedUri}" download="time-tracker_export_${dateStr}.csv"></a>`);
-        $("body").append(link);
-
-        // Simulate a click on the link to trigger the file download
-        link[0].click();
-
-        // Remove the link from the page
-        link.remove();
-*/
+        Utils.download(csvContent, "time-tracker_export_" + dateStr + ".csv", 'text/csv');
     }
 
     // Generate an array of data used to generate a CSV file

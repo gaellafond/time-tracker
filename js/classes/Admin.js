@@ -991,11 +991,15 @@ class Admin {
     backup() {
         const jsonDB = PersistentObject.getDBBackup();
         const dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
-        Utils.download(JSON.stringify(jsonDB, null, 4), "time-tracker_backup_" + dateStr + ".json");
+        Utils.download(JSON.stringify(jsonDB, null, 4), "time-tracker_backup_" + dateStr + ".json", 'application/json');
     }
 
     restore() {
         alert("Restore JSON DB backup. Not yet implemented.");
+        const jsonStr = Utils.upload();
+
+        // TODO
+
     }
 
     exportCSV() {
@@ -1016,7 +1020,7 @@ class Admin {
         });
 
         const dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
-        Utils.download(csvContent, "time-tracker_export_" + dateStr + ".csv");
+        Utils.download(csvContent, "time-tracker_export_" + dateStr + ".csv", 'text/csv');
     }
 
     // Generate an array of data used to generate a CSV file

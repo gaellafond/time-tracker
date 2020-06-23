@@ -194,13 +194,14 @@ class Utils {
         return Math.max(0, totalStorage - Utils.getLocalStorageUsedBytes());
     }
 
-    // Trigger a file download
-    static download(content, filename) {
+    // Create a file on the user's computer
+    //     create backup, save CSV, etc
+    static download(content, filename, type) {
         // NOTE: Use Blob object instead of encoded URL (encodeURI) to not be restricted by URL max length (about 20kB)
         //     https://developer.mozilla.org/en-US/docs/Web/API/Blob
         // Blob max size seems to be in order of GB, which should never be an issue with this application
         // since localstorage is limited to 10MB.
-        const blob = new Blob([content], {type : 'application/json'});
+        const blob = new Blob([content], {type : type});
         const url = URL.createObjectURL(blob);
 
         // Create a link to the CSV and put it in the page markup
@@ -213,5 +214,11 @@ class Utils {
 
         // Remove the link from the page
         link.remove();
+    }
+
+    // Upload a file from the user's computer
+    //     restore backup, etc
+    static upload() {
+
     }
 }
