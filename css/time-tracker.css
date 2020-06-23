@@ -194,6 +194,10 @@ div.spaceLeft span::after {
     width: 100%;
 }
 
+.admin .filterDate input {
+    width: 6em;
+}
+
 .admin .project-editor table {
     width: 100%;
     border-collapse: collapse;

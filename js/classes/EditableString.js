@@ -1,5 +1,5 @@
 class EditableString {
-    constructor(spanEl, onChangeCallback) {
+    constructor(spanEl, onChangeCallback, afterEditCallback) {
         this.spanEl = spanEl;
         this.spanEl.addClass("editableString");
 
@@ -13,6 +13,7 @@ class EditableString {
         }
 
         this.onChangeCallback = onChangeCallback;
+        this.afterEditCallback = afterEditCallback;
         this.autoSelect = false;
         this.cssClass = "";
 
@@ -62,11 +63,17 @@ class EditableString {
 
             if (newValue.length) {
                 // Call the callback, to save the value to the Database
-                const success = this.onChangeCallback(newValue);
+                let success = true;
+                if (this.onChangeCallback) {
+                    success = this.onChangeCallback(newValue);
+                }
 
                 // Set the new value in the html element, unless the callback explicitly returns false
                 if (success !== false) {
                     this.spanEl.text(newValue);
+                    if (this.afterEditCallback) {
+                        this.afterEditCallback(newValue);
+                    }
                 }
             }
 

@@ -261,7 +261,7 @@ class Utils {
 <script>
 // FILE: js/classes/EditableString.js
 class EditableString {
-    constructor(spanEl, onChangeCallback) {
+    constructor(spanEl, onChangeCallback, afterEditCallback) {
         this.spanEl = spanEl;
         this.spanEl.addClass("editableString");
 
@@ -275,6 +275,7 @@ class EditableString {
         }
 
         this.onChangeCallback = onChangeCallback;
+        this.afterEditCallback = afterEditCallback;
         this.autoSelect = false;
         this.cssClass = "";
 
@@ -324,11 +325,17 @@ class EditableString {
 
             if (newValue.length) {
                 // Call the callback, to save the value to the Database
-                const success = this.onChangeCallback(newValue);
+                let success = true;
+                if (this.onChangeCallback) {
+                    success = this.onChangeCallback(newValue);
+                }
 
                 // Set the new value in the html element, unless the callback explicitly returns false
                 if (success !== false) {
                     this.spanEl.text(newValue);
+                    if (this.afterEditCallback) {
+                        this.afterEditCallback(newValue);
+                    }
                 }
             }
 
@@ -1435,13 +1442,12 @@ class Admin {
 
         this.timeTracker = timeTracker;
         this.overlayMarkup = $(`<div class="overlay"></div>`);
-        this.setLogFilter("week-0");
         this.setView("dateChrono");
         this.markup = $(
         `<div class="admin-wrapper">
             <div class="admin">
                 <div class="header-buttons">
-                    <div>
+                    <div class="filterDate">
                         <select class="filter">
                             <optgroup label="Day">
                                 <option value="day-0" selected="selected">Today</option>
@@ -1468,10 +1474,14 @@ class Admin {
                                 <option value="finyear-1">Last financial year</option>
                                 <option value="finyear-2">2 financial years ago</option>
                             </optgroup>
-                            <optgroup label="No filter">
+                            <optgroup label="Other">
+                                <option value="custom">Custom dates</option>
                                 <option value="">Show all</option>
                             </optgroup>
                         </select>
+                        <span class="filterDateFrom">YYYY/MM/DD</span>
+                        -
+                        <span class="filterDateTo">YYYY/MM/DD</span>
                     </div>
                     <button class="close">X</button>
                 </div>
@@ -1504,12 +1514,52 @@ class Admin {
             </div>
         </div>`);
 
-        this.markup.find("select.filter").change(function(admin) {
+        this.filterSelectEl = this.markup.find("select.filter");
+        this.filterSelectEl.change(function(admin) {
             return function() {
                 admin.setLogFilter($(this).val());
                 admin.render();
             };
         }(this));
+
+        const filterDateOnChangeCallback = function(admin, newValue) {
+            if (newValue !== "" && Utils.parseDate(newValue) === null) {
+                return false;
+            }
+            admin.filterSelectEl.val("custom");
+        };
+        const filterDateAfterEditCallback = function(admin, newValue) {
+            admin.updateFilterDates();
+            admin.render();
+        };
+
+        this.filterDateFromEl = this.markup.find("span.filterDateFrom");
+        new EditableString(this.filterDateFromEl,
+            function(admin) {
+                return function(newValue) {
+                    return filterDateOnChangeCallback(admin, newValue);
+                };
+            }(this),
+            function(admin) {
+                return function(newValue) {
+                    filterDateAfterEditCallback(admin, newValue);
+                };
+            }(this),
+        );
+
+        this.filterDateToEl = this.markup.find("span.filterDateTo");
+        new EditableString(this.filterDateToEl,
+            function(admin) {
+                return function(newValue) {
+                    filterDateOnChangeCallback(admin, newValue);
+                };
+            }(this),
+            function(admin) {
+                return function(newValue) {
+                    filterDateAfterEditCallback(admin, newValue);
+                };
+            }(this),
+        );
 
         this.markup.find("select.view").change(function(admin) {
             return function() {
@@ -1547,6 +1597,8 @@ class Admin {
                 admin.exportCSV();
             };
         }(this));
+
+        this.setLogFilter("week-0");
 
         const body = $("body");
         body.prepend(this.markup);
@@ -1589,11 +1641,14 @@ class Admin {
     }
 
     setLogFilter(filterStr) {
-        this.filter = null;
+        let fromDate = null;
+        let toDate = null;
+        let filterType = null;
+
         if (filterStr) {
             const filterStrParts = filterStr.split("-");
              // filterType = day, week, month, year, finyear
-            const filterType = filterStrParts[0];
+            filterType = filterStrParts[0];
             const filterNumberStr = filterStrParts[1];
 
             let filterNumber = 0;
@@ -1604,94 +1659,109 @@ class Admin {
                 return;
             }
 
-            if (filterType === "day") {
-                const dayStart = new Date();
-                dayStart.setMilliseconds(0);
-                dayStart.setSeconds(0);
-                dayStart.setMinutes(0);
-                dayStart.setHours(0);
+            switch(filterType) {
+                case "day":
+                    const dayStart = new Date();
+                    dayStart.setMilliseconds(0);
+                    dayStart.setSeconds(0);
+                    dayStart.setMinutes(0);
+                    dayStart.setHours(0);
 
-                const day = dayStart.getDate() - filterNumber;
-                dayStart.setDate(day);
-                const startDate = Math.floor(dayStart.getTime() / 1000);
+                    const day = dayStart.getDate() - filterNumber;
+                    dayStart.setDate(day);
+                    fromDate = Math.floor(dayStart.getTime() / 1000);
 
-                dayStart.setDate(day+1);
-                const endDate = Math.floor(dayStart.getTime() / 1000);
+                    dayStart.setDate(day+1);
+                    toDate = Math.floor(dayStart.getTime() / 1000);
+                    break;
 
-                this.filter = new LogFilter(startDate, endDate);
+                case "week":
+                    const oneWeek = 7 * 24 * 60 * 60;
+                    fromDate = Utils.getCurrentWeekStart() - (filterNumber * oneWeek);
+                    toDate = fromDate + oneWeek;
+                    break;
 
-            } else if (filterType === "week") {
-                const oneWeek = 7 * 24 * 60 * 60;
-                const startDate = Utils.getCurrentWeekStart() - (filterNumber * oneWeek);
-                const endDate = startDate + oneWeek;
+                case "month":
+                    const monthStart = new Date();
+                    monthStart.setMilliseconds(0);
+                    monthStart.setSeconds(0);
+                    monthStart.setMinutes(0);
+                    monthStart.setHours(0);
+                    monthStart.setDate(1);
 
-                this.filter = new LogFilter(startDate, endDate);
+                    const month = monthStart.getMonth() - filterNumber;
+                    monthStart.setMonth(month);
+                    fromDate = Math.floor(monthStart.getTime() / 1000);
 
-            } else if (filterType === "month") {
-                const monthStart = new Date();
-                monthStart.setMilliseconds(0);
-                monthStart.setSeconds(0);
-                monthStart.setMinutes(0);
-                monthStart.setHours(0);
-                monthStart.setDate(1);
+                    monthStart.setMonth(month+1);
+                    toDate = Math.floor(monthStart.getTime() / 1000);
+                    break;
 
-                const month = monthStart.getMonth() - filterNumber;
-                monthStart.setMonth(month);
-                const startDate = Math.floor(monthStart.getTime() / 1000);
+                case "year":
+                    const yearStart = new Date();
+                    yearStart.setMilliseconds(0);
+                    yearStart.setSeconds(0);
+                    yearStart.setMinutes(0);
+                    yearStart.setHours(0);
+                    yearStart.setDate(1);
+                    yearStart.setMonth(0);
 
-                monthStart.setMonth(month+1);
-                const endDate = Math.floor(monthStart.getTime() / 1000);
+                    const year = yearStart.getFullYear() - filterNumber;
+                    yearStart.setFullYear(year);
+                    fromDate = Math.floor(yearStart.getTime() / 1000);
 
-                this.filter = new LogFilter(startDate, endDate);
+                    yearStart.setFullYear(year+1);
+                    toDate = Math.floor(yearStart.getTime() / 1000);
+                    break;
 
-            } else if (filterType === "year") {
-                const yearStart = new Date();
-                yearStart.setMilliseconds(0);
-                yearStart.setSeconds(0);
-                yearStart.setMinutes(0);
-                yearStart.setHours(0);
-                yearStart.setDate(1);
-                yearStart.setMonth(0);
+                case "finyear":
+                    // 1 July to 30 June
+                    const finYearStart = new Date();
+                    // Determine if we have started the new financial year
+                    // NOTE: Month is 0-indexed
+                    const newFinYear = finYearStart.getMonth() >= 6;
 
-                const year = yearStart.getFullYear() - filterNumber;
-                yearStart.setFullYear(year);
-                const startDate = Math.floor(yearStart.getTime() / 1000);
+                    finYearStart.setMilliseconds(0);
+                    finYearStart.setSeconds(0);
+                    finYearStart.setMinutes(0);
+                    finYearStart.setHours(0);
+                    finYearStart.setDate(1);
+                    finYearStart.setMonth(6); // July, 0-indexed
 
-                yearStart.setFullYear(year+1);
-                const endDate = Math.floor(yearStart.getTime() / 1000);
+                    let finYear = finYearStart.getFullYear() - filterNumber;
+                    if (!newFinYear) {
+                        finYear--;
+                    }
+                    finYearStart.setFullYear(finYear);
+                    fromDate = Math.floor(finYearStart.getTime() / 1000);
 
-                this.filter = new LogFilter(startDate, endDate);
+                    finYearStart.setFullYear(finYear+1);
+                    toDate = Math.floor(finYearStart.getTime() / 1000);
+                    break;
 
-            } else if (filterType === "finyear") {
-                // 1 July to 30 June
-                const yearStart = new Date();
-                // Determine if we have started the new financial year
-                // NOTE: Month is 0-indexed
-                const newFinYear = yearStart.getMonth() >= 6;
+                case "custom":
+                    // Nothing to do
+                    break;
 
-                yearStart.setMilliseconds(0);
-                yearStart.setSeconds(0);
-                yearStart.setMinutes(0);
-                yearStart.setHours(0);
-                yearStart.setDate(1);
-                yearStart.setMonth(6); // July, 0-indexed
-
-                let year = yearStart.getFullYear() - filterNumber;
-                if (!newFinYear) {
-                    year--;
-                }
-                yearStart.setFullYear(year);
-                const startDate = Math.floor(yearStart.getTime() / 1000);
-
-                yearStart.setFullYear(year+1);
-                const endDate = Math.floor(yearStart.getTime() / 1000);
-
-                this.filter = new LogFilter(startDate, endDate);
-
-            } else {
-                console.error("Unsupported filter type: " + filterType);
+                default:
+                    console.error("Unsupported filter type: " + filterType);
+                    break;
             }
         }
+
+        if (filterType !== "custom") {
+            this.filterDateFromEl.text(Utils.formatDate(fromDate));
+            this.filterDateToEl.text(Utils.formatDate(toDate))
+        }
+
+        this.updateFilterDates();
+    }
+
+    updateFilterDates() {
+        const fromDate = Utils.parseDate(this.filterDateFromEl.text());
+        const toDate = Utils.parseDate(this.filterDateToEl.text());
+
+        this.filter = new LogFilter(fromDate, toDate);
     }
 
     setView(view) {
@@ -2677,6 +2747,10 @@ div.spaceLeft span::after {
     overflow: auto;
     max-height: 100%;
     width: 100%;
+}
+
+.admin .filterDate input {
+    width: 6em;
 }
 
 .admin .project-editor table {
