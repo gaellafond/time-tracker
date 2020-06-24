@@ -26,26 +26,29 @@ Copy the file [`target/time-tracker.html`](https://github.com/gaellafond/time-tr
 on your computer and load it on a web browser.  
 Use `Right Click` and `Save link as...` to download the file.
 
-The Time Tracker uses local storage in your browser to save your times and so **your data
+The Time Tracker uses the local storage in your browser to save your times so **your data
 only exists on your computer** in the one browser that you ran the app. If you open the
-TimeTracker using a different browser, the recorded time will not come across.
+Time Tracker using a different browser, the recorded time will not come across.
 
-You can use the `Backup` and `Restore` function from the admin move your recorded time
+You can use the `Backup` and `Restore` function from the admin to move your recorded time
 to a different browser or computer. It's recommended to frequently backup your time
-in case the local storage is reset with a browser update or accidental browser data clear.
+in case the local storage is reset with an update or you accidentally clear your browser data.
 
 We use local storage because it help to keep your **time data private**. No data is sent to any servers.
 This also mean if you lose your time data, there is no way our developer team can recover it for you.
 Backup your time data regularly to avoid losing data.
-Note that this application do not require login since your data can only be access from your computer.
 
-**NOTE:** If you want to avoid problems, do NOT use **Internet Explorer** or **Edge**.
-This advice is also valid for any other website on the Internet.
+**NOTE:** that this application do not require login since your data can only be access from your computer.
+
+**IMPORTANT:** If you want to avoid problems, do NOT use **Internet Explorer** or **Edge**.
+This advice also applies to nearly all websites found on the Internet.
 
 ## Update
 
-To update the app, first backup your time data. Then, delete the download `time-tracker.html` file and redownload it
+To update the app, first backup your time data.
+Then, delete the download `time-tracker.html` file and redownload it
 (see link in the installation section above).
+
 Deleting the `time-tracker.html` won't erase your data. The data is saved in the browser,
 not in the `HTML` file.
 
@@ -53,8 +56,10 @@ not in the `HTML` file.
 
 If you are nervous about losing your time data while doing a risky operation, such as deleting a project,
 backup your data before attempting it. If you are unsatisfied with the result, you can restore your backup.
-Note that you can also restore your backup in an incognito browser window and safely try the operation in
-incognito before trying it on your real Time Tracker.
+
+Note that you can also restore your backup in an **incognito browser window** and safely try the operation in
+incognito before trying it on your real Time Tracker. All modifications to the data and all time logged in an
+incognito browser window will be lost as soon as you close the browser window.
 
 ## Development
 
@@ -80,10 +85,26 @@ Example of an Apache config file for this project:
 * Apache server
 * Git
 * Web browser
-* Unix/Linux for building the single final HTML file.
+* Unix/Linux for building the single final HTML file (Optional).
 
-### Development setup on Windows
-Note: On a vanilla Windows you will be able to modify and test the code, just not build the final HTML file.
+### Development setup on Linux (Debian, Ubuntu, etc)
+1. **Install Apache** by running the following command:  
+`sudo apt-get install apache2`
+2. **Test the installation** by opening `http://localhost` in a browser. You should see a test page.
+3. **Setup TimeTracker website**. Create the file `/etc/apache2/sites-available/time-tracker.conf`.
+Copy the `VirtualHost` config above in the new file and change the `DocumentRoot` value
+to point at your `time-tracker` directory.
+4. **Enable TimeTracker website** by running the following command:  
+`sudo a2ensite time-tracker.conf`
+5. **Verify** the config by running the following command:  
+`apachectl configtest`
+6. **Reload Apache** by running the following command:  
+`sudo service apache2 reload`
+7. **Visit** the website by going to the URL `http://timetracker.localhost`
+
+### Development setup on Ms Windows
+**NOTE:** On a vanilla Ms Windows operating system, you will be able to modify and test the code,
+just not build the final HTML file.
 
 1. **Download Apache server**. Apache does not provide binary releases of the software for Windows and so
 apache needs to be installed from a bundle such as [XAMPP](https://www.apachefriends.org/index.html)
@@ -131,8 +152,7 @@ When developing using Apache the local store area for localhost (`http://localho
 from when you are running the app just off the file system (`file://`) and so the Apache 
 localhost version of the app should not interact with the one running off the file system.
 
-At this stage the Time Tracker does not have an import feature to restore exported
-time records and so if you need to test off the file system served version of the app
+If you need to test off the file system served version of the app
 without damaging your normal Time Tracking database you can use an incognito browser 
 window or use a different web browser (i.e. Firefox if you normally use Chrome for your 
 time tracking).
@@ -141,7 +161,7 @@ time tracking).
 ## Compilation
 
 The project is built using the `make` command. To run this `make` command you will need a Linux/Unix
-environment. On Windows you can still do development using an Apache webserver, just not the 
+environment. On Ms Windows you can still do development using an Apache webserver, just not the 
 build packaging process.
 
 The build creates a compiled HTML file that can be used without a web server like Apache.
