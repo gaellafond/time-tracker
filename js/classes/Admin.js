@@ -56,13 +56,20 @@ class Admin {
 
                 <div class="time-ribbon"></div>
 
-                <div class="viewSelector">
-                    <h2>View</h2>
-                    <select class="view">
-                        <option value="dateChrono" selected="selected">By dates</option>
-                        <option value="date">By dates, grouped by projects</option>
-                        <option value="project">By projects</option>
-                    </select>
+                <div class="project-editor-header">
+                    <div class="viewSelector">
+                        <h2>View</h2>
+                        <select class="view">
+                            <option value="dateChrono" selected="selected">By dates</option>
+                            <option value="date">By dates, grouped by projects</option>
+                            <option value="project">By projects</option>
+                        </select>
+                    </div>
+
+                    <div class="timeNormalisation">
+                        <h3>Time normalisation percentage</h3>
+                        <span class="timeNormalisationPercentage">${Math.round(this.timeTracker.getTimeNormalisationPercentage() * 100.0)}</span>%
+                    </div>
                 </div>
                 <div class="project-editor"></div>
 
@@ -130,6 +137,26 @@ class Admin {
             return function() {
                 admin.setView($(this).val());
                 admin.render();
+            };
+        }(this));
+
+        new EditableString(this.markup.find("span.timeNormalisationPercentage"), function(admin) {
+            return function(oldValue, newValue) {
+                try {
+                    const intValue = parseInt(newValue);
+                    if (intValue < 0 || intValue > 500) {
+                        return false;
+                    }
+                    if ("" + intValue !== newValue) {
+                        return false;
+                    }
+                    admin.timeTracker.setTimeNormalisationPercentage(intValue / 100.0);
+                    admin.timeTracker.save();
+                    admin.dirty = true;
+                    admin.render();
+                } catch(err) {
+                    return false;
+                }
             };
         }(this));
 
@@ -563,6 +590,8 @@ class Admin {
 
 
     renderProjectLogsEditorByProjects(project) {
+        const timeNormalisation = this.timeTracker.getTimeNormalisationPercentage();
+
         let logs = project.getLogs(this.filter);
         if (logs !== null && logs.length > 0) {
             let logsTable = $(`<table class="logs-table">
@@ -572,6 +601,7 @@ class Admin {
                     <th>Start date</th>
                     <th>End date</th>
                     <th>Time</th>
+                    <th>Normalised time</th>
                     <th>Message</th>
                     <th class="delete-column">X</th>
                 </tr>
@@ -620,6 +650,10 @@ class Admin {
                     let elapseTimeCellDataEl = $(`<span>${Utils.formatTime(elapseTime)}</span>`);
                     elapseTimeCellEl.append(elapseTimeCellDataEl);
 
+                    let elapseTimeNormalisedCellEl = $(`<td></td>`);
+                    let elapseTimeNormalisedCellDataEl = $(`<span>${Utils.formatTime(elapseTime * timeNormalisation)}</span>`);
+                    elapseTimeNormalisedCellEl.append(elapseTimeNormalisedCellDataEl);
+
                     let messageCellEl = $(`<td></td>`);
                     let messageCellDataEl = $(`<span>${Utils.escapeHTML(log.getMessage())}</span>`);
                     messageCellEl.append(messageCellDataEl);
@@ -632,6 +666,7 @@ class Admin {
                     logRow.append(startDateCellEl);
                     logRow.append(endDateCellEl);
                     logRow.append(elapseTimeCellEl);
+                    logRow.append(elapseTimeNormalisedCellEl);
                     logRow.append(messageCellEl);
                     logRow.append(deleteCellEl);
 
@@ -718,6 +753,8 @@ class Admin {
     _getTotalRow(total, label) {
         label = label ? label : "TOTAL";
 
+        const timeNormalisation = this.timeTracker.getTimeNormalisationPercentage();
+
         let totalRow = $(`<tr class="total">
             <td class="key"></td>
             <th colspan="3">${label}</th>
@@ -727,7 +764,12 @@ class Admin {
         let totalCellDataEl = $(`<span>${Utils.formatTime(total)}</span>`);
         totalCellEl.append(totalCellDataEl);
 
+        let totalNormalisedCellEl = $(`<td></td>`);
+        let totalNormalisedCellDataEl = $(`<span>${Utils.formatTime(total * timeNormalisation)}</span>`);
+        totalNormalisedCellEl.append(totalNormalisedCellDataEl);
+
         totalRow.append(totalCellEl);
+        totalRow.append(totalNormalisedCellEl);
 
         // Filler
         totalRow.append(`<td colspan="2"></td>`);
@@ -747,6 +789,8 @@ class Admin {
             return "";
         }
 
+        const timeNormalisation = this.timeTracker.getTimeNormalisationPercentage();
+
         const logsTable = $(`<table class="logs-table">
             <tr class="header">
                 <th class="key">Key</th>
@@ -754,6 +798,7 @@ class Admin {
                 <th>Start date</th>
                 <th>End date</th>
                 <th>Time</th>
+                <th>Normalised time</th>
                 <th>Message</th>
                 <th class="delete-column">X</th>
             </tr>
@@ -793,6 +838,10 @@ class Admin {
                         let elapseTimeCellDataEl = $(`<span>${Utils.formatTime(elapseTime)}</span>`);
                         elapseTimeCellEl.append(elapseTimeCellDataEl);
 
+                        let elapseTimeNormalisedCellEl = $(`<td></td>`);
+                        let elapseTimeNormalisedCellDataEl = $(`<span>${Utils.formatTime(elapseTime * timeNormalisation)}</span>`);
+                        elapseTimeNormalisedCellEl.append(elapseTimeNormalisedCellDataEl);
+
                         let messageCellEl = $(`<td></td>`);
                         let messageCellDataEl = $(`<span>${Utils.escapeHTML(log.getMessage())}</span>`);
                         messageCellEl.append(messageCellDataEl);
@@ -804,6 +853,7 @@ class Admin {
                         logRow.append(startDateCellEl);
                         logRow.append(endDateCellEl);
                         logRow.append(elapseTimeCellEl);
+                        logRow.append(elapseTimeNormalisedCellEl);
                         logRow.append(messageCellEl);
                         logRow.append(deleteCellEl);
 
@@ -868,6 +918,7 @@ class Admin {
                         <th style="background-color: ${projectColor}">TOTAL</th>
                         <th colspan="2"></th>
                         <td>${Utils.formatTime(total)}</td>
+                        <td>${Utils.formatTime(total * timeNormalisation)}</td>
                         <td colspan="2"></td>
                     </tr>`);
 
@@ -888,6 +939,7 @@ class Admin {
             <th>GRAND TOTAL</th>
             <th colspan="2"></th>
             <td>${Utils.formatTime(dayTotal)}</td>
+            <td>${Utils.formatTime(dayTotal * timeNormalisation)}</td>
             <td colspan="2"></td>
         </tr>`);
         logsTable.append(dayTotalRow);
@@ -904,6 +956,8 @@ class Admin {
             return logA.getStartDate() - logB.getStartDate();
         });
 
+        const timeNormalisation = this.timeTracker.getTimeNormalisationPercentage();
+
         const logsTable = $(`<table class="logs-table">
             <tr class="header">
                 <th class="key">Key</th>
@@ -911,6 +965,7 @@ class Admin {
                 <th>Start date</th>
                 <th>End date</th>
                 <th>Time</th>
+                <th>Normalised time</th>
                 <th>Message</th>
                 <th class="delete-column">X</th>
             </tr>
@@ -940,6 +995,10 @@ class Admin {
                 let elapseTimeCellDataEl = $(`<span>${Utils.formatTime(elapseTime)}</span>`);
                 elapseTimeCellEl.append(elapseTimeCellDataEl);
 
+                let elapseTimeNormalisedCellEl = $(`<td></td>`);
+                let elapseTimeNormalisedCellDataEl = $(`<span>${Utils.formatTime(elapseTime * timeNormalisation)}</span>`);
+                elapseTimeNormalisedCellEl.append(elapseTimeNormalisedCellDataEl);
+
                 let messageCellEl = $(`<td></td>`);
                 let messageCellDataEl = $(`<span>${Utils.escapeHTML(log.getMessage())}</span>`);
                 messageCellEl.append(messageCellDataEl);
@@ -951,6 +1010,7 @@ class Admin {
                 logRow.append(startDateCellEl);
                 logRow.append(endDateCellEl);
                 logRow.append(elapseTimeCellEl);
+                logRow.append(elapseTimeNormalisedCellEl);
                 logRow.append(messageCellEl);
                 logRow.append(deleteCellEl);
 
@@ -1016,6 +1076,7 @@ class Admin {
             <th>TOTAL</th>
             <th colspan="2"></th>
             <td>${Utils.formatTime(dayTotal)}</td>
+            <td>${Utils.formatTime(dayTotal * timeNormalisation)}</td>
             <td colspan="2"></td>
         </tr>`);
         logsTable.append(dayTotalRow);

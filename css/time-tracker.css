@@ -52,13 +52,6 @@ select.projectColour {
     color: #999999;
 }
 
-.viewSelector {
-    margin: 1em 0;
-}
-.viewSelector h2 {
-    display: inline;
-}
-
 div.header {
     display: flex;
     flex-wrap: wrap;
@@ -213,6 +206,29 @@ div.spaceLeft span::after {
     padding: 0.2em;
 }
 
+.admin .viewSelector {
+    margin: 1em 0;
+}
+.admin .viewSelector h2 {
+    display: inline;
+}
+
+.admin .project-editor-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+.admin .project-editor-header .timeNormalisation {
+    margin: 1em 0;
+}
+.admin .project-editor-header .timeNormalisation h3 {
+    display: inline;
+}
+.admin .project-editor-header .timeNormalisation input {
+    width: 3em;
+}
+
 .admin .project-editor table {
     width: 100%;
     border-collapse: collapse;
@@ -250,7 +266,7 @@ div.spaceLeft span::after {
 
 .admin .project-editor table.logs-table td,
 .admin .project-editor table.logs-table th {
-    width: 20%;
+    width: 16%;
 }
 
 .admin .project-editor table.logs-table tr.header,

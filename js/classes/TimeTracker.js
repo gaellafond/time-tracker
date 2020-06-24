@@ -76,17 +76,23 @@ class TimeTracker {
 
     load() {
         const timeTrackerDataStr = window.localStorage.getItem('timeTrackerData');
+        this.timeNormalisationPercentage = 1.13;
+
         if (timeTrackerDataStr) {
             const jsonTimeTrackerData = JSON.parse(timeTrackerDataStr);
 
             this.name = jsonTimeTrackerData["name"];
+            if (jsonTimeTrackerData.hasOwnProperty("timeNormalisationPercentage")) {
+                this.timeNormalisationPercentage = jsonTimeTrackerData["timeNormalisationPercentage"];
+            }
         } else {
             this.name = "Your name";
         }
     }
     save() {
         const jsonTimeTrackerData = {
-            "name": this.name
+            "name": this.name,
+            "timeNormalisationPercentage": this.timeNormalisationPercentage
         };
 
         window.localStorage.setItem('timeTrackerData', JSON.stringify(jsonTimeTrackerData));
@@ -98,6 +104,13 @@ class TimeTracker {
     }
     setName(newName) {
         this.name = newName;
+    }
+
+    getTimeNormalisationPercentage() {
+        return this.timeNormalisationPercentage;
+    }
+    setTimeNormalisationPercentage(timeNormalisationPercentage) {
+        this.timeNormalisationPercentage = timeNormalisationPercentage;
     }
 
     updateSpaceLeft() {
