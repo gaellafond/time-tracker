@@ -5,6 +5,7 @@ This project was build to keep track of my time at work.
 ## Installation
 
 Copy the file [`target/time-tracker.html`](https://github.com/gaellafond/time-tracker/raw/master/target/time-tracker.html)
+<a href="https://github.com/gaellafond/time-tracker/raw/master/target/time-tracker.html" download>`target/time-tracker.html`</a>
 on your computer and load it on a web browser.
 
 The Time Tracker uses local storage in your browser to save your times and so your data
