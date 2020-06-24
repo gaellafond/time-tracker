@@ -2,7 +2,7 @@
 
 > I have started this project to keep track of my time at work.
 
-<p style="text-align: right">Gael Lafond, Feb 2020</p>
+*Gael Lafond, Feb 2020*
 
 It's only meant to be used as a **personal memory helper**.
 One of the most important aspect of this app is **privacy**.
