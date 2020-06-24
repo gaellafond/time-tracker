@@ -7,12 +7,18 @@ This project was build to keep track of my time at work.
 Copy the file [`target/time-tracker.html`](https://github.com/gaellafond/time-tracker/raw/master/target/time-tracker.html)
 on your computer and load it on a web browser. Use `Right Click` and `Save link as...` to download the file.
 
-The Time Tracker uses local storage in your browser to save your times and so your data
-only exists on your local machine in the one browser that you ran the app. If you switch 
-broswers then the time records will not come across. 
+The Time Tracker uses local storage in your browser to save your times and so **your data
+only exists on your computer** in the one browser that you ran the app. If you open the
+TimeTracker using a different browser, the recorded time will not come across.
 
-We use local storage because the data remains private. No data is sent to any servers.
-It also means we don't need to worry about users and passwords in the application.
+You can use the `Backup` and `Restore` function from the admin move your recorded time
+to a different browser or computer. It's recommended to frequently backup your time
+in case the local storage is reset with a browser update or accidental browser data clear.
+
+We use local storage because it help to keep your **time data private**. No data is sent to any servers.
+This also mean if you lose your time data, there is no way our developer team can recover it for you.
+Backup your time data regularly to avoid losing data.
+Note that this application do not require login since your data can only be access from your computer.
 
 **NOTE:** If you want to avoid problems, do NOT use **Internet Explorer** or **Edge**.
 This advice is also valid for any other website on the Internet.
@@ -36,6 +42,7 @@ Example of an Apache config file for this project:
     </Directory>
 </VirtualHost>
 ```
+
 ### Required development tools
 * Apache server
 * Git
@@ -104,11 +111,11 @@ The project is built using the `make` command. To run this `make` command you wi
 environment. On Windows you can still do development using an Apache webserver, just not the 
 build packaging process.
 
-The build creates a standalone HTML file that can be used without a web server like Apache.
+The build creates a compiled HTML file that can be used without a web server like Apache.
 
 ```
 make clean
 make
 ```
 
-The standalone HTML file can be found in `target/time-tracker.html`
+The compiled HTML file can be found in `target/time-tracker.html`
