@@ -4,7 +4,7 @@
 
 *Gael Lafond, Feb 2020*
 
-It's only meant to be used as a **personal memory helper**.
+The Time Tracker is only meant to be used as a **personal memory helper**.
 One of the most important aspect of this app is **privacy**.
 No data logged in this app will ever leave your computer.
 
