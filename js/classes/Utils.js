@@ -102,7 +102,16 @@ class Utils {
             return null;
         }
 
-        const timestamp = Date.parse(dateStr);
+        // Add time to avoid timezone mess
+        return Utils.parseDatetime(dateStr + " 00:00:00");
+    }
+
+    static parseDatetime(datetimeStr) {
+        if (datetimeStr === null) {
+            return null;
+        }
+
+        const timestamp = Date.parse(datetimeStr);
         if (isNaN(timestamp)) {
             return null;
         }

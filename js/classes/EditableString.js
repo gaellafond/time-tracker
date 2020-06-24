@@ -1,3 +1,6 @@
+// onChangeCallback and afterEditCallback
+// function(oldValue, newValue)
+// Return false to cancel
 class EditableString {
     constructor(spanEl, onChangeCallback, afterEditCallback) {
         this.spanEl = spanEl;
@@ -15,6 +18,7 @@ class EditableString {
         this.onChangeCallback = onChangeCallback;
         this.afterEditCallback = afterEditCallback;
         this.autoSelect = false;
+        this.allowEmpty = false;
         this.cssClass = "";
 
         this.spanEl.click(function(editableString) {
@@ -27,6 +31,10 @@ class EditableString {
     // Auto select the text content when toggling edit mode, for easy text replacement.
     setAutoSelect(autoSelect) {
         this.autoSelect = !!autoSelect;
+    }
+
+    setAllowEmpty(allowEmpty) {
+        this.allowEmpty = !!allowEmpty;
     }
 
     setInputCssClass(cssClass) {
@@ -58,21 +66,25 @@ class EditableString {
 
     toggleEditOff() {
         if (this.inputEl) {
+            // Get the old value from the span element
+            const oldValue = this.spanEl.text();
             // Get the new value from the input field
             const newValue = this.inputEl.val().trim();
 
-            if (newValue.length) {
-                // Call the callback, to save the value to the Database
-                let success = true;
-                if (this.onChangeCallback) {
-                    success = this.onChangeCallback(newValue);
-                }
+            if (newValue !== oldValue) {
+                if (this.allowEmpty || newValue.length) {
+                    // Call the callback, to save the value to the Database
+                    let success = true;
+                    if (this.onChangeCallback) {
+                        success = this.onChangeCallback(oldValue, newValue);
+                    }
 
-                // Set the new value in the html element, unless the callback explicitly returns false
-                if (success !== false) {
-                    this.spanEl.text(newValue);
-                    if (this.afterEditCallback) {
-                        this.afterEditCallback(newValue);
+                    // Set the new value in the html element, unless the callback explicitly returns false
+                    if (success !== false) {
+                        this.spanEl.text(newValue);
+                        if (this.afterEditCallback) {
+                            this.afterEditCallback(oldValue, newValue);
+                        }
                     }
                 }
             }

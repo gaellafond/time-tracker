@@ -119,7 +119,16 @@ class Utils {
             return null;
         }
 
-        const timestamp = Date.parse(dateStr);
+        // Add time to avoid timezone mess
+        return Utils.parseDatetime(dateStr + " 00:00:00");
+    }
+
+    static parseDatetime(datetimeStr) {
+        if (datetimeStr === null) {
+            return null;
+        }
+
+        const timestamp = Date.parse(datetimeStr);
         if (isNaN(timestamp)) {
             return null;
         }
@@ -260,6 +269,9 @@ class Utils {
 </script>
 <script>
 // FILE: js/classes/EditableString.js
+// onChangeCallback and afterEditCallback
+// function(oldValue, newValue)
+// Return false to cancel
 class EditableString {
     constructor(spanEl, onChangeCallback, afterEditCallback) {
         this.spanEl = spanEl;
@@ -277,6 +289,7 @@ class EditableString {
         this.onChangeCallback = onChangeCallback;
         this.afterEditCallback = afterEditCallback;
         this.autoSelect = false;
+        this.allowEmpty = false;
         this.cssClass = "";
 
         this.spanEl.click(function(editableString) {
@@ -289,6 +302,10 @@ class EditableString {
     // Auto select the text content when toggling edit mode, for easy text replacement.
     setAutoSelect(autoSelect) {
         this.autoSelect = !!autoSelect;
+    }
+
+    setAllowEmpty(allowEmpty) {
+        this.allowEmpty = !!allowEmpty;
     }
 
     setInputCssClass(cssClass) {
@@ -320,21 +337,25 @@ class EditableString {
 
     toggleEditOff() {
         if (this.inputEl) {
+            // Get the old value from the span element
+            const oldValue = this.spanEl.text();
             // Get the new value from the input field
             const newValue = this.inputEl.val().trim();
 
-            if (newValue.length) {
-                // Call the callback, to save the value to the Database
-                let success = true;
-                if (this.onChangeCallback) {
-                    success = this.onChangeCallback(newValue);
-                }
+            if (newValue !== oldValue) {
+                if (this.allowEmpty || newValue.length) {
+                    // Call the callback, to save the value to the Database
+                    let success = true;
+                    if (this.onChangeCallback) {
+                        success = this.onChangeCallback(oldValue, newValue);
+                    }
 
-                // Set the new value in the html element, unless the callback explicitly returns false
-                if (success !== false) {
-                    this.spanEl.text(newValue);
-                    if (this.afterEditCallback) {
-                        this.afterEditCallback(newValue);
+                    // Set the new value in the html element, unless the callback explicitly returns false
+                    if (success !== false) {
+                        this.spanEl.text(newValue);
+                        if (this.afterEditCallback) {
+                            this.afterEditCallback(oldValue, newValue);
+                        }
                     }
                 }
             }
@@ -633,7 +654,7 @@ class Project extends PersistentObject {
 
         // Add click event on title (edit)
         const editableProjectTitle = new EditableString(this.markup.find("h2.title"), function(project) {
-            return function(newValue) {
+            return function(oldValue, newValue) {
                 project.setName(newValue);
                 project.save();
             };
@@ -872,7 +893,7 @@ class Log extends PersistentObject {
     addEventListeners() {
         // Add click event on log name (edit)
         const editableLogMessage = new EditableString(this.markup.find("span.message"), function(log) {
-            return function(newValue) {
+            return function(oldValue, newValue) {
                 log.setMessage(newValue);
                 log.save();
             };
@@ -928,15 +949,22 @@ class Log extends PersistentObject {
 <script>
 // FILE: js/classes/LogFilter.js
 class LogFilter {
-    constructor(startDate, endDate) {
-        this.startDate = startDate;
-        this.endDate = endDate;
+    constructor(fromDate, toDate) {
+        this.fromDate = fromDate;
+        this.toDate = toDate;
     }
 
     filter(log) {
-        // Return true if log is between startDate and endDate
-        return (log.getStartDate() < this.endDate && log.getStartDate() >= this.startDate) ||
-            (log.getEndDate() <= this.endDate && log.getEndDate() > this.startDate);
+        if (this.fromDate === null && this.toDate === null) {
+            return true;
+        }
+
+        const _fromDate = this.fromDate === null ? Number.NEGATIVE_INFINITY : this.fromDate;
+        const _toDate = this.toDate === null ? Number.POSITIVE_INFINITY : this.toDate;
+
+        // Return true if log is between fromDate and toDate
+        return (log.getStartDate() < _toDate && log.getStartDate() >= _fromDate) ||
+            (log.getEndDate() <= _toDate && log.getEndDate() > _fromDate);
     }
 }
 </script>
@@ -1070,7 +1098,7 @@ class TimeTracker {
         }(this));
 
         const editablePageTitle = new EditableString(this.pageTitleEl, function(timeTracker) {
-            return function(newValue) {
+            return function(oldValue, newValue) {
                 timeTracker.setName(newValue);
                 timeTracker.save();
             };
@@ -1534,32 +1562,34 @@ class Admin {
         };
 
         this.filterDateFromEl = this.markup.find("span.filterDateFrom");
-        new EditableString(this.filterDateFromEl,
+        const filterDateFromEditStr = new EditableString(this.filterDateFromEl,
             function(admin) {
-                return function(newValue) {
+                return function(oldValue, newValue) {
                     return filterDateOnChangeCallback(admin, newValue);
                 };
             }(this),
             function(admin) {
-                return function(newValue) {
+                return function(oldValue, newValue) {
                     filterDateAfterEditCallback(admin, newValue);
                 };
             }(this),
         );
+        filterDateFromEditStr.setAllowEmpty(true);
 
         this.filterDateToEl = this.markup.find("span.filterDateTo");
-        new EditableString(this.filterDateToEl,
+        const filterDateToEditStr = new EditableString(this.filterDateToEl,
             function(admin) {
-                return function(newValue) {
-                    filterDateOnChangeCallback(admin, newValue);
+                return function(oldValue, newValue) {
+                    return filterDateOnChangeCallback(admin, newValue);
                 };
             }(this),
             function(admin) {
-                return function(newValue) {
+                return function(oldValue, newValue) {
                     filterDateAfterEditCallback(admin, newValue);
                 };
             }(this),
         );
+        filterDateToEditStr.setAllowEmpty(true);
 
         this.markup.find("select.view").change(function(admin) {
             return function() {
@@ -1641,6 +1671,7 @@ class Admin {
     }
 
     setLogFilter(filterStr) {
+        const oneDay = 24 * 60 * 60;
         let fromDate = null;
         let toDate = null;
         let filterType = null;
@@ -1676,7 +1707,7 @@ class Admin {
                     break;
 
                 case "week":
-                    const oneWeek = 7 * 24 * 60 * 60;
+                    const oneWeek = 7 * oneDay;
                     fromDate = Utils.getCurrentWeekStart() - (filterNumber * oneWeek);
                     toDate = fromDate + oneWeek;
                     break;
@@ -1750,6 +1781,11 @@ class Admin {
         }
 
         if (filterType !== "custom") {
+            if (toDate !== null) {
+                // Remove one day because humans struggle to understand non inclusive dates
+                toDate -= oneDay;
+            }
+
             this.filterDateFromEl.text(Utils.formatDate(fromDate));
             this.filterDateToEl.text(Utils.formatDate(toDate))
         }
@@ -1758,8 +1794,15 @@ class Admin {
     }
 
     updateFilterDates() {
+        const oneDay = 24 * 60 * 60;
         const fromDate = Utils.parseDate(this.filterDateFromEl.text());
-        const toDate = Utils.parseDate(this.filterDateToEl.text());
+        let toDate = Utils.parseDate(this.filterDateToEl.text());
+
+        // Add the one day because the date is actually at time 00:00:00
+        // It's basically equivalent to a non inclusive filter: [fromDate, toDate[
+        if (toDate !== null) {
+            toDate += oneDay;
+        }
 
         this.filter = new LogFilter(fromDate, toDate);
     }
@@ -1889,7 +1932,7 @@ class Admin {
         sortedDates.sort();
         $.each(sortedDates, function(admin) {
             return function(dateIndex, dateStr) {
-                const date = Utils.parseDate(dateStr);
+                const date = Utils.parseDatetime(dateStr);
 
                 const dateRow = $(`<tr></tr>`);
 
@@ -1952,7 +1995,7 @@ class Admin {
         sortedDates.sort();
         $.each(sortedDates, function(admin) {
             return function(dateIndex, dateStr) {
-                const date = Utils.parseDate(dateStr);
+                const date = Utils.parseDatetime(dateStr);
 
                 const dateRow = $(`<tr></tr>`);
 
@@ -2058,8 +2101,8 @@ class Admin {
                     logRow.append(deleteCellEl);
 
                     new EditableString(startDateCellDataEl, function(admin, log) {
-                        return function(newValue) {
-                            const newDate = Utils.parseDate(newValue);
+                        return function(oldValue, newValue) {
+                            const newDate = Utils.parseDatetime(newValue);
                             if (newDate) {
                                 log.setStartDate(newDate);
                                 log.save();
@@ -2072,8 +2115,8 @@ class Admin {
                     }(admin, log));
 
                     new EditableString(endDateCellDataEl, function(admin, log) {
-                        return function(newValue) {
-                            const newDate = Utils.parseDate(newValue);
+                        return function(oldValue, newValue) {
+                            const newDate = Utils.parseDatetime(newValue);
                             if (newDate) {
                                 log.setEndDate(newDate);
                                 log.save();
@@ -2086,7 +2129,7 @@ class Admin {
                     }(admin, log));
 
                     new EditableString(messageCellDataEl, function(admin, log) {
-                        return function(newValue) {
+                        return function(oldValue, newValue) {
                             log.setMessage(newValue);
                             log.save();
                             admin.render();
@@ -2230,8 +2273,8 @@ class Admin {
                         logRow.append(deleteCellEl);
 
                         new EditableString(startDateCellDataEl, function(admin, log) {
-                            return function(newValue) {
-                                const newDate = Utils.parseDate(newValue);
+                            return function(oldValue, newValue) {
+                                const newDate = Utils.parseDatetime(newValue);
                                 if (newDate) {
                                     log.setStartDate(newDate);
                                     log.save();
@@ -2244,8 +2287,8 @@ class Admin {
                         }(admin, log));
 
                         new EditableString(endDateCellDataEl, function(admin, log) {
-                            return function(newValue) {
-                                const newDate = Utils.parseDate(newValue);
+                            return function(oldValue, newValue) {
+                                const newDate = Utils.parseDatetime(newValue);
                                 if (newDate) {
                                     log.setEndDate(newDate);
                                     log.save();
@@ -2258,7 +2301,7 @@ class Admin {
                         }(admin, log));
 
                         new EditableString(messageCellDataEl, function(admin, log) {
-                            return function(newValue) {
+                            return function(oldValue, newValue) {
                                 log.setMessage(newValue);
                                 log.save();
                                 admin.render();
@@ -2377,8 +2420,8 @@ class Admin {
                 logRow.append(deleteCellEl);
 
                 new EditableString(startDateCellDataEl, function(admin, log) {
-                    return function(newValue) {
-                        const newDate = Utils.parseDate(newValue);
+                    return function(oldValue, newValue) {
+                        const newDate = Utils.parseDatetime(newValue);
                         if (newDate) {
                             log.setStartDate(newDate);
                             log.save();
@@ -2391,8 +2434,8 @@ class Admin {
                 }(admin, log));
 
                 new EditableString(endDateCellDataEl, function(admin, log) {
-                    return function(newValue) {
-                        const newDate = Utils.parseDate(newValue);
+                    return function(oldValue, newValue) {
+                        const newDate = Utils.parseDatetime(newValue);
                         if (newDate) {
                             log.setEndDate(newDate);
                             log.save();
@@ -2405,7 +2448,7 @@ class Admin {
                 }(admin, log));
 
                 new EditableString(messageCellDataEl, function(admin, log) {
-                    return function(newValue) {
+                    return function(oldValue, newValue) {
                         log.setMessage(newValue);
                         log.save();
                         admin.render();
@@ -2599,6 +2642,10 @@ select.projectColour {
     margin: 0.5em;
 }
 
+.editableString {
+    cursor: pointer;
+}
+
 .editableString .empty {
     color: #999999;
 }
@@ -2751,6 +2798,17 @@ div.spaceLeft span::after {
 
 .admin .filterDate input {
     width: 6em;
+}
+
+/* Add a little bit of padding do the span remain clickable even when empty */
+.admin span.filterDateFrom,
+.admin span.filterDateTo {
+    display: inline-block;
+    min-width: 5em;
+    min-height: 1em;
+    vertical-align: middle;
+    border: 1px solid #CCCCCC;
+    padding: 0.2em;
 }
 
 .admin .project-editor table {

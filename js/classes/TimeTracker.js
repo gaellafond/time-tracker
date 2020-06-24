@@ -126,7 +126,7 @@ class TimeTracker {
         }(this));
 
         const editablePageTitle = new EditableString(this.pageTitleEl, function(timeTracker) {
-            return function(newValue) {
+            return function(oldValue, newValue) {
                 timeTracker.setName(newValue);
                 timeTracker.save();
             };

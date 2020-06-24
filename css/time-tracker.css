@@ -44,6 +44,10 @@ select.projectColour {
     margin: 0.5em;
 }
 
+.editableString {
+    cursor: pointer;
+}
+
 .editableString .empty {
     color: #999999;
 }
@@ -196,6 +200,17 @@ div.spaceLeft span::after {
 
 .admin .filterDate input {
     width: 6em;
+}
+
+/* Add a little bit of padding do the span remain clickable even when empty */
+.admin span.filterDateFrom,
+.admin span.filterDateTo {
+    display: inline-block;
+    min-width: 5em;
+    min-height: 1em;
+    vertical-align: middle;
+    border: 1px solid #CCCCCC;
+    padding: 0.2em;
 }
 
 .admin .project-editor table {

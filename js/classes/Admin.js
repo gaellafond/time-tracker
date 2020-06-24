@@ -97,32 +97,34 @@ class Admin {
         };
 
         this.filterDateFromEl = this.markup.find("span.filterDateFrom");
-        new EditableString(this.filterDateFromEl,
+        const filterDateFromEditStr = new EditableString(this.filterDateFromEl,
             function(admin) {
-                return function(newValue) {
+                return function(oldValue, newValue) {
                     return filterDateOnChangeCallback(admin, newValue);
                 };
             }(this),
             function(admin) {
-                return function(newValue) {
+                return function(oldValue, newValue) {
                     filterDateAfterEditCallback(admin, newValue);
                 };
             }(this),
         );
+        filterDateFromEditStr.setAllowEmpty(true);
 
         this.filterDateToEl = this.markup.find("span.filterDateTo");
-        new EditableString(this.filterDateToEl,
+        const filterDateToEditStr = new EditableString(this.filterDateToEl,
             function(admin) {
-                return function(newValue) {
-                    filterDateOnChangeCallback(admin, newValue);
+                return function(oldValue, newValue) {
+                    return filterDateOnChangeCallback(admin, newValue);
                 };
             }(this),
             function(admin) {
-                return function(newValue) {
+                return function(oldValue, newValue) {
                     filterDateAfterEditCallback(admin, newValue);
                 };
             }(this),
         );
+        filterDateToEditStr.setAllowEmpty(true);
 
         this.markup.find("select.view").change(function(admin) {
             return function() {
@@ -204,6 +206,7 @@ class Admin {
     }
 
     setLogFilter(filterStr) {
+        const oneDay = 24 * 60 * 60;
         let fromDate = null;
         let toDate = null;
         let filterType = null;
@@ -239,7 +242,7 @@ class Admin {
                     break;
 
                 case "week":
-                    const oneWeek = 7 * 24 * 60 * 60;
+                    const oneWeek = 7 * oneDay;
                     fromDate = Utils.getCurrentWeekStart() - (filterNumber * oneWeek);
                     toDate = fromDate + oneWeek;
                     break;
@@ -313,6 +316,11 @@ class Admin {
         }
 
         if (filterType !== "custom") {
+            if (toDate !== null) {
+                // Remove one day because humans struggle to understand non inclusive dates
+                toDate -= oneDay;
+            }
+
             this.filterDateFromEl.text(Utils.formatDate(fromDate));
             this.filterDateToEl.text(Utils.formatDate(toDate))
         }
@@ -321,8 +329,15 @@ class Admin {
     }
 
     updateFilterDates() {
+        const oneDay = 24 * 60 * 60;
         const fromDate = Utils.parseDate(this.filterDateFromEl.text());
-        const toDate = Utils.parseDate(this.filterDateToEl.text());
+        let toDate = Utils.parseDate(this.filterDateToEl.text());
+
+        // Add the one day because the date is actually at time 00:00:00
+        // It's basically equivalent to a non inclusive filter: [fromDate, toDate[
+        if (toDate !== null) {
+            toDate += oneDay;
+        }
 
         this.filter = new LogFilter(fromDate, toDate);
     }
@@ -452,7 +467,7 @@ class Admin {
         sortedDates.sort();
         $.each(sortedDates, function(admin) {
             return function(dateIndex, dateStr) {
-                const date = Utils.parseDate(dateStr);
+                const date = Utils.parseDatetime(dateStr);
 
                 const dateRow = $(`<tr></tr>`);
 
@@ -515,7 +530,7 @@ class Admin {
         sortedDates.sort();
         $.each(sortedDates, function(admin) {
             return function(dateIndex, dateStr) {
-                const date = Utils.parseDate(dateStr);
+                const date = Utils.parseDatetime(dateStr);
 
                 const dateRow = $(`<tr></tr>`);
 
@@ -621,8 +636,8 @@ class Admin {
                     logRow.append(deleteCellEl);
 
                     new EditableString(startDateCellDataEl, function(admin, log) {
-                        return function(newValue) {
-                            const newDate = Utils.parseDate(newValue);
+                        return function(oldValue, newValue) {
+                            const newDate = Utils.parseDatetime(newValue);
                             if (newDate) {
                                 log.setStartDate(newDate);
                                 log.save();
@@ -635,8 +650,8 @@ class Admin {
                     }(admin, log));
 
                     new EditableString(endDateCellDataEl, function(admin, log) {
-                        return function(newValue) {
-                            const newDate = Utils.parseDate(newValue);
+                        return function(oldValue, newValue) {
+                            const newDate = Utils.parseDatetime(newValue);
                             if (newDate) {
                                 log.setEndDate(newDate);
                                 log.save();
@@ -649,7 +664,7 @@ class Admin {
                     }(admin, log));
 
                     new EditableString(messageCellDataEl, function(admin, log) {
-                        return function(newValue) {
+                        return function(oldValue, newValue) {
                             log.setMessage(newValue);
                             log.save();
                             admin.render();
@@ -793,8 +808,8 @@ class Admin {
                         logRow.append(deleteCellEl);
 
                         new EditableString(startDateCellDataEl, function(admin, log) {
-                            return function(newValue) {
-                                const newDate = Utils.parseDate(newValue);
+                            return function(oldValue, newValue) {
+                                const newDate = Utils.parseDatetime(newValue);
                                 if (newDate) {
                                     log.setStartDate(newDate);
                                     log.save();
@@ -807,8 +822,8 @@ class Admin {
                         }(admin, log));
 
                         new EditableString(endDateCellDataEl, function(admin, log) {
-                            return function(newValue) {
-                                const newDate = Utils.parseDate(newValue);
+                            return function(oldValue, newValue) {
+                                const newDate = Utils.parseDatetime(newValue);
                                 if (newDate) {
                                     log.setEndDate(newDate);
                                     log.save();
@@ -821,7 +836,7 @@ class Admin {
                         }(admin, log));
 
                         new EditableString(messageCellDataEl, function(admin, log) {
-                            return function(newValue) {
+                            return function(oldValue, newValue) {
                                 log.setMessage(newValue);
                                 log.save();
                                 admin.render();
@@ -940,8 +955,8 @@ class Admin {
                 logRow.append(deleteCellEl);
 
                 new EditableString(startDateCellDataEl, function(admin, log) {
-                    return function(newValue) {
-                        const newDate = Utils.parseDate(newValue);
+                    return function(oldValue, newValue) {
+                        const newDate = Utils.parseDatetime(newValue);
                         if (newDate) {
                             log.setStartDate(newDate);
                             log.save();
@@ -954,8 +969,8 @@ class Admin {
                 }(admin, log));
 
                 new EditableString(endDateCellDataEl, function(admin, log) {
-                    return function(newValue) {
-                        const newDate = Utils.parseDate(newValue);
+                    return function(oldValue, newValue) {
+                        const newDate = Utils.parseDatetime(newValue);
                         if (newDate) {
                             log.setEndDate(newDate);
                             log.save();
@@ -968,7 +983,7 @@ class Admin {
                 }(admin, log));
 
                 new EditableString(messageCellDataEl, function(admin, log) {
-                    return function(newValue) {
+                    return function(oldValue, newValue) {
                         log.setMessage(newValue);
                         log.save();
                         admin.render();

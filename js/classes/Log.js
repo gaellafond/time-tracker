@@ -57,7 +57,7 @@ class Log extends PersistentObject {
     addEventListeners() {
         // Add click event on log name (edit)
         const editableLogMessage = new EditableString(this.markup.find("span.message"), function(log) {
-            return function(newValue) {
+            return function(oldValue, newValue) {
                 log.setMessage(newValue);
                 log.save();
             };

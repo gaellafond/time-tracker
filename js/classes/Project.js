@@ -171,7 +171,7 @@ class Project extends PersistentObject {
 
         // Add click event on title (edit)
         const editableProjectTitle = new EditableString(this.markup.find("h2.title"), function(project) {
-            return function(newValue) {
+            return function(oldValue, newValue) {
                 project.setName(newValue);
                 project.save();
             };
