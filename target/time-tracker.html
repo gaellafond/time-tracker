@@ -1423,7 +1423,7 @@ class TimeRibbon {
                 }
 
                 const cellLength = endSecInDay - startSecInDay;
-                const tooltip = Utils.formatTime(cellLength);
+                const tooltip = Utils.formatTime(cellLength) + " - " + project.getName() + ": " + log.getMessage();
                 if (cellLength > 0) {
                     // White space at the beginning and gap in the logs (white space)
                     if (startSecInDay > lastEndSecInDay) {
