@@ -25,7 +25,7 @@ This advice is also valid for any other website on the Internet.
 
 ## Update
 
-To update the app, delete the download `time-tracker.html` file and redownload it
+To update the app, first backup your time data. Then, delete the download `time-tracker.html` file and redownload it
 (see link in the installation section above).
 Deleting the `time-tracker.html` won't erase your data. The data is saved in the browser,
 not in the `HTML` file.
