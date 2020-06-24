@@ -23,6 +23,20 @@ Note that this application do not require login since your data can only be acce
 **NOTE:** If you want to avoid problems, do NOT use **Internet Explorer** or **Edge**.
 This advice is also valid for any other website on the Internet.
 
+## Update
+
+To update the app, delete the download `time-tracker.html` file and redownload it
+(see link in the installation section above).
+Deleting the `time-tracker.html` won't erase your data. The data is saved in the browser,
+not in the `HTML` file.
+
+## Risky operations
+
+If you are nervous about losing your time data while doing a risky operation, such as deleting a project,
+backup your data before attempting it. If you are unsatisfied with the result, you can restore your backup.
+Note that you can also restore your backup in an incognito browser window and safely try the operation in
+incognito before trying it on your real Time Tracker.
+
 ## Development
 
 The project is split in multiple files.
