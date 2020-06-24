@@ -737,7 +737,7 @@ class Admin {
             if (totalRowCount > 1) {
                 const spacerRow = $(`<tr class="spacer">
                     <td class="key"></td>
-                    <th colspan="6"></th>
+                    <th colspan="7"></th>
                 </tr>`);
                 logsTable.append(spacerRow);
 
@@ -813,7 +813,7 @@ class Admin {
 
                     const spacerRow = $(`<tr class="spacer">
                         <td class="key"></td>
-                        <th colspan="6"></th>
+                        <th colspan="7"></th>
                     </tr>`);
                     logsTable.append(spacerRow);
 
@@ -930,7 +930,7 @@ class Admin {
 
         const spacerRow = $(`<tr class="spacer">
             <td class="key"></td>
-            <th colspan="6"></th>
+            <th colspan="7"></th>
         </tr>`);
         logsTable.append(spacerRow);
 
