@@ -16,14 +16,15 @@ It was designed to help filling the time sheet when necessary, and to help
 calculating how much time was spend on various projects.
 
 All data logged in **100% confidential**.
-I wanted to be able to use it to track time spend on tasks unrelated to
+I wanted to be able to use it to also track time spend on tasks unrelated to
 work, such as calling mum, going for a walk, etc. without worrying about been
 ask to justify those activities.
 
 ## Installation
 
 Copy the file [`target/time-tracker.html`](https://github.com/gaellafond/time-tracker/raw/master/target/time-tracker.html)
-on your computer and load it on a web browser. Use `Right Click` and `Save link as...` to download the file.
+on your computer and load it on a web browser.  
+Use `Right Click` and `Save link as...` to download the file.
 
 The Time Tracker uses local storage in your browser to save your times and so **your data
 only exists on your computer** in the one browser that you ran the app. If you open the
