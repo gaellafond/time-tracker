@@ -12,7 +12,7 @@ class TimeRibbon {
 
     static drawCell(cellLength, backgroundColour, projectName = "", logMessage = "", tooltip = "") {
         let message = projectName ? `<span class="project-name">${Utils.escapeHTML(projectName)}</span>: ${Utils.escapeHTML(logMessage)}` : `${Utils.escapeHTML(logMessage)}`;
-        return `<div class="log" style="flex-grow:${cellLength}; background-color:${backgroundColour};" title="${Utils.escapeHTML(logMessage)}"><div class="message" title="${tooltip}">${message}</div></div>`;
+        return `<div class="log" style="flex-grow:${cellLength}; background-color:${backgroundColour};" title="${Utils.escapeHTML(tooltip)}"><div class="message">${message}</div></div>`;
     }
 
     // TODO Filter instead of renderedDates
@@ -170,7 +170,9 @@ class TimeRibbon {
                 if (cellLength > 0) {
                     // White space at the beginning and gap in the logs (white space)
                     if (startSecInDay > lastEndSecInDay) {
-                        ribbonRow.append(TimeRibbon.drawCell(startSecInDay - lastEndSecInDay, "#ffffff"));
+                        const breakLength = startSecInDay - lastEndSecInDay;
+                        const tooltip = lastEndSecInDay > dayStart ? Utils.formatTime(breakLength) : "";
+                        ribbonRow.append(TimeRibbon.drawCell(breakLength, "#ffffff", "", "", tooltip));
                     }
                     // Actual log
                     ribbonRow.append(TimeRibbon.drawCell(cellLength, project.getBackgroundColour(), project.getName(), log.getMessage(), tooltip));
