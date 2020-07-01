@@ -65,14 +65,15 @@ class Utils {
         return date.getFullYear() + '-' + Utils.padNumber(date.getMonth()+1) + '-' + Utils.padNumber(date.getDate());
     }
 
-    static formatDateForFilename(timestamp) {
+    static formatDatetimeForFilename(timestamp) {
         if (timestamp === null) {
             return "";
         }
 
         let date = new Date(timestamp * 1000);
 
-        return date.getFullYear() + '-' + Utils.padNumber(date.getMonth()+1) + '-' + Utils.padNumber(date.getDate());
+        return date.getFullYear() + '-' + Utils.padNumber(date.getMonth()+1) + '-' + Utils.padNumber(date.getDate()) +
+            '_' + Utils.padNumber(date.getHours()) + 'h' + Utils.padNumber(date.getMinutes());
     }
 
     static formatDateForCSV(timestamp) {

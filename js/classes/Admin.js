@@ -1128,7 +1128,7 @@ class Admin {
 
     backup() {
         const jsonDB = PersistentObject.getDBBackup();
-        const dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
+        const dateStr = Utils.formatDatetimeForFilename(Utils.getCurrentTimestamp());
         Utils.download(JSON.stringify(jsonDB, null, 4), "time-tracker_backup_" + dateStr + ".json", 'application/json');
     }
 
@@ -1167,7 +1167,7 @@ class Admin {
             csvContent += rowStr + "\r\n";
         });
 
-        const dateStr = Utils.formatDateForFilename(Utils.getCurrentTimestamp());
+        const dateStr = Utils.formatDatetimeForFilename(Utils.getCurrentTimestamp());
         Utils.download(csvContent, "time-tracker_export_" + dateStr + ".csv", 'text/csv');
     }
 
