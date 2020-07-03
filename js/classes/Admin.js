@@ -1151,8 +1151,7 @@ class Admin {
     }
 
     exportCSV() {
-        // CSV content, starting with URI header
-        let csvContent = "data:text/csv;charset=utf-8,";
+        let csvContent = "";
 
         // Get data as an array and generate a CSV string from it.
         const dataArray = this.generateDataArray();
