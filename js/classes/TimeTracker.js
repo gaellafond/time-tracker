@@ -66,9 +66,9 @@ class TimeTracker {
 
         const currentDay = Utils.getCurrentDayStart();
         const oneDay = 24 * 60 * 60;
-        this.todayTimeRibbonFilter = new LogFilter(currentDay, currentDay + oneDay);
+        this.todayTimeRibbonFilter = new LogDateFilter(currentDay, currentDay + oneDay);
         this.todayTimeRibbon = new TimeRibbon(this.todayTimeRibbonEl, this);
-        this.todayTimeRibbon.render(this.todayTimeRibbonFilter);
+        this.todayTimeRibbon.render([this.todayTimeRibbonFilter]);
 
         this.updateSpaceLeft();
         this.addEventListeners();
@@ -155,7 +155,7 @@ class TimeTracker {
         this.reloadProjects();
         this.reloadProjectsMarkup();
 
-        this.todayTimeRibbon.render(this.todayTimeRibbonFilter);
+        this.todayTimeRibbon.render([this.todayTimeRibbonFilter]);
     }
 
     reloadProjects() {

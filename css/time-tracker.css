@@ -197,7 +197,8 @@ div.spaceLeft span::after {
 
 /* Add a little bit of padding do the span remain clickable even when empty */
 .admin span.filterDateFrom,
-.admin span.filterDateTo {
+.admin span.filterDateTo,
+.admin span.filterSearch {
     display: inline-block;
     min-width: 5em;
     min-height: 1em;

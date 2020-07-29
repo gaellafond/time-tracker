@@ -249,14 +249,32 @@ class Project extends PersistentObject {
         }
     }
 
-    getLogs(logFilter) {
-        if (!logFilter) {
+    getLogs(logFilters) {
+        if (!logFilters) {
+            return this.logs;
+        }
+
+        let nonNullLogFilters = [];
+        $.each(logFilters, function(logFilterIndex, logFilter) {
+            if (logFilter != null) {
+                nonNullLogFilters.push(logFilter);
+            }
+        });
+        if (nonNullLogFilters.length <= 0) {
             return this.logs;
         }
 
         const filteredLogs = [];
         $.each(this.logs, function(logIndex, log) {
-            if (logFilter.filter(log)) {
+            let selected = true;
+            $.each(nonNullLogFilters, function(logFilterIndex, logFilter) {
+                if (!logFilter.filter(log)) {
+                    selected = false;
+                    // Stop the iteration
+                    return false;
+                }
+            });
+            if (selected) {
                 filteredLogs.push(log);
             }
         });

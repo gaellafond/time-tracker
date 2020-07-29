@@ -1,4 +1,4 @@
-class LogFilter {
+class LogDateFilter {
     constructor(fromDate, toDate) {
         this.fromDate = fromDate;
         this.toDate = toDate;

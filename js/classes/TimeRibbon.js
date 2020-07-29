@@ -15,22 +15,21 @@ class TimeRibbon {
         return `<div class="log" style="flex-grow:${cellLength}; background-color:${backgroundColour};" title="${Utils.escapeHTML(tooltip)}"><div class="message">${message}</div></div>`;
     }
 
-    // TODO Filter instead of renderedDates
-    render(filter) {
-        this._render(filter);
+    render(filters) {
+        this._render(filters);
 
         if (this.refreshInterval) {
             window.clearInterval(this.refreshInterval);
         }
 
-        this.refreshInterval = window.setInterval(function(timeRibbon, filter) {
+        this.refreshInterval = window.setInterval(function(timeRibbon, filters) {
             return function() {
-                timeRibbon._render(filter);
+                timeRibbon._render(filters);
             };
-        }(this, filter), 60 * 1000);
+        }(this, filters), 60 * 1000);
     }
 
-    _render(filter = null) {
+    _render(filters = null) {
         // dates = Map object
         //   Key: Formatted date (used to group logs per date, sort and display)
         //   Value: Array of log objects for that date
@@ -40,7 +39,7 @@ class TimeRibbon {
         // and store them in an array per date
         const projectMap = this.timeTracker.getProjectMap();
         $.each(projectMap, function(projectKey, project) {
-            $.each(project.getLogs(filter), function(logIndex, log) {
+            $.each(project.getLogs(filters), function(logIndex, log) {
                 let date = Utils.formatDate(log.getStartDate())
 
                 if (!dates[date]) {

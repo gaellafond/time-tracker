@@ -6,6 +6,9 @@ class Admin {
         this.timeTracker = timeTracker;
         this.overlayMarkup = $(`<div class="overlay"></div>`);
         this.setView("dateChrono");
+        this.dateFilter = null;
+        this.searchFilter = null;
+
         this.markup = $(
         `<div class="admin-wrapper">
             <div class="admin">
@@ -42,9 +45,14 @@ class Admin {
                                 <option value="">Show all</option>
                             </optgroup>
                         </select>
+
+                        Filter:
                         <span class="filterDateFrom">YYYY/MM/DD</span>
                         -
                         <span class="filterDateTo">YYYY/MM/DD</span>
+
+                        Search:
+                        <span class="filterSearch"></span>                        
                     </div>
                     <button class="close">X</button>
                 </div>
@@ -87,7 +95,7 @@ class Admin {
         this.filterSelectEl = this.markup.find("select.filter");
         this.filterSelectEl.change(function(admin) {
             return function() {
-                admin.setLogFilter($(this).val());
+                admin.setLogDateFilter($(this).val());
                 admin.render();
             };
         }(this));
@@ -114,7 +122,7 @@ class Admin {
                 return function(oldValue, newValue) {
                     filterDateAfterEditCallback(admin, newValue);
                 };
-            }(this),
+            }(this)
         );
         filterDateFromEditStr.setAllowEmpty(true);
 
@@ -129,9 +137,21 @@ class Admin {
                 return function(oldValue, newValue) {
                     filterDateAfterEditCallback(admin, newValue);
                 };
-            }(this),
+            }(this)
         );
         filterDateToEditStr.setAllowEmpty(true);
+
+        this.filterSearchEl = this.markup.find("span.filterSearch");
+        const filterSearchEditStr = new EditableString(this.filterSearchEl,
+            function(admin) {
+                return function(oldValue, newValue) {
+                    admin.updateFilterSearch(newValue);
+                };
+            }(this),
+            null,
+            ""
+        );
+        filterSearchEditStr.setAllowEmpty(true);
 
         this.markup.find("select.view").change(function(admin) {
             return function() {
@@ -190,7 +210,7 @@ class Admin {
             };
         }(this));
 
-        this.setLogFilter("week-0");
+        this.setLogDateFilter("week-0");
 
         const body = $("body");
         body.prepend(this.markup);
@@ -232,7 +252,7 @@ class Admin {
         }
     }
 
-    setLogFilter(filterStr) {
+    setLogDateFilter(filterStr) {
         const oneDay = 24 * 60 * 60;
         let fromDate = null;
         let toDate = null;
@@ -366,7 +386,13 @@ class Admin {
             toDate += oneDay;
         }
 
-        this.filter = new LogFilter(fromDate, toDate);
+        this.dateFilter = new LogDateFilter(fromDate, toDate);
+    }
+
+    updateFilterSearch(searchStr) {
+        this.searchFilter = new LogSearchFilter(searchStr);
+        console.log("UPDATE SEARCH: " + searchStr);
+        this.render();
     }
 
     setView(view) {
@@ -474,7 +500,7 @@ class Admin {
         const dates = {};
         $.each(projects, function(admin) {
             return function(projectIndex, project) {
-                let logs = project.getLogs(admin.filter);
+                let logs = project.getLogs([admin.dateFilter, admin.searchFilter]);
                 if (logs !== null && logs.length > 0) {
                     $.each(logs, function(logIndex, log) {
                         const logDate = Utils.formatDate(log.getStartDate());
@@ -540,7 +566,7 @@ class Admin {
         const dates = {};
         $.each(projects, function(admin) {
             return function(projectIndex, project) {
-                let logs = project.getLogs(admin.filter);
+                let logs = project.getLogs([admin.dateFilter, admin.searchFilter]);
                 if (logs !== null && logs.length > 0) {
                     $.each(logs, function(logIndex, log) {
                         const logDate = Utils.formatDate(log.getStartDate());
@@ -592,7 +618,7 @@ class Admin {
     renderProjectLogsEditorByProjects(project) {
         const timeNormalisation = this.timeTracker.getTimeNormalisationPercentage();
 
-        let logs = project.getLogs(this.filter);
+        let logs = project.getLogs([this.dateFilter, this.searchFilter]);
         if (logs !== null && logs.length > 0) {
             let logsTable = $(`<table class="logs-table">
                 <tr class="header">
@@ -1121,7 +1147,7 @@ class Admin {
     }
 
     render() {
-        this.adminTimeRibbon.render(this.filter);
+        this.adminTimeRibbon.render([this.dateFilter, this.searchFilter]);
         this.renderProjectFilter();
         this.renderProjectEditor();
     }

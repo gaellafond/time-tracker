@@ -2,7 +2,7 @@
 // function(oldValue, newValue)
 // Return false to cancel
 class EditableString {
-    constructor(spanEl, onChangeCallback, afterEditCallback) {
+    constructor(spanEl, onChangeCallback, afterEditCallback, defaultValue="EMPTY") {
         this.spanEl = spanEl;
         this.spanEl.addClass("editableString");
 
@@ -12,7 +12,7 @@ class EditableString {
         // (you can't click an element with no width).
         // If this happens, set its value to something that can be selected by the user.
         if (!this.spanEl.text()) {
-            this.spanEl.html('<em class="empty">EMPTY</em>');
+            this.spanEl.html('<em class="empty">' + defaultValue + '</em>');
         }
 
         this.onChangeCallback = onChangeCallback;
