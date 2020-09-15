@@ -46,6 +46,7 @@ select.projectColour {
 
 .editableString {
     cursor: pointer;
+    color: #000099;
 }
 
 .editableString .empty {
