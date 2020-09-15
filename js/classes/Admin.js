@@ -849,8 +849,11 @@ class Admin {
                         total += elapseTime;
                         const logRow = $(`<tr>
                             <td class="key">${Utils.escapeHTML(log.getKey())}</td>
-                            <td style="background-color: ${projectColor}">${Utils.escapeHTML(project.getName())}</td>
                         </tr>`);
+
+                        let projectCellEl = $(`<td style="background-color: ${projectColor}"></td>`);
+                        let projectCellDataEl = $(`<span>${Utils.escapeHTML(project.getName())}</span>`);
+                        projectCellEl.append(projectCellDataEl);
 
                         let startDateCellEl = $(`<td></td>`);
                         let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
@@ -876,12 +879,22 @@ class Admin {
                         let deleteCellButtonEl = $(`<button class="delete">X</button>`);
                         deleteCellEl.append(deleteCellButtonEl);
 
+                        logRow.append(projectCellEl);
                         logRow.append(startDateCellEl);
                         logRow.append(endDateCellEl);
                         logRow.append(elapseTimeCellEl);
                         logRow.append(elapseTimeNormalisedCellEl);
                         logRow.append(messageCellEl);
                         logRow.append(deleteCellEl);
+
+                        new EditableProject(projectCellEl, admin.timeTracker, project, function(admin, log) {
+                            return function(oldProject, newProject) {
+                                log.setProject(newProject);
+                                admin.timeTracker.reloadProjects();
+                                admin.render();
+                                admin.dirty = true;
+                            }
+                        }(admin, log));
 
                         new EditableString(startDateCellDataEl, function(admin, log) {
                             return function(oldValue, newValue) {
@@ -1006,8 +1019,11 @@ class Admin {
                 dayTotal += elapseTime;
                 const logRow = $(`<tr>
                     <td class="key">${Utils.escapeHTML(log.getKey())}</td>
-                    <td style="background-color: ${projectColor}">${Utils.escapeHTML(project.getName())}</td>
                 </tr>`);
+
+                let projectCellEl = $(`<td style="background-color: ${projectColor}"></td>`);
+                let projectCellDataEl = $(`<span>${Utils.escapeHTML(project.getName())}</span>`);
+                projectCellEl.append(projectCellDataEl);
 
                 let startDateCellEl = $(`<td></td>`);
                 let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
@@ -1033,12 +1049,21 @@ class Admin {
                 let deleteCellButtonEl = $(`<button class="delete">X</button>`);
                 deleteCellEl.append(deleteCellButtonEl);
 
+                logRow.append(projectCellEl);
                 logRow.append(startDateCellEl);
                 logRow.append(endDateCellEl);
                 logRow.append(elapseTimeCellEl);
                 logRow.append(elapseTimeNormalisedCellEl);
                 logRow.append(messageCellEl);
                 logRow.append(deleteCellEl);
+
+                new EditableProject(projectCellEl, admin.timeTracker, project, function(admin, log) {
+                    return function(oldProject, newProject) {
+                        log.setProject(newProject);
+                        admin.render();
+                        admin.dirty = true;
+                    }
+                }(admin, log));
 
                 new EditableString(startDateCellDataEl, function(admin, log) {
                     return function(oldValue, newValue) {

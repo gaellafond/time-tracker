@@ -60,7 +60,7 @@ class EditableString {
 
             // Update the field value when...
             this.inputEl.change(changeFunction); // The user tape "enter"
-            this.inputEl.focusout(changeFunction); // The user click somewhere else in the page
+            this.inputEl.focusout(changeFunction); // The user clicked somewhere else in the page
         }
     }
 

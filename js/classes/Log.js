@@ -74,6 +74,15 @@ class Log extends PersistentObject {
         return this.project;
     }
 
+    setProject(project) {
+        this.project = project;
+
+        // Change log ID (because it contains reference to its project)
+        this.delete();
+        this.key = PersistentObject.getUniqueKey(Log.getKeyPrefix(project.getKey()));
+        this.save();
+    }
+
     getMessage() {
         return this.message;
     }
