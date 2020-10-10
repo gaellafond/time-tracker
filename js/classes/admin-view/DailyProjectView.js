@@ -1,6 +1,7 @@
-class DailyProjectView {
+class DailyProjectView extends AbstractView {
 
     constructor(admin) {
+        super();
         this.admin = admin;
     }
 

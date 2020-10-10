@@ -1,6 +1,7 @@
-class ChronoView {
+class ChronoView extends AbstractView {
 
     constructor(admin) {
+        super();
         this.admin = admin;
     }
 

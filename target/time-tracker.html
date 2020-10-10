@@ -2146,10 +2146,22 @@ class Admin {
 }
 </script>
 <script>
+// FILE: js/classes/admin-view/AbstractView.js
+/**
+ * This class doesn't do anything.
+ * It's just to describe the methods
+ * that needs to be defined in Views
+ */
+class AbstractView {
+    render(containerEl) {}
+}
+</script>
+<script>
 // FILE: js/classes/admin-view/ChronoView.js
-class ChronoView {
+class ChronoView extends AbstractView {
 
     constructor(admin) {
+        super();
         this.admin = admin;
     }
 
@@ -2374,9 +2386,10 @@ class ChronoView {
 </script>
 <script>
 // FILE: js/classes/admin-view/DailyProjectView.js
-class DailyProjectView {
+class DailyProjectView extends AbstractView {
 
     constructor(admin) {
+        super();
         this.admin = admin;
     }
 
@@ -2638,9 +2651,10 @@ class DailyProjectView {
 </script>
 <script>
 // FILE: js/classes/admin-view/ProjectView.js
-class ProjectView {
+class ProjectView extends AbstractView {
 
     constructor(admin) {
+        super();
         this.admin = admin;
     }
 
