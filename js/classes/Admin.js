@@ -391,7 +391,6 @@ class Admin {
 
     updateFilterSearch(searchStr) {
         this.searchFilter = new LogSearchFilter(searchStr);
-        console.log("UPDATE SEARCH: " + searchStr);
         this.render();
     }
 
@@ -412,7 +411,7 @@ class Admin {
     }
 
     renderProjectEditorByProjects() {
-        const projects = this.timeTracker.getSelectedProjects();
+        const projects = this.timeTracker.getProjects();
         if (!projects || projects.length <= 0) {
             return;
         }
@@ -427,7 +426,10 @@ class Admin {
         </table>`);
         $.each(projects, function(admin) {
             return function(projectIndex, project) {
-                let projectTableRow = $(`<tr style="background-color: ${project.getBackgroundColour()}">
+                const selected = project.isSelected();
+                const rowClass = selected ? "selected" : "not-selected";
+
+                let projectTableRow = $(`<tr class="${rowClass}" style="background-color: ${project.getBackgroundColour()}">
                     <td class="key">${project.getKey()}</td>
                     <td class="name">${Utils.escapeHTML(project.getName())}</td>
                 </tr>`);
@@ -485,7 +487,7 @@ class Admin {
     }
 
     renderProjectEditorByDates() {
-        const projects = this.timeTracker.getSelectedProjects();
+        const projects = this.timeTracker.getProjects();
         if (!projects || projects.length <= 0) {
             return;
         }
@@ -551,7 +553,7 @@ class Admin {
     }
 
     renderProjectEditorByDatesChronological() {
-        const projects = this.timeTracker.getSelectedProjects();
+        const projects = this.timeTracker.getProjects();
         if (!projects || projects.length <= 0) {
             return;
         }
@@ -618,10 +620,13 @@ class Admin {
     renderProjectLogsEditorByProjects(project) {
         const timeNormalisation = this.timeTracker.getTimeNormalisationPercentage();
 
+        const selected = project.isSelected();
+        const rowClass = selected ? "selected" : "not-selected";
+
         let logs = project.getLogs([this.dateFilter, this.searchFilter]);
         if (logs !== null && logs.length > 0) {
             let logsTable = $(`<table class="logs-table">
-                <tr class="header">
+                <tr class="header ${rowClass}">
                     <th class="key">Key</th>
                     <th>Weekday</th>
                     <th>Start date</th>
@@ -646,7 +651,7 @@ class Admin {
                     currentWeekNumber = Utils.getWeekNumber(log.getStartDate());
 
                     if (lastWeekNumber !== currentWeekNumber) {
-                        logsTable.append(admin._getTotalRow(totalTime));
+                        logsTable.append(admin._getTotalRow(totalTime, selected));
                         totalRowCount++;
                         totalTime = 0;
                         lastTotalWeekNumber = lastWeekNumber;
@@ -656,7 +661,7 @@ class Admin {
                     grandTotalTime += elapseTime;
                     totalTime += elapseTime;
 
-                    let logRow = $(`<tr>
+                    let logRow = $(`<tr class="${rowClass}">
                         <td class="key">${log.getKey()}</td>
                     </tr>`);
 
@@ -756,7 +761,7 @@ class Admin {
             }(this));
 
             if (lastTotalWeekNumber !== currentWeekNumber) {
-                logsTable.append(this._getTotalRow(totalTime));
+                logsTable.append(this._getTotalRow(totalTime, selected));
                 totalRowCount++;
             }
 
@@ -767,7 +772,7 @@ class Admin {
                 </tr>`);
                 logsTable.append(spacerRow);
 
-                logsTable.append(this._getTotalRow(grandTotalTime, "GRAND TOTAL"));
+                logsTable.append(this._getTotalRow(grandTotalTime, selected, "GRAND TOTAL"));
             }
 
             return logsTable;
@@ -776,12 +781,13 @@ class Admin {
         return null;
     }
 
-    _getTotalRow(total, label) {
+    _getTotalRow(total, selected, label) {
         label = label ? label : "TOTAL";
+        const rowClass = selected ? "selected" : "not-selected";
 
         const timeNormalisation = this.timeTracker.getTimeNormalisationPercentage();
 
-        let totalRow = $(`<tr class="total">
+        let totalRow = $(`<tr class="total ${rowClass}">
             <td class="key"></td>
             <th colspan="3">${label}</th>
         </tr>`);
@@ -833,6 +839,9 @@ class Admin {
         let dayTotal = 0;
         $.each(projects, function(admin) {
             return function(projectIndex, project) {
+                const selected = project.isSelected();
+                const rowClass = selected ? "selected" : "not-selected";
+
                 const logList = logMap[project.getKey()];
                 const projectColor = project.getBackgroundColour();
                 if (logList) {
@@ -847,7 +856,7 @@ class Admin {
                     $.each(logList, function(logIndex, log) {
                         const elapseTime = log.getElapseTime();
                         total += elapseTime;
-                        const logRow = $(`<tr>
+                        const logRow = $(`<tr class="${rowClass}">
                             <td class="key">${Utils.escapeHTML(log.getKey())}</td>
                         </tr>`);
 
@@ -952,7 +961,7 @@ class Admin {
                         logsTable.append(logRow);
                     });
 
-                    const totalRow = $(`<tr class="total">
+                    const totalRow = $(`<tr class="total ${rowClass}">
                         <td class="key"></td>
                         <th style="background-color: ${projectColor}">TOTAL</th>
                         <th colspan="2"></th>
@@ -961,7 +970,9 @@ class Admin {
                         <td colspan="2"></td>
                     </tr>`);
 
-                    dayTotal += total;
+                    if (selected) {
+                        dayTotal += total;
+                    }
                     logsTable.append(totalRow);
                 }
             };
@@ -1014,10 +1025,15 @@ class Admin {
         $.each(logArray, function(admin) {
             return function(logIndex, log) {
                 const project = log.getProject();
+                const selected = project.isSelected();
+                const rowClass = selected ? "selected" : "not-selected";
                 const projectColor = project.getBackgroundColour();
                 const elapseTime = log.getElapseTime();
-                dayTotal += elapseTime;
-                const logRow = $(`<tr>
+
+                if (selected) {
+                    dayTotal += elapseTime;
+                }
+                const logRow = $(`<tr class="${rowClass}">
                     <td class="key">${Utils.escapeHTML(log.getKey())}</td>
                 </tr>`);
 

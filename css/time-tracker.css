@@ -46,7 +46,10 @@ select.projectColour {
 
 .editableString {
     cursor: pointer;
-    color: #000099;
+}
+
+.editableString:hover {
+    color: #0000CC;
 }
 
 .editableString .empty {
@@ -234,6 +237,10 @@ div.spaceLeft span::after {
 .admin .project-editor table {
     width: 100%;
     border-collapse: collapse;
+}
+
+.admin .project-editor table tr.not-selected {
+    color: #999999;
 }
 
 .admin .project-editor table.dates-table td.name,
