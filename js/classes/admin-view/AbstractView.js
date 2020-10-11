@@ -4,5 +4,5 @@
  * that needs to be defined in Views
  */
 class AbstractView {
-    render(containerEl) {}
+    render() {}
 }

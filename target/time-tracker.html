@@ -2026,7 +2026,7 @@ class Admin {
         this.destroyProjectEditor();
 
         if (this.view) {
-            this.view.render(this.projectEditorEl);
+            this.projectEditorEl.append(this.view.render());
         } else {
             console.error("Invalid view object");
         }
@@ -2153,7 +2153,7 @@ class Admin {
  * that needs to be defined in Views
  */
 class AbstractView {
-    render(containerEl) {}
+    render() {}
 }
 </script>
 <script>
@@ -2165,7 +2165,7 @@ class ChronoView extends AbstractView {
         this.admin = admin;
     }
 
-    render(containerEl) {
+    render() {
         const projects = this.admin.timeTracker.getProjects();
         if (!projects || projects.length <= 0) {
             return;
@@ -2217,7 +2217,7 @@ class ChronoView extends AbstractView {
 
                 const logRow = $(`<tr></tr>`);
                 let logCellEl = $(`<td colspan="2"></td>`);
-                let logCellDataEl = chronoView.renderProjectLogsEditorByDatesChronological(dates[dateStr], projects);
+                let logCellDataEl = chronoView._renderLogTable(dates[dateStr], projects);
                 logCellEl.append(logCellDataEl);
                 logRow.append(logCellEl);
 
@@ -2225,10 +2225,10 @@ class ChronoView extends AbstractView {
             };
         }(this));
 
-        containerEl.append(datesTable);
+        return datesTable;
     }
 
-    renderProjectLogsEditorByDatesChronological(logArray, projects) {
+    _renderLogTable(logArray, projects) {
         if (!logArray || logArray.length <= 0) {
             return "";
         }
@@ -2393,7 +2393,7 @@ class DailyProjectView extends AbstractView {
         this.admin = admin;
     }
 
-    render(containerEl) {
+    render() {
         const projects = this.admin.timeTracker.getProjects();
         if (!projects || projects.length <= 0) {
             return;
@@ -2448,7 +2448,7 @@ class DailyProjectView extends AbstractView {
 
                 const logRow = $(`<tr></tr>`);
                 let logCellEl = $(`<td colspan="2"></td>`);
-                let logCellDataEl = dailyProjectView.renderProjectLogsEditorByDates(dates[dateStr], projects);
+                let logCellDataEl = dailyProjectView._renderLogTable(dates[dateStr], projects);
                 logCellEl.append(logCellDataEl);
                 logRow.append(logCellEl);
 
@@ -2456,12 +2456,12 @@ class DailyProjectView extends AbstractView {
             };
         }(this));
 
-        containerEl.append(datesTable);
+        return datesTable;
     }
 
     // Key: projectKey
     // Value: array of Log
-    renderProjectLogsEditorByDates(logMap, projects) {
+    _renderLogTable(logMap, projects) {
         if (!logMap) {
             return "";
         }
@@ -2658,7 +2658,7 @@ class ProjectView extends AbstractView {
         this.admin = admin;
     }
 
-    render(containerEl) {
+    render() {
         const projects = this.admin.timeTracker.getProjects();
         if (!projects || projects.length <= 0) {
             return;
@@ -2724,17 +2724,17 @@ class ProjectView extends AbstractView {
 
                 let projectLogsRow = $(`<tr><td class="key"></td></tr>`);
                 let projectLogsCell = $(`<td colspan="3" style="background-color: ${project.getBackgroundColour()}"></td>`);
-                projectLogsCell.append(projectView.renderProjectLogsEditorByProjects(project));
+                projectLogsCell.append(projectView._renderProjectLogTable(project));
 
                 projectLogsRow.append(projectLogsCell);
                 projectTable.append(projectLogsRow);
             }
         }(this));
 
-        containerEl.append(projectTable);
+        return projectTable;
     }
 
-    renderProjectLogsEditorByProjects(project) {
+    _renderProjectLogTable(project) {
         const timeNormalisation = this.admin.timeTracker.getTimeNormalisationPercentage();
 
         const selected = project.isSelected();

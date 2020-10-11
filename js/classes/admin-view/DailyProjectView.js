@@ -5,7 +5,7 @@ class DailyProjectView extends AbstractView {
         this.admin = admin;
     }
 
-    render(containerEl) {
+    render() {
         const projects = this.admin.timeTracker.getProjects();
         if (!projects || projects.length <= 0) {
             return;
@@ -60,7 +60,7 @@ class DailyProjectView extends AbstractView {
 
                 const logRow = $(`<tr></tr>`);
                 let logCellEl = $(`<td colspan="2"></td>`);
-                let logCellDataEl = dailyProjectView.renderProjectLogsEditorByDates(dates[dateStr], projects);
+                let logCellDataEl = dailyProjectView._renderLogTable(dates[dateStr], projects);
                 logCellEl.append(logCellDataEl);
                 logRow.append(logCellEl);
 
@@ -68,12 +68,12 @@ class DailyProjectView extends AbstractView {
             };
         }(this));
 
-        containerEl.append(datesTable);
+        return datesTable;
     }
 
     // Key: projectKey
     // Value: array of Log
-    renderProjectLogsEditorByDates(logMap, projects) {
+    _renderLogTable(logMap, projects) {
         if (!logMap) {
             return "";
         }

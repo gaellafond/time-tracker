@@ -412,7 +412,7 @@ class Admin {
         this.destroyProjectEditor();
 
         if (this.view) {
-            this.view.render(this.projectEditorEl);
+            this.projectEditorEl.append(this.view.render());
         } else {
             console.error("Invalid view object");
         }

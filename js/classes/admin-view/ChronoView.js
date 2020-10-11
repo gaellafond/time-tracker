@@ -5,7 +5,7 @@ class ChronoView extends AbstractView {
         this.admin = admin;
     }
 
-    render(containerEl) {
+    render() {
         const projects = this.admin.timeTracker.getProjects();
         if (!projects || projects.length <= 0) {
             return;
@@ -57,7 +57,7 @@ class ChronoView extends AbstractView {
 
                 const logRow = $(`<tr></tr>`);
                 let logCellEl = $(`<td colspan="2"></td>`);
-                let logCellDataEl = chronoView.renderProjectLogsEditorByDatesChronological(dates[dateStr], projects);
+                let logCellDataEl = chronoView._renderLogTable(dates[dateStr], projects);
                 logCellEl.append(logCellDataEl);
                 logRow.append(logCellEl);
 
@@ -65,10 +65,10 @@ class ChronoView extends AbstractView {
             };
         }(this));
 
-        containerEl.append(datesTable);
+        return datesTable;
     }
 
-    renderProjectLogsEditorByDatesChronological(logArray, projects) {
+    _renderLogTable(logArray, projects) {
         if (!logArray || logArray.length <= 0) {
             return "";
         }

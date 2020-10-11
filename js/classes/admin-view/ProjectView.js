@@ -5,7 +5,7 @@ class ProjectView extends AbstractView {
         this.admin = admin;
     }
 
-    render(containerEl) {
+    render() {
         const projects = this.admin.timeTracker.getProjects();
         if (!projects || projects.length <= 0) {
             return;
@@ -71,17 +71,17 @@ class ProjectView extends AbstractView {
 
                 let projectLogsRow = $(`<tr><td class="key"></td></tr>`);
                 let projectLogsCell = $(`<td colspan="3" style="background-color: ${project.getBackgroundColour()}"></td>`);
-                projectLogsCell.append(projectView.renderProjectLogsEditorByProjects(project));
+                projectLogsCell.append(projectView._renderProjectLogTable(project));
 
                 projectLogsRow.append(projectLogsCell);
                 projectTable.append(projectLogsRow);
             }
         }(this));
 
-        containerEl.append(projectTable);
+        return projectTable;
     }
 
-    renderProjectLogsEditorByProjects(project) {
+    _renderProjectLogTable(project) {
         const timeNormalisation = this.admin.timeTracker.getTimeNormalisationPercentage();
 
         const selected = project.isSelected();
