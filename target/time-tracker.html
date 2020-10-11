@@ -950,6 +950,9 @@ class Log extends PersistentObject {
         this.startDate = startDate;
         this.endDate = endDate;
 
+        this.startDateOverlaps = false;
+        this.endDateOverlaps = false;
+
         const elapse = this.getElapseTime();
         this.markup = $(`
             <div>
@@ -1045,6 +1048,13 @@ class Log extends PersistentObject {
 
     getElapseTime() {
         return (this.endDate ? this.endDate : Utils.getCurrentTimestamp()) - this.startDate;
+    }
+
+    isStartDateOverlaps() {
+        return this.startDateOverlaps;
+    }
+    isEndDateOverlaps() {
+        return this.endDateOverlaps;
     }
 
     toJson() {
@@ -1354,6 +1364,39 @@ class TimeTracker {
     loadProjectsLogs() {
         $.each(this.projectMap, function(projectKey, project) {
             project.loadLogs();
+        });
+
+        this.flagOverlappingLogs();
+    }
+
+    flagOverlappingLogs() {
+        const allLogs = {}; // Array of all logs, used to flag overlapping dates
+        $.each(this.projectMap, function(projectKey, project) {
+            const logs = project.getLogs();
+
+            $.each(logs, function(logIndex, log) {
+                // Collect all logs to set log overlap flags
+                log.startDateOverlaps = false;
+                log.endDateOverlaps = false;
+                if (allLogs[log.getStartDate()]) {
+                    log.startDateOverlaps = true;
+                    allLogs[log.getStartDate()].startDateOverlaps = true;
+                } else {
+                    allLogs[log.getStartDate()] = log;
+                }
+            });
+        });
+
+        const logStartDates = Object.keys(allLogs);
+        logStartDates.sort();
+        let previousLog = null;
+        $.each(logStartDates, function(dateIndex, startDate) {
+            const log = allLogs[startDate];
+            if (previousLog && previousLog.getEndDate() > log.getStartDate()) {
+                previousLog.endDateOverlaps = true;
+                log.startDateOverlaps = true;
+            }
+            previousLog = log;
         });
     }
 
@@ -2272,11 +2315,13 @@ class ChronoView extends AbstractView {
                 let projectCellDataEl = $(`<span>${Utils.escapeHTML(project.getName())}</span>`);
                 projectCellEl.append(projectCellDataEl);
 
-                let startDateCellEl = $(`<td></td>`);
+                const startDateClass = log.isStartDateOverlaps() ? "overlaps" : "";
+                let startDateCellEl = $(`<td class="${startDateClass}"></td>`);
                 let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
                 startDateCellEl.append(startDateCellDataEl);
 
-                let endDateCellEl = $(`<td></td>`);
+                const endDateClass = log.isEndDateOverlaps() ? "overlaps" : "";
+                let endDateCellEl = $(`<td class="${endDateClass}"></td>`);
                 let endDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getEndDate())}</span>`);
                 endDateCellEl.append(endDateCellDataEl);
 
@@ -2318,6 +2363,7 @@ class ChronoView extends AbstractView {
                         if (newDate) {
                             log.setStartDate(newDate);
                             log.save();
+                            chronoView.admin.timeTracker.flagOverlappingLogs();
                             chronoView.admin.render();
                             chronoView.admin.dirty = true;
                         } else {
@@ -2332,6 +2378,7 @@ class ChronoView extends AbstractView {
                         if (newDate) {
                             log.setEndDate(newDate);
                             log.save();
+                            chronoView.admin.timeTracker.flagOverlappingLogs();
                             chronoView.admin.render();
                             chronoView.admin.dirty = true;
                         } else {
@@ -2514,11 +2561,13 @@ class DailyProjectView extends AbstractView {
                         let projectCellDataEl = $(`<span>${Utils.escapeHTML(project.getName())}</span>`);
                         projectCellEl.append(projectCellDataEl);
 
-                        let startDateCellEl = $(`<td></td>`);
+                        const startDateClass = log.isStartDateOverlaps() ? "overlaps" : "";
+                        let startDateCellEl = $(`<td class="${startDateClass}"></td>`);
                         let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
                         startDateCellEl.append(startDateCellDataEl);
 
-                        let endDateCellEl = $(`<td></td>`);
+                        const endDateClass = log.isEndDateOverlaps() ? "overlaps" : "";
+                        let endDateCellEl = $(`<td class="${endDateClass}"></td>`);
                         let endDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getEndDate())}</span>`);
                         endDateCellEl.append(endDateCellDataEl);
 
@@ -2561,6 +2610,7 @@ class DailyProjectView extends AbstractView {
                                 if (newDate) {
                                     log.setStartDate(newDate);
                                     log.save();
+                                    dailyProjectView.admin.timeTracker.flagOverlappingLogs();
                                     dailyProjectView.admin.render();
                                     dailyProjectView.admin.dirty = true;
                                 } else {
@@ -2575,6 +2625,7 @@ class DailyProjectView extends AbstractView {
                                 if (newDate) {
                                     log.setEndDate(newDate);
                                     log.save();
+                                    dailyProjectView.admin.timeTracker.flagOverlappingLogs();
                                     dailyProjectView.admin.render();
                                     dailyProjectView.admin.dirty = true;
                                 } else {
@@ -2786,11 +2837,13 @@ class ProjectView extends AbstractView {
                     let weekdayCellDataEl = $(`<span>${Utils.getWeekday(log.getStartDate())}</span>`);
                     weekdayCellEl.append(weekdayCellDataEl);
 
-                    let startDateCellEl = $(`<td></td>`);
+                    const startDateClass = log.isStartDateOverlaps() ? "overlaps" : "";
+                    let startDateCellEl = $(`<td class="${startDateClass}"></td>`);
                     let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
                     startDateCellEl.append(startDateCellDataEl);
 
-                    let endDateCellEl = $(`<td></td>`);
+                    const endDateClass = log.isEndDateOverlaps() ? "overlaps" : "";
+                    let endDateCellEl = $(`<td class="${endDateClass}"></td>`);
                     let endDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getEndDate())}</span>`);
                     endDateCellEl.append(endDateCellDataEl);
 
@@ -2824,6 +2877,7 @@ class ProjectView extends AbstractView {
                             if (newDate) {
                                 log.setStartDate(newDate);
                                 log.save();
+                                projectView.admin.timeTracker.flagOverlappingLogs();
                                 projectView.admin.render();
                                 projectView.admin.dirty = true;
                             } else {
@@ -2838,6 +2892,7 @@ class ProjectView extends AbstractView {
                             if (newDate) {
                                 log.setEndDate(newDate);
                                 log.save();
+                                projectView.admin.timeTracker.flagOverlappingLogs();
                                 projectView.admin.render();
                                 projectView.admin.dirty = true;
                             } else {
@@ -3174,6 +3229,10 @@ div.spaceLeft span::after {
 
 .admin .project-editor table tr.not-selected {
     color: #999999;
+}
+
+.admin .project-editor table tr td.overlaps {
+    color: #FF0000;
 }
 
 .admin .project-editor table.dates-table td.name,

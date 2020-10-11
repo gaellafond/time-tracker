@@ -243,6 +243,10 @@ div.spaceLeft span::after {
     color: #999999;
 }
 
+.admin .project-editor table tr td.overlaps {
+    color: #FF0000;
+}
+
 .admin .project-editor table.dates-table td.name,
 .admin .project-editor table.projects-table td.name {
     font-weight: bold;

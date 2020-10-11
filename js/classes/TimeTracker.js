@@ -249,6 +249,39 @@ class TimeTracker {
         $.each(this.projectMap, function(projectKey, project) {
             project.loadLogs();
         });
+
+        this.flagOverlappingLogs();
+    }
+
+    flagOverlappingLogs() {
+        const allLogs = {}; // Array of all logs, used to flag overlapping dates
+        $.each(this.projectMap, function(projectKey, project) {
+            const logs = project.getLogs();
+
+            $.each(logs, function(logIndex, log) {
+                // Collect all logs to set log overlap flags
+                log.startDateOverlaps = false;
+                log.endDateOverlaps = false;
+                if (allLogs[log.getStartDate()]) {
+                    log.startDateOverlaps = true;
+                    allLogs[log.getStartDate()].startDateOverlaps = true;
+                } else {
+                    allLogs[log.getStartDate()] = log;
+                }
+            });
+        });
+
+        const logStartDates = Object.keys(allLogs);
+        logStartDates.sort();
+        let previousLog = null;
+        $.each(logStartDates, function(dateIndex, startDate) {
+            const log = allLogs[startDate];
+            if (previousLog && previousLog.getEndDate() > log.getStartDate()) {
+                previousLog.endDateOverlaps = true;
+                log.startDateOverlaps = true;
+            }
+            previousLog = log;
+        });
     }
 
     startLogCounter(log) {

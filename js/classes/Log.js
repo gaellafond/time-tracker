@@ -11,6 +11,9 @@ class Log extends PersistentObject {
         this.startDate = startDate;
         this.endDate = endDate;
 
+        this.startDateOverlaps = false;
+        this.endDateOverlaps = false;
+
         const elapse = this.getElapseTime();
         this.markup = $(`
             <div>
@@ -106,6 +109,13 @@ class Log extends PersistentObject {
 
     getElapseTime() {
         return (this.endDate ? this.endDate : Utils.getCurrentTimestamp()) - this.startDate;
+    }
+
+    isStartDateOverlaps() {
+        return this.startDateOverlaps;
+    }
+    isEndDateOverlaps() {
+        return this.endDateOverlaps;
     }
 
     toJson() {

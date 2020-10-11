@@ -112,11 +112,13 @@ class ChronoView extends AbstractView {
                 let projectCellDataEl = $(`<span>${Utils.escapeHTML(project.getName())}</span>`);
                 projectCellEl.append(projectCellDataEl);
 
-                let startDateCellEl = $(`<td></td>`);
+                const startDateClass = log.isStartDateOverlaps() ? "overlaps" : "";
+                let startDateCellEl = $(`<td class="${startDateClass}"></td>`);
                 let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
                 startDateCellEl.append(startDateCellDataEl);
 
-                let endDateCellEl = $(`<td></td>`);
+                const endDateClass = log.isEndDateOverlaps() ? "overlaps" : "";
+                let endDateCellEl = $(`<td class="${endDateClass}"></td>`);
                 let endDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getEndDate())}</span>`);
                 endDateCellEl.append(endDateCellDataEl);
 
@@ -158,6 +160,7 @@ class ChronoView extends AbstractView {
                         if (newDate) {
                             log.setStartDate(newDate);
                             log.save();
+                            chronoView.admin.timeTracker.flagOverlappingLogs();
                             chronoView.admin.render();
                             chronoView.admin.dirty = true;
                         } else {
@@ -172,6 +175,7 @@ class ChronoView extends AbstractView {
                         if (newDate) {
                             log.setEndDate(newDate);
                             log.save();
+                            chronoView.admin.timeTracker.flagOverlappingLogs();
                             chronoView.admin.render();
                             chronoView.admin.dirty = true;
                         } else {

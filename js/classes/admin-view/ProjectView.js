@@ -133,11 +133,13 @@ class ProjectView extends AbstractView {
                     let weekdayCellDataEl = $(`<span>${Utils.getWeekday(log.getStartDate())}</span>`);
                     weekdayCellEl.append(weekdayCellDataEl);
 
-                    let startDateCellEl = $(`<td></td>`);
+                    const startDateClass = log.isStartDateOverlaps() ? "overlaps" : "";
+                    let startDateCellEl = $(`<td class="${startDateClass}"></td>`);
                     let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
                     startDateCellEl.append(startDateCellDataEl);
 
-                    let endDateCellEl = $(`<td></td>`);
+                    const endDateClass = log.isEndDateOverlaps() ? "overlaps" : "";
+                    let endDateCellEl = $(`<td class="${endDateClass}"></td>`);
                     let endDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getEndDate())}</span>`);
                     endDateCellEl.append(endDateCellDataEl);
 
@@ -171,6 +173,7 @@ class ProjectView extends AbstractView {
                             if (newDate) {
                                 log.setStartDate(newDate);
                                 log.save();
+                                projectView.admin.timeTracker.flagOverlappingLogs();
                                 projectView.admin.render();
                                 projectView.admin.dirty = true;
                             } else {
@@ -185,6 +188,7 @@ class ProjectView extends AbstractView {
                             if (newDate) {
                                 log.setEndDate(newDate);
                                 log.save();
+                                projectView.admin.timeTracker.flagOverlappingLogs();
                                 projectView.admin.render();
                                 projectView.admin.dirty = true;
                             } else {
