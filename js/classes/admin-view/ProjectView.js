@@ -57,7 +57,28 @@ class ProjectView extends AbstractView {
                         if (isNaN(newValue)) {
                             return false;
                         }
-                        project.setOrder(newValue);
+                        const oldOrder = parseInt(oldValue);
+                        const newOrder = parseInt(newValue);
+                        if (oldOrder === newOrder) {
+                            // The new value is basically equivalent, something like 2 === 2.0
+                            return false;
+                        }
+
+                        if (oldOrder > newOrder) {
+                            // Why -0.5?
+                            // If the project was in position 5 and the user input 2 (for example),
+                            // we change the value to 1.5, which mean the project will be placed
+                            // between 1 and 2, therefore getting position 2 after fixing project orders.
+                            project.setOrder(newOrder - 0.5);
+                        } else {
+                            // Why +0.5?
+                            // If the project was in position 2 and the user input 5 (for example),
+                            // we change the value to 5.5, which mean the project will be placed
+                            // between 5 and 6, therefore getting position 5 after fixing project orders,
+                            // considering the moved project won't be in position 2 anymore.
+                            project.setOrder(newOrder + 0.5);
+                        }
+
                         project.save();
                         projectView.admin.timeTracker.fixProjectOrder();
                         projectView.admin.render();
