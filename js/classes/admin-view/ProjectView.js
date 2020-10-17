@@ -101,6 +101,7 @@ class ProjectView extends AbstractView {
                         if (window.confirm(warningMessage)) {
                             project.delete();
                             projectView.admin.timeTracker.reload();
+                            projectView.admin.timeTracker.fixProjectOrder();
                             projectView.admin.render();
                             projectView.admin.dirty = true;
                         }
