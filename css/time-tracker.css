@@ -14,7 +14,8 @@ select {
     font-size: 1.2em;
 }
 
-select.projectColour {
+select.projectColour,
+select.projectOrder {
     padding: 0;
     margin: 0 0.5em;
     font-size: 1em;

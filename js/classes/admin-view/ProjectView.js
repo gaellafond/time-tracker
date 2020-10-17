@@ -48,16 +48,20 @@ class ProjectView extends AbstractView {
                 projectTableRow.append(projectColourCellEl);
 
                 let projectOrderCellEl = $(`<td></td>`);
-                let projectOrderEl = $(`<span>${project.getOrder()}</span>`);
-                projectOrderCellEl.append(projectOrderEl);
-                projectTableRow.append(projectOrderCellEl);
+                let projectOrderSelect = $(`<select class="projectOrder"></select>`);
+                for (let i=1; i<=projects.length; i++) {
+                    const selected = i === project.getOrder();
+                    projectOrderSelect.append($(`<option value="${i}" ${selected ? "selected=\"selected\"" : ""}>${i}</option>`));
+                }
+                projectOrderCellEl.append(projectOrderSelect);
 
-                const editableProjectOrder = new EditableString(projectOrderEl, function(projectView, project) {
-                    return function(oldValue, newValue) {
+                projectOrderSelect.change(function(projectView, project) {
+                    return function() {
+                        let newValue = $(this).val();
                         if (isNaN(newValue)) {
                             return false;
                         }
-                        const oldOrder = parseInt(oldValue);
+                        const oldOrder = project.getOrder();
                         const newOrder = parseInt(newValue);
                         if (oldOrder === newOrder) {
                             // The new value is basically equivalent, something like 2 === 2.0
@@ -85,7 +89,7 @@ class ProjectView extends AbstractView {
                         projectView.admin.dirty = true;
                     };
                 }(projectView, project));
-                editableProjectOrder.setAutoSelect(true);
+                projectTableRow.append(projectOrderCellEl);
 
                 let deleteCellEl = $(`<td class="delete-column"></td>`);
                 let deleteCellButtonEl = $(`<button class="delete">X</button>`);
