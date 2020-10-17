@@ -13,13 +13,15 @@ class TimeTracker {
         this.pageTitleEl = $(`<h1>${this.getName()}</h1>`);
         this.pageTitleContainerEl.append(this.pageTitleEl);
 
+        this.buttonsDivEl = $(`<div class="header-buttons"></div>`);
         this.checkOutButtonEl = $(`<button>Stop timer</button>`);
         this.showAdminButtonEl = $(`<button>Admin</button>`);
+        this.buttonsDivEl.append(this.checkOutButtonEl);
+        this.buttonsDivEl.append(this.showAdminButtonEl);
 
         this.headerEl.append(this.spaceLeftContainerEl);
         this.headerEl.append(this.pageTitleContainerEl);
-        this.headerEl.append(this.checkOutButtonEl);
-        this.headerEl.append(this.showAdminButtonEl);
+        this.headerEl.append(this.buttonsDivEl);
 
         this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
         this.dashboardEl = $(`<div class="dashboard"></div>`);

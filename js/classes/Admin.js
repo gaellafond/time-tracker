@@ -98,8 +98,10 @@ class Admin {
                 <div class="project-editor"></div>
 
                 <div class="footer-buttons">
-                    <button class="reset">RESET</button>
-                    <div>
+                    <div class="left">
+                        <button class="reset">RESET</button>
+                    </div>
+                    <div class="right">
                         <button class="backup">Backup</button>
                         <button class="restore">Restore</button>
                         <button class="exportCSV">Export CSV</button>

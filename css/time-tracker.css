@@ -64,6 +64,11 @@ div.header {
     margin: 1em 0;
 }
 
+/* Keep button to the right, when they wrap (on small screen) */
+div.header .header-buttons {
+    margin-left: auto;
+}
+
 div.pageTitle h1 {
     margin: 0;
     flex-grow: 1;
@@ -252,6 +257,10 @@ div.spaceLeft span::after {
     width: 3em;
 }
 
+.admin .project-editor {
+    overflow: auto;
+}
+
 .admin .project-editor table {
     width: 100%;
     border-collapse: collapse;
@@ -363,6 +372,13 @@ div.spaceLeft span::after {
     justify-content: space-between;
     align-items: flex-end;
 }
+.admin .footer-buttons .right {
+    text-align: right;
+}
+.admin .footer-buttons .right button {
+    margin-top: 0.5em;
+}
+
 .admin button.reset {
     background-color: #FF0000;
 }

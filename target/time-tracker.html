@@ -1129,13 +1129,15 @@ class TimeTracker {
         this.pageTitleEl = $(`<h1>${this.getName()}</h1>`);
         this.pageTitleContainerEl.append(this.pageTitleEl);
 
+        this.buttonsDivEl = $(`<div class="header-buttons"></div>`);
         this.checkOutButtonEl = $(`<button>Stop timer</button>`);
         this.showAdminButtonEl = $(`<button>Admin</button>`);
+        this.buttonsDivEl.append(this.checkOutButtonEl);
+        this.buttonsDivEl.append(this.showAdminButtonEl);
 
         this.headerEl.append(this.spaceLeftContainerEl);
         this.headerEl.append(this.pageTitleContainerEl);
-        this.headerEl.append(this.checkOutButtonEl);
-        this.headerEl.append(this.showAdminButtonEl);
+        this.headerEl.append(this.buttonsDivEl);
 
         this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
         this.dashboardEl = $(`<div class="dashboard"></div>`);
@@ -1755,8 +1757,10 @@ class Admin {
                 <div class="project-editor"></div>
 
                 <div class="footer-buttons">
-                    <button class="reset">RESET</button>
-                    <div>
+                    <div class="left">
+                        <button class="reset">RESET</button>
+                    </div>
+                    <div class="right">
                         <button class="backup">Backup</button>
                         <button class="restore">Restore</button>
                         <button class="exportCSV">Export CSV</button>
@@ -3062,6 +3066,11 @@ div.header {
     margin: 1em 0;
 }
 
+/* Keep button to the right, when they wrap (on small screen) */
+div.header .header-buttons {
+    margin-left: auto;
+}
+
 div.pageTitle h1 {
     margin: 0;
     flex-grow: 1;
@@ -3250,6 +3259,10 @@ div.spaceLeft span::after {
     width: 3em;
 }
 
+.admin .project-editor {
+    overflow: auto;
+}
+
 .admin .project-editor table {
     width: 100%;
     border-collapse: collapse;
@@ -3361,6 +3374,13 @@ div.spaceLeft span::after {
     justify-content: space-between;
     align-items: flex-end;
 }
+.admin .footer-buttons .right {
+    text-align: right;
+}
+.admin .footer-buttons .right button {
+    margin-top: 0.5em;
+}
+
 .admin button.reset {
     background-color: #FF0000;
 }
