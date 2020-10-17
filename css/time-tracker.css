@@ -195,7 +195,18 @@ div.spaceLeft span::after {
     width: 100%;
 }
 
-.admin .filterDate input {
+.admin .filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.admin .filters div {
+    margin: 0.1em 0.5em;
+}
+.admin .filters div select {
+    margin: 0;
+}
+.admin .filters input {
     width: 6em;
 }
 
@@ -209,6 +220,13 @@ div.spaceLeft span::after {
     vertical-align: middle;
     border: 1px solid #CCCCCC;
     padding: 0.2em;
+}
+
+.admin .time-ribbon {
+    overflow: auto;
+}
+.admin .time-ribbon table {
+    min-width: 100em;
 }
 
 .admin .viewSelector {
@@ -327,6 +345,16 @@ div.spaceLeft span::after {
     display: flex;
     justify-content: space-between;
     margin-bottom: 1em;
+}
+
+/* Keep the close button visible when scrolling down */
+.admin .header-buttons .right {
+    min-width: 50px;
+}
+.admin .header-buttons .right .close {
+    position: fixed;
+    top: 2em;
+    right: 1.5em;
 }
 
 .admin .footer-buttons {

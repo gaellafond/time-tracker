@@ -19,48 +19,58 @@ class Admin {
         `<div class="admin-wrapper">
             <div class="admin">
                 <div class="header-buttons">
-                    <div class="filterDate">
-                        <select class="filter">
-                            <optgroup label="Day">
-                                <option value="day-0" selected="selected">Today</option>
-                                <option value="day-1">Yesterday</option>
-                                <option value="day-2">2 days ago</option>
-                            </optgroup>
-                            <optgroup label="Week">
-                                <option value="week-0" selected="selected">This week</option>
-                                <option value="week-1">Last week</option>
-                                <option value="week-2">2 weeks ago</option>
-                            </optgroup>
-                            <optgroup label="Month">
-                                <option value="month-0">This month</option>
-                                <option value="month-1">Last month</option>
-                                <option value="month-2">2 months ago</option>
-                            </optgroup>
-                            <optgroup label="Year">
-                                <option value="year-0">This year</option>
-                                <option value="year-1">Last year</option>
-                                <option value="year-2">2 years ago</option>
-                            </optgroup>
-                            <optgroup label="Financial Year">
-                                <option value="finyear-0">This financial year</option>
-                                <option value="finyear-1">Last financial year</option>
-                                <option value="finyear-2">2 financial years ago</option>
-                            </optgroup>
-                            <optgroup label="Other">
-                                <option value="custom">Custom dates</option>
-                                <option value="">Show all</option>
-                            </optgroup>
-                        </select>
+                    <div class="left">
+                        <div class="filters">
+                            <div>
+                                <select class="filter">
+                                    <optgroup label="Day">
+                                        <option value="day-0" selected="selected">Today</option>
+                                        <option value="day-1">Yesterday</option>
+                                        <option value="day-2">2 days ago</option>
+                                    </optgroup>
+                                    <optgroup label="Week">
+                                        <option value="week-0" selected="selected">This week</option>
+                                        <option value="week-1">Last week</option>
+                                        <option value="week-2">2 weeks ago</option>
+                                    </optgroup>
+                                    <optgroup label="Month">
+                                        <option value="month-0">This month</option>
+                                        <option value="month-1">Last month</option>
+                                        <option value="month-2">2 months ago</option>
+                                    </optgroup>
+                                    <optgroup label="Year">
+                                        <option value="year-0">This year</option>
+                                        <option value="year-1">Last year</option>
+                                        <option value="year-2">2 years ago</option>
+                                    </optgroup>
+                                    <optgroup label="Financial Year">
+                                        <option value="finyear-0">This financial year</option>
+                                        <option value="finyear-1">Last financial year</option>
+                                        <option value="finyear-2">2 financial years ago</option>
+                                    </optgroup>
+                                    <optgroup label="Other">
+                                        <option value="custom">Custom dates</option>
+                                        <option value="">Show all</option>
+                                    </optgroup>
+                                </select>
+                            </div>
 
-                        Filter:
-                        <span class="filterDateFrom">YYYY/MM/DD</span>
-                        -
-                        <span class="filterDateTo">YYYY/MM/DD</span>
-
-                        Search:
-                        <span class="filterSearch"></span>                        
+                            <div>
+                                Filter:
+                                <span class="filterDateFrom">YYYY/MM/DD</span>
+                                -
+                                <span class="filterDateTo">YYYY/MM/DD</span>
+                            </div>
+    
+                            <div>
+                                Search:
+                                <span class="filterSearch"></span>                        
+                            </div>
+                        </div>
                     </div>
-                    <button class="close">X</button>
+                    <div class="right">
+                        <button class="close">X</button>
+                    </div>
                 </div>
 
                 <div class="project-filter-container">
