@@ -708,7 +708,7 @@ class Project extends PersistentObject {
         // this = dragged project
         this.markup.on("dragstart", function(draggedProject) {
             return function(event) {
-                event.originalEvent.dataTransfer.setData("text", draggedProject.getKey());
+                draggedProject.timeTracker.draggedProject = draggedProject;
             };
         }(this));
 
@@ -723,12 +723,17 @@ class Project extends PersistentObject {
         this.markup.on("drop", function(dropOnProject) {
             return function(event) {
                 event.preventDefault();
-                const draggedProjectKey = event.originalEvent.dataTransfer.getData("text");
-                const draggedProject = dropOnProject.timeTracker.getProject(draggedProjectKey);
-
+                const draggedProject = dropOnProject.timeTracker.draggedProject;
+                dropOnProject.timeTracker.draggedProject = null;
                 draggedProject.moveOn(dropOnProject);
             };
         }(this));
+
+        // Drag and drop on mobile
+        // See: https://medium.com/@deepakkadarivel/drag-and-drop-dnd-for-mobile-browsers-fc9bcd1ad3c5
+        // Events: "touchstart", "touchmove", "touchend"
+        // The screen scroll can't be deactivated, so whatever we do will always feels like a hack.
+        // It's better to leave it and let the user use the admin (Project view) to edit the order.
 
         // Add click event on start button
         this.markup.find("button.start").click(function(project) {
@@ -2153,10 +2158,7 @@ class Admin {
                 const nbElements = Object.keys(jsonDB).length;
                 if (confirm("Are you sure you want to replace the entire content of this Time Tracker with those " + nbElements + " entries?")) {
                     PersistentObject.restoreDBBackup(jsonDB);
-                    alert("Backup successfully restored");
                     location.reload();
-                } else {
-                    alert("Backup restore aborted");
                 }
             } catch(err) {
                 alert("Invalid JSON:\n" + err);
@@ -2698,6 +2700,7 @@ class ProjectView extends AbstractView {
                 <th class="key">Key</th>
                 <th>Name</th>
                 <th>Colour</th>
+                <th>Order</th>
                 <th class="delete-column">X</th>
             </tr>
         </table>`);
@@ -2729,6 +2732,25 @@ class ProjectView extends AbstractView {
                 }(projectView, project));
                 projectTableRow.append(projectColourCellEl);
 
+                let projectOrderCellEl = $(`<td></td>`);
+                let projectOrderEl = $(`<span>${project.getOrder()}</span>`);
+                projectOrderCellEl.append(projectOrderEl);
+                projectTableRow.append(projectOrderCellEl);
+
+                const editableProjectOrder = new EditableString(projectOrderEl, function(projectView, project) {
+                    return function(oldValue, newValue) {
+                        if (isNaN(newValue)) {
+                            return false;
+                        }
+                        project.setOrder(newValue);
+                        project.save();
+                        projectView.admin.timeTracker.fixProjectOrder();
+                        projectView.admin.render();
+                        projectView.admin.dirty = true;
+                    };
+                }(projectView, project));
+                editableProjectOrder.setAutoSelect(true);
+
                 let deleteCellEl = $(`<td class="delete-column"></td>`);
                 let deleteCellButtonEl = $(`<button class="delete">X</button>`);
                 deleteCellEl.append(deleteCellButtonEl);
@@ -2752,7 +2774,7 @@ class ProjectView extends AbstractView {
                 projectTable.append(projectTableRow);
 
                 let projectLogsRow = $(`<tr><td class="key"></td></tr>`);
-                let projectLogsCell = $(`<td colspan="3" style="background-color: ${project.getBackgroundColour()}"></td>`);
+                let projectLogsCell = $(`<td colspan="4" style="background-color: ${project.getBackgroundColour()}"></td>`);
                 projectLogsCell.append(projectView._renderProjectLogTable(project));
 
                 projectLogsRow.append(projectLogsCell);

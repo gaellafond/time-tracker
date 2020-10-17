@@ -15,6 +15,7 @@ class ProjectView extends AbstractView {
                 <th class="key">Key</th>
                 <th>Name</th>
                 <th>Colour</th>
+                <th>Order</th>
                 <th class="delete-column">X</th>
             </tr>
         </table>`);
@@ -46,6 +47,25 @@ class ProjectView extends AbstractView {
                 }(projectView, project));
                 projectTableRow.append(projectColourCellEl);
 
+                let projectOrderCellEl = $(`<td></td>`);
+                let projectOrderEl = $(`<span>${project.getOrder()}</span>`);
+                projectOrderCellEl.append(projectOrderEl);
+                projectTableRow.append(projectOrderCellEl);
+
+                const editableProjectOrder = new EditableString(projectOrderEl, function(projectView, project) {
+                    return function(oldValue, newValue) {
+                        if (isNaN(newValue)) {
+                            return false;
+                        }
+                        project.setOrder(newValue);
+                        project.save();
+                        projectView.admin.timeTracker.fixProjectOrder();
+                        projectView.admin.render();
+                        projectView.admin.dirty = true;
+                    };
+                }(projectView, project));
+                editableProjectOrder.setAutoSelect(true);
+
                 let deleteCellEl = $(`<td class="delete-column"></td>`);
                 let deleteCellButtonEl = $(`<button class="delete">X</button>`);
                 deleteCellEl.append(deleteCellButtonEl);
@@ -69,7 +89,7 @@ class ProjectView extends AbstractView {
                 projectTable.append(projectTableRow);
 
                 let projectLogsRow = $(`<tr><td class="key"></td></tr>`);
-                let projectLogsCell = $(`<td colspan="3" style="background-color: ${project.getBackgroundColour()}"></td>`);
+                let projectLogsCell = $(`<td colspan="4" style="background-color: ${project.getBackgroundColour()}"></td>`);
                 projectLogsCell.append(projectView._renderProjectLogTable(project));
 
                 projectLogsRow.append(projectLogsCell);

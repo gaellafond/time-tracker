@@ -140,7 +140,7 @@ class Project extends PersistentObject {
         // this = dragged project
         this.markup.on("dragstart", function(draggedProject) {
             return function(event) {
-                event.originalEvent.dataTransfer.setData("text", draggedProject.getKey());
+                draggedProject.timeTracker.draggedProject = draggedProject;
             };
         }(this));
 
@@ -155,12 +155,17 @@ class Project extends PersistentObject {
         this.markup.on("drop", function(dropOnProject) {
             return function(event) {
                 event.preventDefault();
-                const draggedProjectKey = event.originalEvent.dataTransfer.getData("text");
-                const draggedProject = dropOnProject.timeTracker.getProject(draggedProjectKey);
-
+                const draggedProject = dropOnProject.timeTracker.draggedProject;
+                dropOnProject.timeTracker.draggedProject = null;
                 draggedProject.moveOn(dropOnProject);
             };
         }(this));
+
+        // Drag and drop on mobile
+        // See: https://medium.com/@deepakkadarivel/drag-and-drop-dnd-for-mobile-browsers-fc9bcd1ad3c5
+        // Events: "touchstart", "touchmove", "touchend"
+        // The screen scroll can't be deactivated, so whatever we do will always feels like a hack.
+        // It's better to leave it and let the user use the admin (Project view) to edit the order.
 
         // Add click event on start button
         this.markup.find("button.start").click(function(project) {

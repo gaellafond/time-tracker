@@ -493,10 +493,7 @@ class Admin {
                 const nbElements = Object.keys(jsonDB).length;
                 if (confirm("Are you sure you want to replace the entire content of this Time Tracker with those " + nbElements + " entries?")) {
                     PersistentObject.restoreDBBackup(jsonDB);
-                    alert("Backup successfully restored");
                     location.reload();
-                } else {
-                    alert("Backup restore aborted");
                 }
             } catch(err) {
                 alert("Invalid JSON:\n" + err);
