@@ -2211,7 +2211,88 @@ class Admin {
  * that needs to be defined in Views
  */
 class AbstractView {
-    render() {}
+    constructor(admin) {
+        this.admin = admin;
+    }
+
+    // Abstract method to define
+    render() { }
+
+    // Common methods used by pretty much every views
+
+    getEditLogProjectFunction(log) {
+        return function(view) {
+            return function(oldProject, newProject) {
+                log.setProject(newProject);
+                view.admin.timeTracker.reloadProjects();
+                view.admin.render();
+                view.admin.dirty = true;
+            }
+        }(this);
+    }
+
+    getEditLogStartDateFunction(log) {
+        return function(view) {
+            return function(oldValue, newValue) {
+                const newDate = Utils.parseDatetime(newValue);
+                if (newDate && newDate <= log.getEndDate()) {
+                    log.setStartDate(newDate);
+                    log.save();
+                    view.admin.timeTracker.flagOverlappingLogs();
+                    view.admin.render();
+                    view.admin.dirty = true;
+                } else {
+                    return false;
+                }
+            }
+        }(this);
+    }
+
+    getEditLogEndDateFunction(log) {
+        return function(view) {
+            return function(oldValue, newValue) {
+                const newDate = Utils.parseDatetime(newValue);
+                if (newDate && newDate >= log.getStartDate()) {
+                    log.setEndDate(newDate);
+                    log.save();
+                    view.admin.timeTracker.flagOverlappingLogs();
+                    view.admin.render();
+                    view.admin.dirty = true;
+                } else {
+                    return false;
+                }
+            }
+        }(this);
+    }
+
+    getEditLogMessageFunction(log) {
+        return function(view) {
+            return function(oldValue, newValue) {
+                log.setMessage(newValue);
+                log.save();
+                view.admin.render();
+                view.admin.dirty = true;
+            }
+        }(this);
+    }
+
+    getDeleteLogFunction(log) {
+        return function(view) {
+            return function() {
+                // NOTE: No character need escaping in a "confirm" window
+                const warningMessage =
+                    "Are you sure you want to delete this log?\n" +
+                    "    Log: " + log.getMessage() + "\n" +
+                    "    Project: " + log.getProject().getName()
+                if (window.confirm(warningMessage)) {
+                    log.delete();
+                    view.admin.timeTracker.reload();
+                    view.admin.render();
+                    view.admin.dirty = true;
+                }
+            };
+        }(this);
+    }
 }
 </script>
 <script>
@@ -2219,8 +2300,7 @@ class AbstractView {
 class ChronoView extends AbstractView {
 
     constructor(admin) {
-        super();
-        this.admin = admin;
+        super(admin);
     }
 
     render() {
@@ -2364,68 +2444,11 @@ class ChronoView extends AbstractView {
                 logRow.append(messageCellEl);
                 logRow.append(deleteCellEl);
 
-                new EditableProject(projectCellEl, chronoView.admin.timeTracker, project, function(chronoView, log) {
-                    return function(oldProject, newProject) {
-                        log.setProject(newProject);
-                        chronoView.admin.render();
-                        chronoView.admin.dirty = true;
-                    }
-                }(chronoView, log));
-
-                new EditableString(startDateCellDataEl, function(chronoView, log) {
-                    return function(oldValue, newValue) {
-                        const newDate = Utils.parseDatetime(newValue);
-                        if (newDate) {
-                            log.setStartDate(newDate);
-                            log.save();
-                            chronoView.admin.timeTracker.flagOverlappingLogs();
-                            chronoView.admin.render();
-                            chronoView.admin.dirty = true;
-                        } else {
-                            return false;
-                        }
-                    }
-                }(chronoView, log));
-
-                new EditableString(endDateCellDataEl, function(chronoView, log) {
-                    return function(oldValue, newValue) {
-                        const newDate = Utils.parseDatetime(newValue);
-                        if (newDate) {
-                            log.setEndDate(newDate);
-                            log.save();
-                            chronoView.admin.timeTracker.flagOverlappingLogs();
-                            chronoView.admin.render();
-                            chronoView.admin.dirty = true;
-                        } else {
-                            return false;
-                        }
-                    }
-                }(chronoView, log));
-
-                new EditableString(messageCellDataEl, function(chronoView, log) {
-                    return function(oldValue, newValue) {
-                        log.setMessage(newValue);
-                        log.save();
-                        chronoView.admin.render();
-                        chronoView.admin.dirty = true;
-                    }
-                }(chronoView, log));
-
-                deleteCellButtonEl.click(function(chronoView, log) {
-                    return function() {
-                        // NOTE: No character need escaping in a "confirm" window
-                        const warningMessage =
-                            "Are you sure you want to delete this log?\n" +
-                            "    Log: " + log.getMessage() + "\n" +
-                            "    Project: " + log.getProject().getName()
-                        if (window.confirm(warningMessage)) {
-                            log.delete();
-                            chronoView.admin.timeTracker.reload();
-                            chronoView.admin.render();
-                            chronoView.admin.dirty = true;
-                        }
-                    };
-                }(chronoView, log));
+                new EditableProject(projectCellEl, chronoView.admin.timeTracker, project, chronoView.getEditLogProjectFunction(log));
+                new EditableString(startDateCellDataEl, chronoView.getEditLogStartDateFunction(log));
+                new EditableString(endDateCellDataEl, chronoView.getEditLogEndDateFunction(log));
+                new EditableString(messageCellDataEl, chronoView.getEditLogMessageFunction(log));
+                deleteCellButtonEl.click(chronoView.getDeleteLogFunction(log));
 
                 logsTable.append(logRow);
             };
@@ -2451,8 +2474,7 @@ class ChronoView extends AbstractView {
 class DailyProjectView extends AbstractView {
 
     constructor(admin) {
-        super();
-        this.admin = admin;
+        super(admin);
     }
 
     render() {
@@ -2610,69 +2632,11 @@ class DailyProjectView extends AbstractView {
                         logRow.append(messageCellEl);
                         logRow.append(deleteCellEl);
 
-                        new EditableProject(projectCellEl, dailyProjectView.admin.timeTracker, project, function(dailyProjectView, log) {
-                            return function(oldProject, newProject) {
-                                log.setProject(newProject);
-                                dailyProjectView.admin.timeTracker.reloadProjects();
-                                dailyProjectView.admin.render();
-                                dailyProjectView.admin.dirty = true;
-                            }
-                        }(dailyProjectView, log));
-
-                        new EditableString(startDateCellDataEl, function(dailyProjectView, log) {
-                            return function(oldValue, newValue) {
-                                const newDate = Utils.parseDatetime(newValue);
-                                if (newDate) {
-                                    log.setStartDate(newDate);
-                                    log.save();
-                                    dailyProjectView.admin.timeTracker.flagOverlappingLogs();
-                                    dailyProjectView.admin.render();
-                                    dailyProjectView.admin.dirty = true;
-                                } else {
-                                    return false;
-                                }
-                            }
-                        }(dailyProjectView, log));
-
-                        new EditableString(endDateCellDataEl, function(dailyProjectView, log) {
-                            return function(oldValue, newValue) {
-                                const newDate = Utils.parseDatetime(newValue);
-                                if (newDate) {
-                                    log.setEndDate(newDate);
-                                    log.save();
-                                    dailyProjectView.admin.timeTracker.flagOverlappingLogs();
-                                    dailyProjectView.admin.render();
-                                    dailyProjectView.admin.dirty = true;
-                                } else {
-                                    return false;
-                                }
-                            }
-                        }(dailyProjectView, log));
-
-                        new EditableString(messageCellDataEl, function(dailyProjectView, log) {
-                            return function(oldValue, newValue) {
-                                log.setMessage(newValue);
-                                log.save();
-                                dailyProjectView.admin.render();
-                                dailyProjectView.admin.dirty = true;
-                            }
-                        }(dailyProjectView, log));
-
-                        deleteCellButtonEl.click(function(dailyProjectView, log) {
-                            return function() {
-                                // NOTE: No character need escaping in a "confirm" window
-                                const warningMessage =
-                                    "Are you sure you want to delete this log?\n" +
-                                    "    Log: " + log.getMessage() + "\n" +
-                                    "    Project: " + log.getProject().getName()
-                                if (window.confirm(warningMessage)) {
-                                    log.delete();
-                                    dailyProjectView.admin.timeTracker.reload();
-                                    dailyProjectView.admin.render();
-                                    dailyProjectView.admin.dirty = true;
-                                }
-                            };
-                        }(dailyProjectView, log));
+                        new EditableProject(projectCellEl, dailyProjectView.admin.timeTracker, project, dailyProjectView.getEditLogProjectFunction(log));
+                        new EditableString(startDateCellDataEl, dailyProjectView.getEditLogStartDateFunction(log));
+                        new EditableString(endDateCellDataEl, dailyProjectView.getEditLogEndDateFunction(log));
+                        new EditableString(messageCellDataEl, dailyProjectView.getEditLogMessageFunction(log));
+                        deleteCellButtonEl.click(dailyProjectView.getDeleteLogFunction(log));
 
                         logsTable.append(logRow);
                     });
@@ -2720,8 +2684,7 @@ class DailyProjectView extends AbstractView {
 class ProjectView extends AbstractView {
 
     constructor(admin) {
-        super();
-        this.admin = admin;
+        super(admin);
     }
 
     render() {
@@ -2886,60 +2849,10 @@ class ProjectView extends AbstractView {
                     logRow.append(messageCellEl);
                     logRow.append(deleteCellEl);
 
-                    new EditableString(startDateCellDataEl, function(projectView, log) {
-                        return function(oldValue, newValue) {
-                            const newDate = Utils.parseDatetime(newValue);
-                            if (newDate) {
-                                log.setStartDate(newDate);
-                                log.save();
-                                projectView.admin.timeTracker.flagOverlappingLogs();
-                                projectView.admin.render();
-                                projectView.admin.dirty = true;
-                            } else {
-                                return false;
-                            }
-                        }
-                    }(projectView, log));
-
-                    new EditableString(endDateCellDataEl, function(projectView, log) {
-                        return function(oldValue, newValue) {
-                            const newDate = Utils.parseDatetime(newValue);
-                            if (newDate) {
-                                log.setEndDate(newDate);
-                                log.save();
-                                projectView.admin.timeTracker.flagOverlappingLogs();
-                                projectView.admin.render();
-                                projectView.admin.dirty = true;
-                            } else {
-                                return false;
-                            }
-                        }
-                    }(projectView, log));
-
-                    new EditableString(messageCellDataEl, function(projectView, log) {
-                        return function(oldValue, newValue) {
-                            log.setMessage(newValue);
-                            log.save();
-                            projectView.admin.render();
-                            projectView.admin.dirty = true;
-                        }
-                    }(projectView, log));
-
-                    deleteCellButtonEl.click(function(projectView, log) {
-                        return function() {
-                            // NOTE: No character need escaping in a "confirm" window
-                            const warningMessage =
-                                "Are you sure you want to delete this log?\n" +
-                                "    Log: " + log.getMessage() + "\n" +
-                                "    Project: " + log.getProject().getName()
-                            if (window.confirm(warningMessage)) {
-                                log.delete();
-                                projectView.admin.timeTracker.reload();
-                                projectView.admin.render();
-                                projectView.admin.dirty = true;
-                            }
-                        };
-                    }(projectView, log));
+                    new EditableString(startDateCellDataEl, projectView.getEditLogStartDateFunction(log));
+                    new EditableString(endDateCellDataEl, projectView.getEditLogEndDateFunction(log));
+                    new EditableString(messageCellDataEl, projectView.getEditLogMessageFunction(log));
+                    deleteCellButtonEl.click(projectView.getDeleteLogFunction(log));
 
                     logsTable.append(logRow);
 
@@ -3193,7 +3106,8 @@ div.spaceLeft span::after {
 
 .admin {
     background-color: #FFFFFF;
-    padding: 1em;
+    /* Firefox do not understand padding bottom very well. Make it 0 and add padding to the buttons div */
+    padding: 1em 1em 0 1em;
     border: 5px solid black;
     border-radius: 25px;
     box-shadow: 5px 5px 5px #000000;
@@ -3363,7 +3277,7 @@ div.spaceLeft span::after {
 
 /* Keep the close button visible when scrolling down */
 .admin .header-buttons .right {
-    min-width: 50px;
+    min-width: 90px;
 }
 .admin .header-buttons .right .close {
     position: fixed;
@@ -3376,6 +3290,8 @@ div.spaceLeft span::after {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    /* For firefox (see comment in .admin above) */
+    padding-bottom: 1em;
 }
 .admin .footer-buttons .right {
     text-align: right;

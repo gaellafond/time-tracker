@@ -1,8 +1,7 @@
 class DailyProjectView extends AbstractView {
 
     constructor(admin) {
-        super();
-        this.admin = admin;
+        super(admin);
     }
 
     render() {
@@ -160,69 +159,11 @@ class DailyProjectView extends AbstractView {
                         logRow.append(messageCellEl);
                         logRow.append(deleteCellEl);
 
-                        new EditableProject(projectCellEl, dailyProjectView.admin.timeTracker, project, function(dailyProjectView, log) {
-                            return function(oldProject, newProject) {
-                                log.setProject(newProject);
-                                dailyProjectView.admin.timeTracker.reloadProjects();
-                                dailyProjectView.admin.render();
-                                dailyProjectView.admin.dirty = true;
-                            }
-                        }(dailyProjectView, log));
-
-                        new EditableString(startDateCellDataEl, function(dailyProjectView, log) {
-                            return function(oldValue, newValue) {
-                                const newDate = Utils.parseDatetime(newValue);
-                                if (newDate) {
-                                    log.setStartDate(newDate);
-                                    log.save();
-                                    dailyProjectView.admin.timeTracker.flagOverlappingLogs();
-                                    dailyProjectView.admin.render();
-                                    dailyProjectView.admin.dirty = true;
-                                } else {
-                                    return false;
-                                }
-                            }
-                        }(dailyProjectView, log));
-
-                        new EditableString(endDateCellDataEl, function(dailyProjectView, log) {
-                            return function(oldValue, newValue) {
-                                const newDate = Utils.parseDatetime(newValue);
-                                if (newDate) {
-                                    log.setEndDate(newDate);
-                                    log.save();
-                                    dailyProjectView.admin.timeTracker.flagOverlappingLogs();
-                                    dailyProjectView.admin.render();
-                                    dailyProjectView.admin.dirty = true;
-                                } else {
-                                    return false;
-                                }
-                            }
-                        }(dailyProjectView, log));
-
-                        new EditableString(messageCellDataEl, function(dailyProjectView, log) {
-                            return function(oldValue, newValue) {
-                                log.setMessage(newValue);
-                                log.save();
-                                dailyProjectView.admin.render();
-                                dailyProjectView.admin.dirty = true;
-                            }
-                        }(dailyProjectView, log));
-
-                        deleteCellButtonEl.click(function(dailyProjectView, log) {
-                            return function() {
-                                // NOTE: No character need escaping in a "confirm" window
-                                const warningMessage =
-                                    "Are you sure you want to delete this log?\n" +
-                                    "    Log: " + log.getMessage() + "\n" +
-                                    "    Project: " + log.getProject().getName()
-                                if (window.confirm(warningMessage)) {
-                                    log.delete();
-                                    dailyProjectView.admin.timeTracker.reload();
-                                    dailyProjectView.admin.render();
-                                    dailyProjectView.admin.dirty = true;
-                                }
-                            };
-                        }(dailyProjectView, log));
+                        new EditableProject(projectCellEl, dailyProjectView.admin.timeTracker, project, dailyProjectView.getEditLogProjectFunction(log));
+                        new EditableString(startDateCellDataEl, dailyProjectView.getEditLogStartDateFunction(log));
+                        new EditableString(endDateCellDataEl, dailyProjectView.getEditLogEndDateFunction(log));
+                        new EditableString(messageCellDataEl, dailyProjectView.getEditLogMessageFunction(log));
+                        deleteCellButtonEl.click(dailyProjectView.getDeleteLogFunction(log));
 
                         logsTable.append(logRow);
                     });

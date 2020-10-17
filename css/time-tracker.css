@@ -190,7 +190,8 @@ div.spaceLeft span::after {
 
 .admin {
     background-color: #FFFFFF;
-    padding: 1em;
+    /* Firefox do not understand padding bottom very well. Make it 0 and add padding to the buttons div */
+    padding: 1em 1em 0 1em;
     border: 5px solid black;
     border-radius: 25px;
     box-shadow: 5px 5px 5px #000000;
@@ -360,7 +361,7 @@ div.spaceLeft span::after {
 
 /* Keep the close button visible when scrolling down */
 .admin .header-buttons .right {
-    min-width: 50px;
+    min-width: 90px;
 }
 .admin .header-buttons .right .close {
     position: fixed;
@@ -373,6 +374,8 @@ div.spaceLeft span::after {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    /* For firefox (see comment in .admin above) */
+    padding-bottom: 1em;
 }
 .admin .footer-buttons .right {
     text-align: right;

@@ -1,8 +1,7 @@
 class ProjectView extends AbstractView {
 
     constructor(admin) {
-        super();
-        this.admin = admin;
+        super(admin);
     }
 
     render() {
@@ -167,60 +166,10 @@ class ProjectView extends AbstractView {
                     logRow.append(messageCellEl);
                     logRow.append(deleteCellEl);
 
-                    new EditableString(startDateCellDataEl, function(projectView, log) {
-                        return function(oldValue, newValue) {
-                            const newDate = Utils.parseDatetime(newValue);
-                            if (newDate) {
-                                log.setStartDate(newDate);
-                                log.save();
-                                projectView.admin.timeTracker.flagOverlappingLogs();
-                                projectView.admin.render();
-                                projectView.admin.dirty = true;
-                            } else {
-                                return false;
-                            }
-                        }
-                    }(projectView, log));
-
-                    new EditableString(endDateCellDataEl, function(projectView, log) {
-                        return function(oldValue, newValue) {
-                            const newDate = Utils.parseDatetime(newValue);
-                            if (newDate) {
-                                log.setEndDate(newDate);
-                                log.save();
-                                projectView.admin.timeTracker.flagOverlappingLogs();
-                                projectView.admin.render();
-                                projectView.admin.dirty = true;
-                            } else {
-                                return false;
-                            }
-                        }
-                    }(projectView, log));
-
-                    new EditableString(messageCellDataEl, function(projectView, log) {
-                        return function(oldValue, newValue) {
-                            log.setMessage(newValue);
-                            log.save();
-                            projectView.admin.render();
-                            projectView.admin.dirty = true;
-                        }
-                    }(projectView, log));
-
-                    deleteCellButtonEl.click(function(projectView, log) {
-                        return function() {
-                            // NOTE: No character need escaping in a "confirm" window
-                            const warningMessage =
-                                "Are you sure you want to delete this log?\n" +
-                                "    Log: " + log.getMessage() + "\n" +
-                                "    Project: " + log.getProject().getName()
-                            if (window.confirm(warningMessage)) {
-                                log.delete();
-                                projectView.admin.timeTracker.reload();
-                                projectView.admin.render();
-                                projectView.admin.dirty = true;
-                            }
-                        };
-                    }(projectView, log));
+                    new EditableString(startDateCellDataEl, projectView.getEditLogStartDateFunction(log));
+                    new EditableString(endDateCellDataEl, projectView.getEditLogEndDateFunction(log));
+                    new EditableString(messageCellDataEl, projectView.getEditLogMessageFunction(log));
+                    deleteCellButtonEl.click(projectView.getDeleteLogFunction(log));
 
                     logsTable.append(logRow);
 

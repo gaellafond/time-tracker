@@ -1,8 +1,7 @@
 class ChronoView extends AbstractView {
 
     constructor(admin) {
-        super();
-        this.admin = admin;
+        super(admin);
     }
 
     render() {
@@ -146,68 +145,11 @@ class ChronoView extends AbstractView {
                 logRow.append(messageCellEl);
                 logRow.append(deleteCellEl);
 
-                new EditableProject(projectCellEl, chronoView.admin.timeTracker, project, function(chronoView, log) {
-                    return function(oldProject, newProject) {
-                        log.setProject(newProject);
-                        chronoView.admin.render();
-                        chronoView.admin.dirty = true;
-                    }
-                }(chronoView, log));
-
-                new EditableString(startDateCellDataEl, function(chronoView, log) {
-                    return function(oldValue, newValue) {
-                        const newDate = Utils.parseDatetime(newValue);
-                        if (newDate) {
-                            log.setStartDate(newDate);
-                            log.save();
-                            chronoView.admin.timeTracker.flagOverlappingLogs();
-                            chronoView.admin.render();
-                            chronoView.admin.dirty = true;
-                        } else {
-                            return false;
-                        }
-                    }
-                }(chronoView, log));
-
-                new EditableString(endDateCellDataEl, function(chronoView, log) {
-                    return function(oldValue, newValue) {
-                        const newDate = Utils.parseDatetime(newValue);
-                        if (newDate) {
-                            log.setEndDate(newDate);
-                            log.save();
-                            chronoView.admin.timeTracker.flagOverlappingLogs();
-                            chronoView.admin.render();
-                            chronoView.admin.dirty = true;
-                        } else {
-                            return false;
-                        }
-                    }
-                }(chronoView, log));
-
-                new EditableString(messageCellDataEl, function(chronoView, log) {
-                    return function(oldValue, newValue) {
-                        log.setMessage(newValue);
-                        log.save();
-                        chronoView.admin.render();
-                        chronoView.admin.dirty = true;
-                    }
-                }(chronoView, log));
-
-                deleteCellButtonEl.click(function(chronoView, log) {
-                    return function() {
-                        // NOTE: No character need escaping in a "confirm" window
-                        const warningMessage =
-                            "Are you sure you want to delete this log?\n" +
-                            "    Log: " + log.getMessage() + "\n" +
-                            "    Project: " + log.getProject().getName()
-                        if (window.confirm(warningMessage)) {
-                            log.delete();
-                            chronoView.admin.timeTracker.reload();
-                            chronoView.admin.render();
-                            chronoView.admin.dirty = true;
-                        }
-                    };
-                }(chronoView, log));
+                new EditableProject(projectCellEl, chronoView.admin.timeTracker, project, chronoView.getEditLogProjectFunction(log));
+                new EditableString(startDateCellDataEl, chronoView.getEditLogStartDateFunction(log));
+                new EditableString(endDateCellDataEl, chronoView.getEditLogEndDateFunction(log));
+                new EditableString(messageCellDataEl, chronoView.getEditLogMessageFunction(log));
+                deleteCellButtonEl.click(chronoView.getDeleteLogFunction(log));
 
                 logsTable.append(logRow);
             };
