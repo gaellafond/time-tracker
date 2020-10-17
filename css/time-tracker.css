@@ -231,7 +231,9 @@ div.spaceLeft span::after {
     overflow: auto;
 }
 .admin .time-ribbon table {
-    min-width: 100em;
+    /* Make the time ribbon large enough to read the numbers on small device,
+       even when there is tasks with time [00:00 - 23:59]. */
+    min-width: 90em;
 }
 
 .admin .viewSelector {
@@ -419,4 +421,12 @@ div.spaceLeft span::after {
 
 .time-ribbon table td.scaleCell {
     text-align: center;
+}
+
+/* Time display bellow the ribbon (in admin) are hidden when not enough space
+   instead of showing ellipsis.
+   NOTE: This won't happen because of the min-width, but without the "clip",
+         the ellipsis shows up when the ribbon is very large. */
+.time-ribbon table td.scaleCell .log .message {
+    text-overflow: clip;
 }

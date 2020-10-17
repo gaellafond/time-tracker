@@ -119,6 +119,7 @@ class TimeRibbon {
                 };
             }(this));
 
+            // Draw the hours bellow the ribbon
             let rowEl = $(`<tr class="scale"></tr>`);
             let scaleHeader = $(`<td class="rowHeader" colspan="2"></td>`);
             rowEl.append(scaleHeader);
