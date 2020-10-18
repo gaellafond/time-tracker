@@ -28,7 +28,8 @@ class AbstractView {
         return function(view) {
             return function(oldValue, newValue) {
                 const newDate = Utils.parseDatetime(newValue);
-                if (newDate && newDate <= log.getEndDate()) {
+                const endDate = log.getEndDate();
+                if (newDate && (endDate === null || newDate <= endDate)) {
                     log.setStartDate(newDate);
                     log.save();
                     view.admin.timeTracker.flagOverlappingLogs();
