@@ -16,7 +16,7 @@ class Log extends PersistentObject {
 
         const elapse = this.getElapseTime();
         this.markup = $(`
-            <div>
+            <div title="${Utils.escapeHTML(this.getMessage())}">
                 <span class="time" data-logkey="${this.getKey()}">${Utils.formatTime(elapse)}</span> - <span class="message">${Utils.escapeHTML(this.getMessage())}</span>
             </div>
         `);
@@ -61,6 +61,7 @@ class Log extends PersistentObject {
         // Add click event on log name (edit)
         const editableLogMessage = new EditableString(this.markup.find("span.message"), function(log) {
             return function(oldValue, newValue) {
+                log.markup.prop('title', newValue);
                 log.setMessage(newValue);
                 log.save();
             };

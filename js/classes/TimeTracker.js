@@ -303,7 +303,7 @@ class TimeTracker {
                 let elapse = Utils.getCurrentTimestamp() - log.getStartDate();
                 logEl.html(Utils.formatTime(elapse));
             };
-        }(log), 500);
+        }(log), 1000);
     }
 
     stopLogCounter() {
