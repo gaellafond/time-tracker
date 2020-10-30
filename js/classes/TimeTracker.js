@@ -291,7 +291,7 @@ class TimeTracker {
             if (this.runningLog.getKey() === log.getKey()) {
                 this.runningLog = null;
             }
-            this.stopLogCounter();
+            this.stopLogCounter(log.getStartDate());
         }
         this.runningLog = log;
         log.project.setActive(true);
@@ -306,10 +306,10 @@ class TimeTracker {
         }(log), 1000);
     }
 
-    stopLogCounter() {
+    stopLogCounter(endDate = null) {
         this.changePageTitle();
         if (this.runningLog != null) {
-            this.runningLog.setEndDate(Utils.getCurrentTimestamp());
+            this.runningLog.setEndDate(endDate === null ? Utils.getCurrentTimestamp() : endDate);
             this.runningLog.save();
             this.runningLog.getProject().setActive(false);
             this.runningLog = null;
