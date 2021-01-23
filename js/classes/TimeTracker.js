@@ -3,25 +3,38 @@ class TimeTracker {
     constructor(timeTrackerEl) {
         this.load();
 
+        // Header
         this.headerEl = $(`<div class="header"></div>`);
 
-        this.spaceLeftContainerEl = $(`<div class="spaceLeft"></div>`);
-        this.spaceLeftEl = $(`<span>?</span>`);
-        this.spaceLeftContainerEl.append(this.spaceLeftEl);
+        // Left buttons
+        this.leftButtonDivEl = $(`<div class="header-buttons-left"></div>`);
 
+        this.pauseButtonEl = $(`<button>Pause</button>`);
+        this.spaceLeftEl = $(`<span class="spaceLeft">?</span>`);
+
+        this.leftButtonDivEl.append(this.pauseButtonEl);
+        this.leftButtonDivEl.append(this.spaceLeftEl);
+
+
+        // Title
         this.pageTitleContainerEl = $(`<div class="pageTitle"></div>`);
         this.pageTitleEl = $(`<h1>${this.getName()}</h1>`);
         this.pageTitleContainerEl.append(this.pageTitleEl);
 
-        this.buttonsDivEl = $(`<div class="header-buttons"></div>`);
+
+        // Right buttons
+        this.rightButtonsDivEl = $(`<div class="header-buttons-right"></div>`);
         this.checkOutButtonEl = $(`<button>Stop timer</button>`);
         this.showAdminButtonEl = $(`<button>Admin</button>`);
-        this.buttonsDivEl.append(this.checkOutButtonEl);
-        this.buttonsDivEl.append(this.showAdminButtonEl);
 
-        this.headerEl.append(this.spaceLeftContainerEl);
+        this.rightButtonsDivEl.append(this.checkOutButtonEl);
+        this.rightButtonsDivEl.append(this.showAdminButtonEl);
+
+
+        // Assemble header
+        this.headerEl.append(this.leftButtonDivEl);
         this.headerEl.append(this.pageTitleContainerEl);
-        this.headerEl.append(this.buttonsDivEl);
+        this.headerEl.append(this.rightButtonsDivEl);
 
         this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
         this.dashboardEl = $(`<div class="dashboard"></div>`);
@@ -37,6 +50,7 @@ class TimeTracker {
         this.runningLog = null;
         this.runningLogInterval = null;
 
+        this.pausePage = new PausePage(this);
         this.admin = new Admin(this);
 
         this.newProjectBox =
@@ -125,6 +139,12 @@ class TimeTracker {
         $(window).on("localStorageChange", function(timeTracker) {
             return function(event) {
                 timeTracker.updateSpaceLeft();
+            };
+        }(this));
+
+        this.pauseButtonEl.click(function (timeTracker) {
+            return function() {
+                timeTracker.pausePage.pause();
             };
         }(this));
 

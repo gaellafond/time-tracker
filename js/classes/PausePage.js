@@ -1,0 +1,83 @@
+class PausePage {
+
+    constructor(timeTracker) {
+        this.timeTracker = timeTracker;
+        this.overlayMarkup = $("body .overlay");
+
+        this.markup = $(
+        `<div class="pause-page">
+            <div class="buttons">
+                <button class="resume">Resume</button>
+            </div>
+        </div>`);
+
+        this.resumeButtonEl = this.markup.find("button.resume");
+        this.resumeButtonEl.click(function (pausePage) {
+            return function() {
+                pausePage.resume();
+            };
+        }(this));
+
+        const body = $("body");
+        body.prepend(this.markup);
+
+        this.init();
+    }
+
+    init() {
+        if (this.isPaused()) {
+            this.show();
+        }
+    }
+
+    pause() {
+        if (!this.isPaused()) {
+            const runningLog = this.timeTracker.runningLog;
+            if (runningLog) {
+                const jsonTimeTrackerPauseData = {
+                    "pausedLog": runningLog.toJson(),
+                };
+
+                window.localStorage.setItem('timeTrackerPauseData', JSON.stringify(jsonTimeTrackerPauseData));
+                this.timeTracker.stopLogCounter();
+            }
+        }
+
+        if (this.isPaused()) {
+            this.show();
+        }
+    }
+
+    resume() {
+        const timeTrackerPauseDataStr = window.localStorage.getItem('timeTrackerPauseData');
+        if (timeTrackerPauseDataStr) {
+            const jsonTimeTrackerPauseData = JSON.parse(timeTrackerPauseDataStr);
+            const jsonPausedLog = jsonTimeTrackerPauseData["pausedLog"];
+            if (jsonPausedLog) {
+                const pausedLog = Log.load(this.timeTracker, jsonPausedLog);
+                const pausedLogProject = pausedLog.project;
+                if (pausedLogProject) {
+                    pausedLogProject.addLog();
+                }
+            }
+        }
+
+        window.localStorage.removeItem('timeTrackerPauseData');
+
+        this.hide();
+    }
+
+    isPaused() {
+        return !!window.localStorage.getItem('timeTrackerPauseData');
+    }
+
+    show() {
+        this.overlayMarkup.show();
+        this.markup.show();
+    }
+
+    hide() {
+        this.overlayMarkup.hide();
+        this.markup.hide();
+    }
+}

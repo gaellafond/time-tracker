@@ -4,7 +4,7 @@ class Admin {
         this.dirty = false;
 
         this.timeTracker = timeTracker;
-        this.overlayMarkup = $(`<div class="overlay"></div>`);
+        this.overlayMarkup = $("body .overlay");
         this.dateFilter = null;
         this.searchFilter = null;
 
@@ -232,7 +232,6 @@ class Admin {
 
         const body = $("body");
         body.prepend(this.markup);
-        body.prepend(this.overlayMarkup);
 
         this.adminTimeRibbon = new TimeRibbon(this.markup.find(".time-ribbon"), this.timeTracker);
         this.adminTimeRibbon.setDrawTable(true);

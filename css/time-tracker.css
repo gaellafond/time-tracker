@@ -65,8 +65,12 @@ div.header {
     margin: 1em 0;
 }
 
+/* Keep button to the left, when they wrap (on small screen) */
+div.header .header-buttons-left {
+    margin-right: auto;
+}
 /* Keep button to the right, when they wrap (on small screen) */
-div.header .header-buttons {
+div.header .header-buttons-right {
     margin-left: auto;
 }
 
@@ -84,10 +88,10 @@ div.pageTitle input {
     font-size: 2em;
 }
 
-div.spaceLeft span::before {
+span.spaceLeft::before {
     content: "Space left: ";
 }
-div.spaceLeft span::after {
+span.spaceLeft::after {
     content: " MB";
 }
 
@@ -179,6 +183,7 @@ div.spaceLeft span::after {
     z-index: 1000;
 }
 
+.pause-page,
 .admin-wrapper {
     display: none;
     position: fixed;
@@ -187,6 +192,18 @@ div.spaceLeft span::after {
     top: 0;
     left: 0;
     z-index: 1001;
+}
+
+.pause-page {
+    text-align: center;
+}
+.pause-page .buttons {
+    margin-top: 40vh;
+}
+/* Make the resume button really BIG */
+.pause-page .buttons .resume {
+    padding: 1em 2em;
+    font-size: 3em;
 }
 
 .admin {

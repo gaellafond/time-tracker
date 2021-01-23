@@ -1125,25 +1125,38 @@ class TimeTracker {
     constructor(timeTrackerEl) {
         this.load();
 
+        // Header
         this.headerEl = $(`<div class="header"></div>`);
 
-        this.spaceLeftContainerEl = $(`<div class="spaceLeft"></div>`);
-        this.spaceLeftEl = $(`<span>?</span>`);
-        this.spaceLeftContainerEl.append(this.spaceLeftEl);
+        // Left buttons
+        this.leftButtonDivEl = $(`<div class="header-buttons-left"></div>`);
 
+        this.pauseButtonEl = $(`<button>Pause</button>`);
+        this.spaceLeftEl = $(`<span class="spaceLeft">?</span>`);
+
+        this.leftButtonDivEl.append(this.pauseButtonEl);
+        this.leftButtonDivEl.append(this.spaceLeftEl);
+
+
+        // Title
         this.pageTitleContainerEl = $(`<div class="pageTitle"></div>`);
         this.pageTitleEl = $(`<h1>${this.getName()}</h1>`);
         this.pageTitleContainerEl.append(this.pageTitleEl);
 
-        this.buttonsDivEl = $(`<div class="header-buttons"></div>`);
+
+        // Right buttons
+        this.rightButtonsDivEl = $(`<div class="header-buttons-right"></div>`);
         this.checkOutButtonEl = $(`<button>Stop timer</button>`);
         this.showAdminButtonEl = $(`<button>Admin</button>`);
-        this.buttonsDivEl.append(this.checkOutButtonEl);
-        this.buttonsDivEl.append(this.showAdminButtonEl);
 
-        this.headerEl.append(this.spaceLeftContainerEl);
+        this.rightButtonsDivEl.append(this.checkOutButtonEl);
+        this.rightButtonsDivEl.append(this.showAdminButtonEl);
+
+
+        // Assemble header
+        this.headerEl.append(this.leftButtonDivEl);
         this.headerEl.append(this.pageTitleContainerEl);
-        this.headerEl.append(this.buttonsDivEl);
+        this.headerEl.append(this.rightButtonsDivEl);
 
         this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
         this.dashboardEl = $(`<div class="dashboard"></div>`);
@@ -1159,6 +1172,7 @@ class TimeTracker {
         this.runningLog = null;
         this.runningLogInterval = null;
 
+        this.pausePage = new PausePage(this);
         this.admin = new Admin(this);
 
         this.newProjectBox =
@@ -1247,6 +1261,12 @@ class TimeTracker {
         $(window).on("localStorageChange", function(timeTracker) {
             return function(event) {
                 timeTracker.updateSpaceLeft();
+            };
+        }(this));
+
+        this.pauseButtonEl.click(function (timeTracker) {
+            return function() {
+                timeTracker.pausePage.pause();
             };
         }(this));
 
@@ -1663,6 +1683,92 @@ class TimeRibbon {
 }
 </script>
 <script>
+// FILE: js/classes/PausePage.js
+class PausePage {
+
+    constructor(timeTracker) {
+        this.timeTracker = timeTracker;
+        this.overlayMarkup = $("body .overlay");
+
+        this.markup = $(
+        `<div class="pause-page">
+            <div class="buttons">
+                <button class="resume">Resume</button>
+            </div>
+        </div>`);
+
+        this.resumeButtonEl = this.markup.find("button.resume");
+        this.resumeButtonEl.click(function (pausePage) {
+            return function() {
+                pausePage.resume();
+            };
+        }(this));
+
+        const body = $("body");
+        body.prepend(this.markup);
+
+        this.init();
+    }
+
+    init() {
+        if (this.isPaused()) {
+            this.show();
+        }
+    }
+
+    pause() {
+        if (!this.isPaused()) {
+            const runningLog = this.timeTracker.runningLog;
+            if (runningLog) {
+                const jsonTimeTrackerPauseData = {
+                    "pausedLog": runningLog.toJson(),
+                };
+
+                window.localStorage.setItem('timeTrackerPauseData', JSON.stringify(jsonTimeTrackerPauseData));
+                this.timeTracker.stopLogCounter();
+            }
+        }
+
+        if (this.isPaused()) {
+            this.show();
+        }
+    }
+
+    resume() {
+        const timeTrackerPauseDataStr = window.localStorage.getItem('timeTrackerPauseData');
+        if (timeTrackerPauseDataStr) {
+            const jsonTimeTrackerPauseData = JSON.parse(timeTrackerPauseDataStr);
+            const jsonPausedLog = jsonTimeTrackerPauseData["pausedLog"];
+            if (jsonPausedLog) {
+                const pausedLog = Log.load(this.timeTracker, jsonPausedLog);
+                const pausedLogProject = pausedLog.project;
+                if (pausedLogProject) {
+                    pausedLogProject.addLog();
+                }
+            }
+        }
+
+        window.localStorage.removeItem('timeTrackerPauseData');
+
+        this.hide();
+    }
+
+    isPaused() {
+        return !!window.localStorage.getItem('timeTrackerPauseData');
+    }
+
+    show() {
+        this.overlayMarkup.show();
+        this.markup.show();
+    }
+
+    hide() {
+        this.overlayMarkup.hide();
+        this.markup.hide();
+    }
+}
+</script>
+<script>
 // FILE: js/classes/Admin.js
 class Admin {
 
@@ -1670,7 +1776,7 @@ class Admin {
         this.dirty = false;
 
         this.timeTracker = timeTracker;
-        this.overlayMarkup = $(`<div class="overlay"></div>`);
+        this.overlayMarkup = $("body .overlay");
         this.dateFilter = null;
         this.searchFilter = null;
 
@@ -1898,7 +2004,6 @@ class Admin {
 
         const body = $("body");
         body.prepend(this.markup);
-        body.prepend(this.overlayMarkup);
 
         this.adminTimeRibbon = new TimeRibbon(this.markup.find(".time-ribbon"), this.timeTracker);
         this.adminTimeRibbon.setDrawTable(true);
@@ -3031,8 +3136,12 @@ div.header {
     margin: 1em 0;
 }
 
+/* Keep button to the left, when they wrap (on small screen) */
+div.header .header-buttons-left {
+    margin-right: auto;
+}
 /* Keep button to the right, when they wrap (on small screen) */
-div.header .header-buttons {
+div.header .header-buttons-right {
     margin-left: auto;
 }
 
@@ -3050,10 +3159,10 @@ div.pageTitle input {
     font-size: 2em;
 }
 
-div.spaceLeft span::before {
+span.spaceLeft::before {
     content: "Space left: ";
 }
-div.spaceLeft span::after {
+span.spaceLeft::after {
     content: " MB";
 }
 
@@ -3145,6 +3254,7 @@ div.spaceLeft span::after {
     z-index: 1000;
 }
 
+.pause-page,
 .admin-wrapper {
     display: none;
     position: fixed;
@@ -3153,6 +3263,18 @@ div.spaceLeft span::after {
     top: 0;
     left: 0;
     z-index: 1001;
+}
+
+.pause-page {
+    text-align: center;
+}
+.pause-page .buttons {
+    margin-top: 40vh;
+}
+/* Make the resume button really BIG */
+.pause-page .buttons .resume {
+    padding: 1em 2em;
+    font-size: 3em;
 }
 
 .admin {
@@ -3411,6 +3533,7 @@ div.spaceLeft span::after {
 
 <body>
 
+<div class="overlay"></div>
 <div id="time-tracker"></div>
 
 </body>
