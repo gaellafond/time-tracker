@@ -44,7 +44,7 @@ class TimeTracker {
         timeTrackerEl.append(this.todayTimeRibbonEl);
         timeTrackerEl.append(this.dashboardEl);
 
-
+        this.categoryMap = {};
         this.projectMap = {};
 
         this.runningLog = null;
@@ -77,6 +77,8 @@ class TimeTracker {
 
         this.dashboardEl.append(this.newProjectBox);
 
+        this.reloadCategories();
+        this.reloadCategoriesMarkup();
         this.reloadProjects();
         this.reloadProjectsMarkup();
 
@@ -174,6 +176,8 @@ class TimeTracker {
     }
 
     reload() {
+        this.reloadCategories();
+        this.reloadCategoriesMarkup();
         this.reloadProjects();
         this.reloadProjectsMarkup();
 
@@ -189,6 +193,31 @@ class TimeTracker {
         });
 
         this.loadProjectsLogs();
+    }
+
+    reloadCategories() {
+        this.categoryMap = {};
+
+// Add a fake category, to test
+//this.addCategory(new Category(this, "Fake category", 1));
+
+        let jsonCategories = PersistentObject.getAllJSON(Category.keyPrefix);
+        jsonCategories.forEach(jsonCategory => {
+            this.addCategory(Category.load(this, jsonCategory));
+        });
+    }
+
+    addCategory(category) {
+        this.categoryMap[category.getKey()] = category;
+    }
+
+    getCategoryMap() {
+        return this.categoryMap;
+    }
+
+    getCategories() {
+        // Return an array of categories, ordered my "order"
+        return this._sortCategoryArray(Object.values(this.categoryMap));
     }
 
     addProject(project) {
@@ -222,6 +251,11 @@ class TimeTracker {
         });
 
         return projects;
+    }
+
+    _sortCategoryArray(categories) {
+        // Categories sort the same way as projects
+        return this._sortProjectArray(categories);
     }
 
     // Used to auto fix order after drag n drop, delete project, etc
@@ -259,6 +293,19 @@ class TimeTracker {
                 timeTracker.newProjectBox.before(project.getMarkup());
                 project.scrollToBottom();
                 project.addEventListeners();
+            };
+        }(this));
+    }
+
+    reloadCategoriesMarkup() {
+        // Remove all category
+        this.dashboardEl.parent().find(".category").remove();
+
+        const categories = this.getCategories();
+        $.each(categories, function(timeTracker) {
+            return function(index, category) {
+                // Insert the JQuery element to the page Markup
+                timeTracker.dashboardEl.before(category.getMarkup());
             };
         }(this));
     }
