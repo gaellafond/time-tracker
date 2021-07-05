@@ -72,6 +72,14 @@ class Utils {
         return hrs + ':' + Utils.padNumber(mins) + ':' + Utils.padNumber(secs);
     }
 
+    static formatTotalTime(elapseSeconds) {
+        // https://stackoverflow.com/questions/9763441/milliseconds-to-time-in-javascript
+
+        let decimalHours = elapseSeconds / 3600
+
+        return Utils.formatTime(elapseSeconds) + " <span class=\"decimal-time\">" + decimalHours.toFixed(2) + "</span>";
+    }
+
     static formatDate(timestamp) {
         if (timestamp === null) {
             return "";
@@ -2567,8 +2575,8 @@ class ChronoView extends AbstractView {
             <td class="key"></td>
             <th>TOTAL</th>
             <th colspan="2"></th>
-            <td>${Utils.formatTime(dayTotal)}</td>
-            <td>${Utils.formatTime(dayTotal * timeNormalisation)}</td>
+            <td>${Utils.formatTotalTime(dayTotal)}</td>
+            <td>${Utils.formatTotalTime(dayTotal * timeNormalisation)}</td>
             <td colspan="2"></td>
         </tr>`);
         logsTable.append(dayTotalRow);
@@ -2754,8 +2762,8 @@ class DailyProjectView extends AbstractView {
                         <td class="key"></td>
                         <th style="background-color: ${projectColor}">TOTAL</th>
                         <th colspan="2"></th>
-                        <td>${Utils.formatTime(total)}</td>
-                        <td>${Utils.formatTime(total * timeNormalisation)}</td>
+                        <td>${Utils.formatTotalTime(total)}</td>
+                        <td>${Utils.formatTotalTime(total * timeNormalisation)}</td>
                         <td colspan="2"></td>
                     </tr>`);
 
@@ -2777,8 +2785,8 @@ class DailyProjectView extends AbstractView {
             <td class="key"></td>
             <th>GRAND TOTAL</th>
             <th colspan="2"></th>
-            <td>${Utils.formatTime(dayTotal)}</td>
-            <td>${Utils.formatTime(dayTotal * timeNormalisation)}</td>
+            <td>${Utils.formatTotalTime(dayTotal)}</td>
+            <td>${Utils.formatTotalTime(dayTotal * timeNormalisation)}</td>
             <td colspan="2"></td>
         </tr>`);
         logsTable.append(dayTotalRow);
@@ -3048,11 +3056,11 @@ class ProjectView extends AbstractView {
         </tr>`);
 
         let totalCellEl = $(`<td></td>`);
-        let totalCellDataEl = $(`<span>${Utils.formatTime(total)}</span>`);
+        let totalCellDataEl = $(`<span>${Utils.formatTotalTime(total)}</span>`);
         totalCellEl.append(totalCellDataEl);
 
         let totalNormalisedCellEl = $(`<td></td>`);
-        let totalNormalisedCellDataEl = $(`<span>${Utils.formatTime(total * timeNormalisation)}</span>`);
+        let totalNormalisedCellDataEl = $(`<span>${Utils.formatTotalTime(total * timeNormalisation)}</span>`);
         totalNormalisedCellEl.append(totalNormalisedCellDataEl);
 
         totalRow.append(totalCellEl);
@@ -3275,6 +3283,17 @@ span.spaceLeft::after {
 .pause-page .buttons .resume {
     padding: 1em 2em;
     font-size: 3em;
+}
+
+.decimal-time {
+    color: #009900;
+    margin-left: 1em;
+}
+.decimal-time::before {
+    content: "(";
+}
+.decimal-time::after {
+    content: " h)";
 }
 
 .admin {

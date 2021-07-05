@@ -15,10 +15,10 @@ It was not designed to be used as a replacement for a business time sheet.
 It was designed to help filling the time sheet when necessary, and to help
 calculating how much time was spend on various projects.
 
-All data logged in **100% confidential**.
+All data logged in is **100% confidential**.
 I wanted to be able to use it to also track time spend on tasks unrelated to
-work, such as calling mum, going for a walk, etc. without worrying about been
-ask to justify those activities.
+work, such as calling mum, going for a walk, etc. without worrying about
+justifying those activities.
 
 ## Installation
 

@@ -256,11 +256,11 @@ class ProjectView extends AbstractView {
         </tr>`);
 
         let totalCellEl = $(`<td></td>`);
-        let totalCellDataEl = $(`<span>${Utils.formatTime(total)}</span>`);
+        let totalCellDataEl = $(`<span>${Utils.formatTotalTime(total)}</span>`);
         totalCellEl.append(totalCellDataEl);
 
         let totalNormalisedCellEl = $(`<td></td>`);
-        let totalNormalisedCellDataEl = $(`<span>${Utils.formatTime(total * timeNormalisation)}</span>`);
+        let totalNormalisedCellDataEl = $(`<span>${Utils.formatTotalTime(total * timeNormalisation)}</span>`);
         totalNormalisedCellEl.append(totalNormalisedCellDataEl);
 
         totalRow.append(totalCellEl);

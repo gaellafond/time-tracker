@@ -172,8 +172,8 @@ class DailyProjectView extends AbstractView {
                         <td class="key"></td>
                         <th style="background-color: ${projectColor}">TOTAL</th>
                         <th colspan="2"></th>
-                        <td>${Utils.formatTime(total)}</td>
-                        <td>${Utils.formatTime(total * timeNormalisation)}</td>
+                        <td>${Utils.formatTotalTime(total)}</td>
+                        <td>${Utils.formatTotalTime(total * timeNormalisation)}</td>
                         <td colspan="2"></td>
                     </tr>`);
 
@@ -195,8 +195,8 @@ class DailyProjectView extends AbstractView {
             <td class="key"></td>
             <th>GRAND TOTAL</th>
             <th colspan="2"></th>
-            <td>${Utils.formatTime(dayTotal)}</td>
-            <td>${Utils.formatTime(dayTotal * timeNormalisation)}</td>
+            <td>${Utils.formatTotalTime(dayTotal)}</td>
+            <td>${Utils.formatTotalTime(dayTotal * timeNormalisation)}</td>
             <td colspan="2"></td>
         </tr>`);
         logsTable.append(dayTotalRow);

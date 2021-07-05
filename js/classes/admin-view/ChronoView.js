@@ -159,8 +159,8 @@ class ChronoView extends AbstractView {
             <td class="key"></td>
             <th>TOTAL</th>
             <th colspan="2"></th>
-            <td>${Utils.formatTime(dayTotal)}</td>
-            <td>${Utils.formatTime(dayTotal * timeNormalisation)}</td>
+            <td>${Utils.formatTotalTime(dayTotal)}</td>
+            <td>${Utils.formatTotalTime(dayTotal * timeNormalisation)}</td>
             <td colspan="2"></td>
         </tr>`);
         logsTable.append(dayTotalRow);

@@ -206,6 +206,17 @@ span.spaceLeft::after {
     font-size: 3em;
 }
 
+.decimal-time {
+    color: #009900;
+    margin-left: 1em;
+}
+.decimal-time::before {
+    content: "(";
+}
+.decimal-time::after {
+    content: " h)";
+}
+
 .admin {
     background-color: #FFFFFF;
     /* Firefox do not understand padding bottom very well. Make it 0 and add padding to the buttons div */

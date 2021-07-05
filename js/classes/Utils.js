@@ -55,6 +55,14 @@ class Utils {
         return hrs + ':' + Utils.padNumber(mins) + ':' + Utils.padNumber(secs);
     }
 
+    static formatTotalTime(elapseSeconds) {
+        // https://stackoverflow.com/questions/9763441/milliseconds-to-time-in-javascript
+
+        let decimalHours = elapseSeconds / 3600
+
+        return Utils.formatTime(elapseSeconds) + " <span class=\"decimal-time\">" + decimalHours.toFixed(2) + "</span>";
+    }
+
     static formatDate(timestamp) {
         if (timestamp === null) {
             return "";
