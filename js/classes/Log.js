@@ -122,7 +122,7 @@ class Log extends PersistentObject {
     toJson() {
         return {
             "key": this.getKey(),
-            "projectKey": this.project.getKey(),
+            "projectKey": this.project ? this.project.getKey() : null,
             "message": this.message,
             "startDate": this.startDate,
             "endDate": this.endDate

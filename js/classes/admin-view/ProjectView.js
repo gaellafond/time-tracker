@@ -15,6 +15,7 @@ class ProjectView extends AbstractView {
                 <th class="key">Key</th>
                 <th>Name</th>
                 <th>Colour</th>
+                <th>Category</th>
                 <th>Order</th>
                 <th class="delete-column">X</th>
             </tr>
@@ -28,6 +29,7 @@ class ProjectView extends AbstractView {
                     <td class="key">${project.getKey()}</td>
                     <td class="name">${Utils.escapeHTML(project.getName())}</td>
                 </tr>`);
+
 
                 let projectColourCellEl = $(`<td></td>`);
                 let projectColourSelect = $(`<select class="projectColour"></select>`);
@@ -46,6 +48,27 @@ class ProjectView extends AbstractView {
                     };
                 }(projectView, project));
                 projectTableRow.append(projectColourCellEl);
+
+
+                let projectCategoryCellEl = $(`<td></td>`);
+                let projectCategorySelect = $(`<select class="projectCategory"></select>`);
+                const categoryMap = projectView.admin.timeTracker.getCategoryMap();
+                $.each(categoryMap, function(categoryKey, category) {
+                    const selected = categoryKey === project.getCategoryId();
+                    projectCategorySelect.append($(`<option value="${categoryKey}" ${selected ? "selected=\"selected\"" : ""}>${category.getName()}</option>`));
+                });
+                projectCategoryCellEl.append(projectCategorySelect);
+
+                projectCategorySelect.change(function(projectView, project) {
+                    return function() {
+                        project.setCategoryId($(this).val());
+                        project.save();
+                        projectView.admin.render();
+                        projectView.admin.dirty = true;
+                    };
+                }(projectView, project));
+                projectTableRow.append(projectCategoryCellEl);
+
 
                 let projectOrderCellEl = $(`<td></td>`);
                 let projectOrderSelect = $(`<select class="projectOrder"></select>`);
@@ -90,6 +113,7 @@ class ProjectView extends AbstractView {
                     };
                 }(projectView, project));
                 projectTableRow.append(projectOrderCellEl);
+
 
                 let deleteCellEl = $(`<td class="delete-column"></td>`);
                 let deleteCellButtonEl = $(`<button class="delete">X</button>`);

@@ -379,6 +379,109 @@ class EditableString {
 }
 </script>
 <script>
+// FILE: js/classes/EditableCategoryName.js
+// onChangeCallback and afterEditCallback
+// function(oldValue, newValue)
+// Return false to cancel
+class EditableCategoryName {
+    constructor(legendEl, onChangeCallback, afterEditCallback, defaultValue="EMPTY") {
+        this.legendEl = legendEl;
+        this.legendEl.addClass("editableString");
+
+        // This class do not allow empty string.
+        // But the value might already be empty in the DB.
+        // If it's the case, the user won't be able to click it to edit it
+        // (you can't click an element with no width).
+        // If this happens, set its value to something that can be selected by the user.
+        if (!this.legendEl.text()) {
+            this.legendEl.html('<em class="empty">' + defaultValue + '</em>');
+        }
+
+        this.onChangeCallback = onChangeCallback;
+        this.afterEditCallback = afterEditCallback;
+        this.autoSelect = false;
+        this.allowEmpty = false;
+        this.cssClass = "";
+
+        this.legendEl.click(function(editableString) {
+            return function() {
+                editableString.toggleEditOn();
+            };
+        }(this));
+    }
+
+    // Auto select the text content when toggling edit mode, for easy text replacement.
+    setAutoSelect(autoSelect) {
+        this.autoSelect = !!autoSelect;
+    }
+
+    setAllowEmpty(allowEmpty) {
+        this.allowEmpty = !!allowEmpty;
+    }
+
+    setInputCssClass(cssClass) {
+        this.cssClass = cssClass;
+    }
+
+    toggleEditOn() {
+        if (!this.inputEl) {
+            // Hide the legend, but do not remove it, to not mess with the layout of the page
+            this.legendEl.css("visibility", "hidden");
+            this.inputEl = $(`<input class="${this.cssClass}" type="text" value="${this.legendEl.text()}">`);
+            this.legendEl.after(this.inputEl);
+            if (this.autoSelect) {
+                this.inputEl.select(); // Select the text in the text field
+            } else {
+                this.inputEl.focus(); // Put the cursor in the input field to start editing
+            }
+
+            const changeFunction = function(editableString) {
+                return function() {
+                    editableString.toggleEditOff();
+                };
+            }(this);
+
+            // Update the field value when...
+            this.inputEl.change(changeFunction); // The user tape "enter"
+            this.inputEl.focusout(changeFunction); // The user clicked somewhere else in the page
+        }
+    }
+
+    toggleEditOff() {
+        if (this.inputEl) {
+            // Get the old value from the span element
+            const oldValue = this.legendEl.text();
+            // Get the new value from the input field
+            const newValue = this.inputEl.val().trim();
+
+            if (newValue !== oldValue) {
+                if (this.allowEmpty || newValue.length) {
+                    // Call the callback, to save the value to the Database
+                    let success = true;
+                    if (this.onChangeCallback) {
+                        success = this.onChangeCallback(oldValue, newValue);
+                    }
+
+                    // Set the new value in the html element, unless the callback explicitly returns false
+                    if (success !== false) {
+                        this.legendEl.text(newValue);
+                        if (this.afterEditCallback) {
+                            this.afterEditCallback(oldValue, newValue);
+                        }
+                    }
+                }
+            }
+
+            // Delete the input field and show the changed element
+            this.inputEl.remove();
+            this.legendEl.css("visibility", "visible");
+
+            this.inputEl = null;
+        }
+    }
+}
+</script>
+<script>
 // FILE: js/classes/EditableProject.js
 class EditableProject {
     constructor(spanEl, timeTracker, project, onChangeCallback, afterEditCallback) {
@@ -573,9 +676,133 @@ class PersistentObject {
 }
 </script>
 <script>
+// FILE: js/classes/Category.js
+class Category extends PersistentObject {
+    constructor(timeTracker, name, order, key=null) {
+        if (key === null) {
+            super(Category.keyPrefix, false);
+        } else {
+            super(key, true);
+        }
+
+        this.categoryClass = "category";
+        this.timeTracker = timeTracker;
+        this.name = name;
+        this.order = order;
+
+        this.projectMap = {};
+
+        this.markup = null;
+    }
+
+    static get keyPrefix() {
+        return "cat";
+    }
+
+    static load(timeTracker, jsonCategory) {
+        return new Category(
+            timeTracker,
+            jsonCategory.name,
+            jsonCategory.order,
+            jsonCategory.key
+        );
+    }
+
+    getCategoryClass() {
+        return this.categoryClass;
+    }
+    // Needs to be called before "getMarkup()"
+    setCategoryClass(categoryClass) {
+        this.categoryClass = categoryClass;
+    }
+
+    getName() {
+        return this.name;
+    }
+    setName(name) {
+        this.name = name;
+    }
+
+    getOrder() {
+        return this.order;
+    }
+    setOrder(order) {
+        this.order = order;
+    }
+
+    addProject(project) {
+        this.projectMap[project.getKey()] = project;
+    }
+    getProjectMap() {
+        return this.projectMap;
+    }
+    getProjects() {
+        // Return an array of projects, ordered by "order"
+        return TimeTracker.sortProjectArray(Object.values(this.projectMap));
+    }
+
+    getMarkup() {
+        if (this.markup == null) {
+            // Create the JQuery element
+            this.markup = $(`
+                <fieldset class="${this.getCategoryClass()}"><legend class="category-header">${this.getName()}</legend></fieldset>
+            `);
+
+            const editableCategoryName = new EditableCategoryName(this.markup.find("legend.category-header"), function(category) {
+                return function(oldValue, newValue) {
+                    category.setName(newValue);
+                    category.save();
+                };
+            }(this));
+            editableCategoryName.setAutoSelect(true);
+            editableCategoryName.setInputCssClass("category-header");
+        }
+        return this.markup;
+    }
+
+    // Used to re-order project after a drag n drop
+    reloadProjectsMarkup() {
+        // Remove project markup from current category, if any
+        this.markup.find(".project").remove();
+
+        const projects = this.getProjects();
+        const newProjectBox = this.markup.find(".new-project");
+
+        if (newProjectBox.length) {
+            $.each(projects, function(category) {
+                return function(index, project) {
+                    // Insert the JQuery element to the page Markup, before the "New Project" box
+                    newProjectBox.before(project.getMarkup());
+                    project.scrollToBottom();
+                    project.addEventListeners();
+                };
+            }(this));
+        } else {
+            $.each(projects, function(category) {
+                return function(index, project) {
+                    // Insert the JQuery element to the page Markup
+                    category.markup.append(project.getMarkup());
+                    project.scrollToBottom();
+                    project.addEventListeners();
+                };
+            }(this));
+        }
+    }
+
+    toJson() {
+        return {
+            "key": this.getKey(),
+            "name": this.name,
+            "order": this.order
+        }
+    }
+
+}
+</script>
+<script>
 // FILE: js/classes/Project.js
 class Project extends PersistentObject {
-    constructor(timeTracker, name, colourIndex, order, selected, key=null) {
+    constructor(timeTracker, name, categoryId, colourIndex, order, selected, key=null) {
         if (key === null) {
             super(Project.keyPrefix, false);
         } else {
@@ -584,6 +811,7 @@ class Project extends PersistentObject {
 
         this.timeTracker = timeTracker;
         this.name = name;
+        this.categoryId = categoryId;
         this.colourIndex = colourIndex;
         this.order = order;
         // Set to false to ignore in the admin
@@ -682,6 +910,7 @@ class Project extends PersistentObject {
         return new Project(
             timeTracker,
             jsonProject.name,
+            jsonProject.categoryId,
             jsonProject.colourIndex !== undefined ? jsonProject.colourIndex : jsonProject.bgColourIndex,
             jsonProject.order,
             jsonProject.selected === undefined ? true : jsonProject.selected,
@@ -885,6 +1114,13 @@ class Project extends PersistentObject {
         this.name = name;
     }
 
+    getCategoryId() {
+        return this.categoryId;
+    }
+    setCategoryId(categoryId) {
+        this.categoryId = categoryId;
+    }
+
     getLastLog() {
         if (this.logs !== null && this.logs.length > 0) {
             return this.logs[this.logs.length - 1];
@@ -933,6 +1169,7 @@ class Project extends PersistentObject {
         return {
             "key": this.getKey(),
             "name": this.name,
+            "categoryId": this.categoryId,
             "colourIndex": this.colourIndex,
             "order": this.order,
             "selected": this.selected
@@ -1074,7 +1311,7 @@ class Log extends PersistentObject {
     toJson() {
         return {
             "key": this.getKey(),
-            "projectKey": this.project.getKey(),
+            "projectKey": this.project ? this.project.getKey() : null,
             "message": this.message,
             "startDate": this.startDate,
             "endDate": this.endDate
@@ -1174,14 +1411,19 @@ class TimeTracker {
         timeTrackerEl.append(this.todayTimeRibbonEl);
         timeTrackerEl.append(this.dashboardEl);
 
-
-        this.projectMap = {};
+        this.categoryMap = {};
 
         this.runningLog = null;
         this.runningLogInterval = null;
 
         this.pausePage = new PausePage(this);
         this.admin = new Admin(this);
+
+        this.uncategorisedCategory = new Category(this, "Uncategorised", 0, "UNCATEGORISED");
+        this.uncategorisedCategory.setCategoryClass("new-category");
+        const uncategorisedCategoryMarkup = this.uncategorisedCategory.getMarkup();
+
+        this.dashboardEl.append(uncategorisedCategoryMarkup);
 
         this.newProjectBox =
             $(`<div class="new-project" id="new-project">
@@ -1201,14 +1443,14 @@ class TimeTracker {
                 let newProject = new Project(timeTracker, "New project", colourIndex, projectOrder, true);
                 newProject.save();
                 timeTracker.addProject(newProject);
-                timeTracker.reloadProjectsMarkup();
+                timeTracker.reloadCategoriesMarkup();
             };
         }(this));
 
-        this.dashboardEl.append(this.newProjectBox);
+        uncategorisedCategoryMarkup.append(this.newProjectBox);
 
-        this.reloadProjects();
-        this.reloadProjectsMarkup();
+        this.reloadCategories();
+        this.reloadCategoriesMarkup();
 
         const currentDay = Utils.getCurrentDayStart();
         const oneDay = 24 * 60 * 60;
@@ -1304,15 +1546,24 @@ class TimeTracker {
     }
 
     reload() {
-        this.reloadProjects();
-        this.reloadProjectsMarkup();
+        this.reloadCategories();
+        this.reloadCategoriesMarkup();
 
         this.todayTimeRibbon.render([this.todayTimeRibbonFilter]);
     }
 
-    reloadProjects() {
-        this.projectMap = {};
+    reloadCategories() {
+        this.categoryMap = {};
+        this.addCategory(this.uncategorisedCategory);
 
+        let jsonCategories = PersistentObject.getAllJSON(Category.keyPrefix);
+        jsonCategories.forEach(jsonCategory => {
+            this.addCategory(Category.load(this, jsonCategory));
+        });
+
+        this.reloadProjects();
+    }
+    reloadProjects() {
         let jsonProjects = PersistentObject.getAllJSON(Project.keyPrefix);
         jsonProjects.forEach(jsonProject => {
             this.addProject(Project.load(this, jsonProject));
@@ -1321,31 +1572,58 @@ class TimeTracker {
         this.loadProjectsLogs();
     }
 
+    addCategory(category) {
+        this.categoryMap[category.getKey()] = category;
+    }
+
+    getCategoryMap() {
+        return this.categoryMap;
+    }
+
+    getCategories() {
+        // Return an array of categories, ordered my "order"
+        return TimeTracker.sortCategoryArray(Object.values(this.categoryMap));
+    }
+
     addProject(project) {
-        this.projectMap[project.getKey()] = project;
+        let categoryId = project.getCategoryId();
+        let category = categoryId ? this.categoryMap[categoryId] : null;
+        if (!category) {
+            category = this.uncategorisedCategory;
+        }
+
+        category.addProject(project);
     }
 
     getProjectMap() {
-        return this.projectMap;
+        const projectMap = {};
+        $.each(this.categoryMap, function(categoryKey, category) {
+            $.each(category.getProjectMap(), function(projectKey, project) {
+                projectMap[projectKey] = project;
+            });
+        });
+        return projectMap;
     }
 
     getProjects() {
-        // Return an array of projects, ordered my "order"
-        return this._sortProjectArray(Object.values(this.projectMap));
+        // Return an array of projects, ordered by "order"
+        return TimeTracker.sortProjectArray(Object.values(this.getProjectMap()));
     }
 
     getSelectedProjects() {
         // Return an array of selected projects, ordered my "order"
         const projects = [];
-        $.each(this.projectMap, function(projectKey, project) {
-            if (project.isSelected()) {
-                projects.push(project);
-            }
+        $.each(this.categoryMap, function(categoryKey, category) {
+            $.each(category.getProjectMap(), function(projectKey, project) {
+                if (project.isSelected()) {
+                    projects.push(project);
+                }
+            });
         });
-        return this._sortProjectArray(projects);
+        return TimeTracker.sortProjectArray(projects);
     }
 
-    _sortProjectArray(projects) {
+    static sortProjectArray(projects) {
         // Sort projects by order
         projects.sort(function (a, b) {
             return a.getOrder() - b.getOrder();
@@ -1354,10 +1632,19 @@ class TimeTracker {
         return projects;
     }
 
+    static sortCategoryArray(categories) {
+        // Sort categories by order
+        categories.sort(function (a, b) {
+            return a.getOrder() - b.getOrder();
+        });
+
+        return categories;
+    }
+
     // Used to auto fix order after drag n drop, delete project, etc
     fixProjectOrder() {
         this.fixDatabaseProjectOrder();
-        this.reloadProjectsMarkup();
+        this.reloadCategoriesMarkup();
     }
 
     // NOTE: If the app has no bug, this will do nothing.
@@ -1378,28 +1665,37 @@ class TimeTracker {
     }
 
     // Used to re-order project after a drag n drop
-    reloadProjectsMarkup() {
-        // Remove all projects
-        this.dashboardEl.find(".project").remove();
+    reloadCategoriesMarkup() {
+        // Remove all category
+        this.dashboardEl.find(".category").remove();
 
-        const projects = this.getProjects();
-        $.each(projects, function(timeTracker) {
-            return function(index, project) {
-                // Insert the JQuery element to the page Markup, before the "New Project" box
-                timeTracker.newProjectBox.before(project.getMarkup());
-                project.scrollToBottom();
-                project.addEventListeners();
+        const categories = this.getCategories();
+        $.each(categories, function(timeTracker) {
+            return function(index, category) {
+                // Insert the JQuery element to the page Markup
+                timeTracker.dashboardEl.append(category.getMarkup());
+                category.reloadProjectsMarkup();
             };
         }(this));
     }
 
     getProject(projectKey) {
-        return this.projectMap[projectKey];
+        let project = null;
+        $.each(this.categoryMap, function(categoryKey, category) {
+            let projectMap = category.getProjectMap();
+            if (projectMap.hasOwnProperty(projectKey)) {
+                project = projectMap[projectKey];
+                return true;
+            }
+        });
+        return project;
     }
 
     loadProjectsLogs() {
-        $.each(this.projectMap, function(projectKey, project) {
-            project.loadLogs();
+        $.each(this.categoryMap, function(categoryKey, category) {
+            $.each(category.getProjectMap(), function(projectKey, project) {
+                project.loadLogs();
+            });
         });
 
         this.flagOverlappingLogs();
@@ -1407,19 +1703,21 @@ class TimeTracker {
 
     flagOverlappingLogs() {
         const allLogs = {}; // Array of all logs, used to flag overlapping dates
-        $.each(this.projectMap, function(projectKey, project) {
-            const logs = project.getLogs();
+        $.each(this.categoryMap, function(categoryKey, category) {
+            $.each(category.getProjectMap(), function(projectKey, project) {
+                const logs = project.getLogs();
 
-            $.each(logs, function(logIndex, log) {
-                // Collect all logs to set log overlap flags
-                log.startDateOverlaps = false;
-                log.endDateOverlaps = false;
-                if (allLogs[log.getStartDate()]) {
-                    log.startDateOverlaps = true;
-                    allLogs[log.getStartDate()].startDateOverlaps = true;
-                } else {
-                    allLogs[log.getStartDate()] = log;
-                }
+                $.each(logs, function(logIndex, log) {
+                    // Collect all logs to set log overlap flags
+                    log.startDateOverlaps = false;
+                    log.endDateOverlaps = false;
+                    if (allLogs[log.getStartDate()]) {
+                        log.startDateOverlaps = true;
+                        allLogs[log.getStartDate()].startDateOverlaps = true;
+                    } else {
+                        allLogs[log.getStartDate()] = log;
+                    }
+                });
             });
         });
 
@@ -1791,6 +2089,7 @@ class Admin {
         this.viewMap = {
             "chronoView": new ChronoView(this),
             "dailyProjectView": new DailyProjectView(this),
+            "dailyCategoryView": new DailyCategoryView(this),
             "projectView": new ProjectView(this)
         };
         this.setView("chronoView");
@@ -1864,9 +2163,10 @@ class Admin {
                     <div class="viewSelector">
                         <h2>View</h2>
                         <select class="view">
-                            <option value="chronoView" selected="selected">By dates</option>
-                            <option value="dailyProjectView">By dates, grouped by projects</option>
-                            <option value="projectView">By projects</option>
+                            <option value="chronoView" selected="selected">By date</option>
+                            <option value="dailyProjectView">By date, grouped by project</option>
+                            <option value="dailyCategoryView">By date, grouped by category</option>
+                            <option value="projectView">By project</option>
                         </select>
                     </div>
 
@@ -2797,6 +3097,259 @@ class DailyProjectView extends AbstractView {
 }
 </script>
 <script>
+// FILE: js/classes/admin-view/DailyCategoryView.js
+class DailyCategoryView extends AbstractView {
+
+    constructor(admin) {
+        super(admin);
+    }
+
+    render() {
+        const categories = this.admin.timeTracker.getCategories();
+        const projects = this.admin.timeTracker.getProjects();
+        if (!projects || projects.length <= 0) {
+            return;
+        }
+
+        let datesTable = $(`<table class="dates-table">
+            <tr class="header">
+                <th class="weekday">Weekday</th>
+                <th>Date TEST</th>
+            </tr>
+        </table>`);
+
+        const dates = {};
+        $.each(categories, function(dailyCategoryView) {
+            return function(categoryIndex, category) {
+                const categoryKey = category.getKey();
+                $.each(category.getProjects(), function(dailyCategoryView) {
+                    return function(projectIndex, project) {
+                        const projectKey = project.getKey();
+                        let logs = project.getLogs([dailyCategoryView.admin.getDateFilter(), dailyCategoryView.admin.getSearchFilter()]);
+                        if (logs !== null && logs.length > 0) {
+                            $.each(logs, function(logIndex, log) {
+                                const logDate = Utils.formatDate(log.getStartDate());
+                                if (!dates[logDate]) {
+                                    dates[logDate] = {};
+                                }
+                                if (!dates[logDate][categoryKey]) {
+                                    dates[logDate][categoryKey] = {};
+                                }
+                                if (!dates[logDate][categoryKey][projectKey]) {
+                                    dates[logDate][categoryKey][projectKey] = [];
+                                }
+                                dates[logDate][categoryKey][projectKey].push(log);
+                            });
+                        }
+                    };
+                }(dailyCategoryView));
+            };
+        }(this));
+
+        const sortedDates = Object.keys(dates);
+        sortedDates.sort();
+        $.each(sortedDates, function(dailyCategoryView) {
+            return function(dateIndex, dateStr) {
+                const date = Utils.parseDatetime(dateStr);
+
+                const dateRow = $(`<tr></tr>`);
+
+                let weekdayCellEl = $(`<td></td>`);
+                let weekdayCellDataEl = $(`<span>${Utils.getWeekday(date)}</span>`);
+                weekdayCellEl.append(weekdayCellDataEl);
+
+                let dateCellEl = $(`<td></td>`);
+                let dateCellDataEl = $(`<span>${dateStr}</span>`);
+                dateCellEl.append(dateCellDataEl);
+
+                dateRow.append(weekdayCellEl);
+                dateRow.append(dateCellEl);
+
+                datesTable.append(dateRow);
+
+                const logRow = $(`<tr></tr>`);
+                let logCellEl = $(`<td colspan="2"></td>`);
+                let logCellDataEl = dailyCategoryView._renderCategoryLogTable(dates[dateStr], categories);
+                logCellEl.append(logCellDataEl);
+                logRow.append(logCellEl);
+
+                datesTable.append(logRow);
+            };
+        }(this));
+
+        return datesTable;
+    }
+
+    // logMap:
+    //     Key: categoryKey
+    //     Value: Map of Project Key => array of Log
+    _renderCategoryLogTable(logMap, categories) {
+        if (!logMap) {
+            return "";
+        }
+
+        const categoryKeys = Object.keys(logMap);
+        if (categoryKeys.length <= 0) {
+            return "";
+        }
+
+        const timeNormalisation = this.admin.timeTracker.getTimeNormalisationPercentage();
+
+        const logsTable = $(`<table class="logs-table category-logs-table">
+            <tr class="header">
+                <th class="key">Key</th>
+                <th>Category</th>
+                <th>Project</th>
+                <th>Start date</th>
+                <th>End date</th>
+                <th>Time</th>
+                <th>Normalised time</th>
+                <th>Message</th>
+                <th class="delete-column">X</th>
+            </tr>
+        </table>`);
+
+        let dayTotal = 0;
+        $.each(categories, function(dailyCategoryView) {
+            return function(categoryIndex, category) {
+                const categoryKey = category.getKey();
+
+                if (!logMap[categoryKey]) {
+                    return true; // continue
+                }
+
+                const spacerRow = $(`<tr class="spacer">
+                    <td class="key"></td>
+                    <th colspan="8"></th>
+                </tr>`);
+                logsTable.append(spacerRow);
+
+                let categoryTotal = 0;
+                $.each(category.getProjects(), function(dailyCategoryView) {
+                    return function(projectIndex, project) {
+                        const projectKey = project.getKey();
+                        const selected = project.isSelected();
+                        const rowClass = selected ? "selected" : "not-selected";
+
+                        const logList = logMap[categoryKey][projectKey];
+                        const projectColor = project.getBackgroundColour();
+                        if (logList) {
+                            let total = 0;
+                            $.each(logList, function(logIndex, log) {
+                                const elapseTime = log.getElapseTime();
+                                total += elapseTime;
+                                const logRow = $(`<tr class="${rowClass}">
+                                    <td class="key">${Utils.escapeHTML(log.getKey())}</td>
+                                </tr>`);
+
+                                let categoryCellEl = $(`<td></td>`);
+                                let categoryCellDataEl = $(`<span>${Utils.escapeHTML(category.getName())}</span>`);
+                                categoryCellEl.append(categoryCellDataEl);
+
+                                let projectCellEl = $(`<td style="background-color: ${projectColor}"></td>`);
+                                let projectCellDataEl = $(`<span>${Utils.escapeHTML(project.getName())}</span>`);
+                                projectCellEl.append(projectCellDataEl);
+
+                                const startDateClass = log.isStartDateOverlaps() ? "overlaps" : "";
+                                let startDateCellEl = $(`<td class="${startDateClass}"></td>`);
+                                let startDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getStartDate())}</span>`);
+                                startDateCellEl.append(startDateCellDataEl);
+
+                                const endDateClass = log.isEndDateOverlaps() ? "overlaps" : "";
+                                let endDateCellEl = $(`<td class="${endDateClass}"></td>`);
+                                let endDateCellDataEl = $(`<span>${Utils.formatDateForEditor(log.getEndDate())}</span>`);
+                                endDateCellEl.append(endDateCellDataEl);
+
+                                let elapseTimeCellEl = $(`<td></td>`);
+                                let elapseTimeCellDataEl = $(`<span>${Utils.formatTime(elapseTime)}</span>`);
+                                elapseTimeCellEl.append(elapseTimeCellDataEl);
+
+                                let elapseTimeNormalisedCellEl = $(`<td></td>`);
+                                let elapseTimeNormalisedCellDataEl = $(`<span>${Utils.formatTime(elapseTime * timeNormalisation)}</span>`);
+                                elapseTimeNormalisedCellEl.append(elapseTimeNormalisedCellDataEl);
+
+                                let messageCellEl = $(`<td></td>`);
+                                let messageCellDataEl = $(`<span>${Utils.escapeHTML(log.getMessage())}</span>`);
+                                messageCellEl.append(messageCellDataEl);
+
+                                let deleteCellEl = $(`<td class="delete-column"></td>`);
+                                let deleteCellButtonEl = $(`<button class="delete">X</button>`);
+                                deleteCellEl.append(deleteCellButtonEl);
+
+                                logRow.append(categoryCellEl);
+                                logRow.append(projectCellEl);
+                                logRow.append(startDateCellEl);
+                                logRow.append(endDateCellEl);
+                                logRow.append(elapseTimeCellEl);
+                                logRow.append(elapseTimeNormalisedCellEl);
+                                logRow.append(messageCellEl);
+                                logRow.append(deleteCellEl);
+
+                                new EditableProject(projectCellEl, dailyCategoryView.admin.timeTracker, project, dailyCategoryView.getEditLogProjectFunction(log));
+                                new EditableString(startDateCellDataEl, dailyCategoryView.getEditLogStartDateFunction(log));
+                                new EditableString(endDateCellDataEl, dailyCategoryView.getEditLogEndDateFunction(log));
+                                new EditableString(messageCellDataEl, dailyCategoryView.getEditLogMessageFunction(log));
+                                deleteCellButtonEl.click(dailyCategoryView.getDeleteLogFunction(log));
+
+                                logsTable.append(logRow);
+                            });
+
+                            const projectTotalRow = $(`<tr class="${rowClass}">
+                                <td class="key"></td>
+                                <td></td> <!-- Category -->
+                                <th style="background-color: ${projectColor}; text-align:left;">TOTAL</th>
+                                <th colspan="2"></th>
+                                <td>${Utils.formatTotalTime(total)}</td>
+                                <td>${Utils.formatTotalTime(total * timeNormalisation)}</td>
+                                <td colspan="2"></td>
+                            </tr>`);
+                            logsTable.append(projectTotalRow);
+
+                            if (selected) {
+                                categoryTotal += total;
+                                dayTotal += total;
+                            }
+                        }
+                    };
+                }(dailyCategoryView));
+
+                // Total per category
+                const categoryTotalRow = $(`<tr class="total">
+                    <td class="key"></td>
+                    <td><span>${Utils.escapeHTML(category.getName())}</span></td> <!-- Category -->
+                    <th>TOTAL</th>
+                    <th colspan="2"></th>
+                    <td>${Utils.formatTotalTime(categoryTotal)}</td>
+                    <td>${Utils.formatTotalTime(categoryTotal * timeNormalisation)}</td>
+                    <td colspan="2"></td>
+                </tr>`);
+                logsTable.append(categoryTotalRow);
+            };
+        }(this));
+
+        const spacerRow = $(`<tr class="spacer">
+            <td class="key"></td>
+            <th colspan="7"></th>
+        </tr>`);
+        logsTable.append(spacerRow);
+
+        const dayTotalRow = $(`<tr class="total">
+            <td class="key"></td>
+            <td></td> <!-- Category -->
+            <th>GRAND TOTAL</th>
+            <th colspan="2"></th>
+            <td>${Utils.formatTotalTime(dayTotal)}</td>
+            <td>${Utils.formatTotalTime(dayTotal * timeNormalisation)}</td>
+            <td colspan="2"></td>
+        </tr>`);
+        logsTable.append(dayTotalRow);
+
+        return logsTable;
+    }
+
+}
+</script>
+<script>
 // FILE: js/classes/admin-view/ProjectView.js
 class ProjectView extends AbstractView {
 
@@ -2815,6 +3368,7 @@ class ProjectView extends AbstractView {
                 <th class="key">Key</th>
                 <th>Name</th>
                 <th>Colour</th>
+                <th>Category</th>
                 <th>Order</th>
                 <th class="delete-column">X</th>
             </tr>
@@ -2828,6 +3382,7 @@ class ProjectView extends AbstractView {
                     <td class="key">${project.getKey()}</td>
                     <td class="name">${Utils.escapeHTML(project.getName())}</td>
                 </tr>`);
+
 
                 let projectColourCellEl = $(`<td></td>`);
                 let projectColourSelect = $(`<select class="projectColour"></select>`);
@@ -2846,6 +3401,27 @@ class ProjectView extends AbstractView {
                     };
                 }(projectView, project));
                 projectTableRow.append(projectColourCellEl);
+
+
+                let projectCategoryCellEl = $(`<td></td>`);
+                let projectCategorySelect = $(`<select class="projectCategory"></select>`);
+                const categoryMap = projectView.admin.timeTracker.getCategoryMap();
+                $.each(categoryMap, function(categoryKey, category) {
+                    const selected = categoryKey === project.getCategoryId();
+                    projectCategorySelect.append($(`<option value="${categoryKey}" ${selected ? "selected=\"selected\"" : ""}>${category.getName()}</option>`));
+                });
+                projectCategoryCellEl.append(projectCategorySelect);
+
+                projectCategorySelect.change(function(projectView, project) {
+                    return function() {
+                        project.setCategoryId($(this).val());
+                        project.save();
+                        projectView.admin.render();
+                        projectView.admin.dirty = true;
+                    };
+                }(projectView, project));
+                projectTableRow.append(projectCategoryCellEl);
+
 
                 let projectOrderCellEl = $(`<td></td>`);
                 let projectOrderSelect = $(`<select class="projectOrder"></select>`);
@@ -2890,6 +3466,7 @@ class ProjectView extends AbstractView {
                     };
                 }(projectView, project));
                 projectTableRow.append(projectOrderCellEl);
+
 
                 let deleteCellEl = $(`<td class="delete-column"></td>`);
                 let deleteCellButtonEl = $(`<button class="delete">X</button>`);
@@ -3094,6 +3671,7 @@ select {
 }
 
 select.projectColour,
+select.projectCategory,
 select.projectOrder {
     padding: 0;
     margin: 0 0.5em;
@@ -3174,9 +3752,35 @@ span.spaceLeft::after {
     content: " MB";
 }
 
-.dashboard {
+.dashboard {}
+
+.new-category,
+.category {
     display: flex;
     flex-wrap: wrap;
+    /* To help position the input field, used to edit the category name */
+    position: relative;
+    margin-top: 1em;
+}
+
+.new-category{
+    border-color: #EEEEEE;
+}
+.category {
+    border-color: #000000;
+}
+
+.category-header {
+    font-size: 2em;
+}
+.new-category .category-header {
+    color: #999999;
+}
+
+/* Make the input appear where the fieldset legend needs to be. */
+input.category-header {
+    position: absolute;
+    top: -1.2em;
 }
 
 .dashboard .project,
@@ -3369,6 +3973,7 @@ span.spaceLeft::after {
 }
 
 .admin .project-editor {
+    min-width: 40em;
     overflow: auto;
 }
 
@@ -3418,6 +4023,11 @@ span.spaceLeft::after {
 .admin .project-editor table.logs-table td,
 .admin .project-editor table.logs-table th {
     width: 16%;
+}
+
+.admin .project-editor table.category-logs-table td,
+.admin .project-editor table.category-logs-table th {
+    width: 14%;
 }
 
 .admin .project-editor table.logs-table tr.header,

@@ -1,5 +1,5 @@
 class Project extends PersistentObject {
-    constructor(timeTracker, name, category, colourIndex, order, selected, key=null) {
+    constructor(timeTracker, name, categoryId, colourIndex, order, selected, key=null) {
         if (key === null) {
             super(Project.keyPrefix, false);
         } else {
@@ -8,7 +8,7 @@ class Project extends PersistentObject {
 
         this.timeTracker = timeTracker;
         this.name = name;
-        this.category = category;
+        this.categoryId = categoryId;
         this.colourIndex = colourIndex;
         this.order = order;
         // Set to false to ignore in the admin
@@ -107,7 +107,7 @@ class Project extends PersistentObject {
         return new Project(
             timeTracker,
             jsonProject.name,
-            jsonProject.category,
+            jsonProject.categoryId,
             jsonProject.colourIndex !== undefined ? jsonProject.colourIndex : jsonProject.bgColourIndex,
             jsonProject.order,
             jsonProject.selected === undefined ? true : jsonProject.selected,
@@ -311,11 +311,11 @@ class Project extends PersistentObject {
         this.name = name;
     }
 
-    getCategory() {
-        return this.category;
+    getCategoryId() {
+        return this.categoryId;
     }
-    setCategory(category) {
-        this.category = category;
+    setCategoryId(categoryId) {
+        this.categoryId = categoryId;
     }
 
     getLastLog() {
@@ -366,7 +366,7 @@ class Project extends PersistentObject {
         return {
             "key": this.getKey(),
             "name": this.name,
-            "category": this.category,
+            "categoryId": this.categoryId,
             "colourIndex": this.colourIndex,
             "order": this.order,
             "selected": this.selected

@@ -11,6 +11,7 @@ class Admin {
         this.viewMap = {
             "chronoView": new ChronoView(this),
             "dailyProjectView": new DailyProjectView(this),
+            "dailyCategoryView": new DailyCategoryView(this),
             "projectView": new ProjectView(this)
         };
         this.setView("chronoView");
@@ -84,9 +85,10 @@ class Admin {
                     <div class="viewSelector">
                         <h2>View</h2>
                         <select class="view">
-                            <option value="chronoView" selected="selected">By dates</option>
-                            <option value="dailyProjectView">By dates, grouped by projects</option>
-                            <option value="projectView">By projects</option>
+                            <option value="chronoView" selected="selected">By date</option>
+                            <option value="dailyProjectView">By date, grouped by project</option>
+                            <option value="dailyCategoryView">By date, grouped by category</option>
+                            <option value="projectView">By project</option>
                         </select>
                     </div>
 

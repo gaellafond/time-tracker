@@ -14,14 +14,8 @@ select {
     font-size: 1.2em;
 }
 
-.category {
-}
-
-.category-header {
-    font-size: 2em;
-}
-
 select.projectColour,
+select.projectCategory,
 select.projectOrder {
     padding: 0;
     margin: 0 0.5em;
@@ -102,9 +96,35 @@ span.spaceLeft::after {
     content: " MB";
 }
 
-.dashboard {
+.dashboard {}
+
+.new-category,
+.category {
     display: flex;
     flex-wrap: wrap;
+    /* To help position the input field, used to edit the category name */
+    position: relative;
+    margin-top: 1em;
+}
+
+.new-category{
+    border-color: #EEEEEE;
+}
+.category {
+    border-color: #000000;
+}
+
+.category-header {
+    font-size: 2em;
+}
+.new-category .category-header {
+    color: #999999;
+}
+
+/* Make the input appear where the fieldset legend needs to be. */
+input.category-header {
+    position: absolute;
+    top: -1.2em;
 }
 
 .dashboard .project,
@@ -347,6 +367,11 @@ span.spaceLeft::after {
 .admin .project-editor table.logs-table td,
 .admin .project-editor table.logs-table th {
     width: 16%;
+}
+
+.admin .project-editor table.category-logs-table td,
+.admin .project-editor table.category-logs-table th {
+    width: 14%;
 }
 
 .admin .project-editor table.logs-table tr.header,

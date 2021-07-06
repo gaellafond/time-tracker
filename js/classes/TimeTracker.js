@@ -45,13 +45,18 @@ class TimeTracker {
         timeTrackerEl.append(this.dashboardEl);
 
         this.categoryMap = {};
-        this.projectMap = {};
 
         this.runningLog = null;
         this.runningLogInterval = null;
 
         this.pausePage = new PausePage(this);
         this.admin = new Admin(this);
+
+        this.uncategorisedCategory = new Category(this, "Uncategorised", 0, "UNCATEGORISED");
+        this.uncategorisedCategory.setCategoryClass("new-category");
+        const uncategorisedCategoryMarkup = this.uncategorisedCategory.getMarkup();
+
+        this.dashboardEl.append(uncategorisedCategoryMarkup);
 
         this.newProjectBox =
             $(`<div class="new-project" id="new-project">
@@ -71,16 +76,14 @@ class TimeTracker {
                 let newProject = new Project(timeTracker, "New project", colourIndex, projectOrder, true);
                 newProject.save();
                 timeTracker.addProject(newProject);
-                timeTracker.reloadProjectsMarkup();
+                timeTracker.reloadCategoriesMarkup();
             };
         }(this));
 
-        this.dashboardEl.append(this.newProjectBox);
+        uncategorisedCategoryMarkup.append(this.newProjectBox);
 
         this.reloadCategories();
         this.reloadCategoriesMarkup();
-        this.reloadProjects();
-        this.reloadProjectsMarkup();
 
         const currentDay = Utils.getCurrentDayStart();
         const oneDay = 24 * 60 * 60;
@@ -178,33 +181,28 @@ class TimeTracker {
     reload() {
         this.reloadCategories();
         this.reloadCategoriesMarkup();
-        this.reloadProjects();
-        this.reloadProjectsMarkup();
 
         this.todayTimeRibbon.render([this.todayTimeRibbonFilter]);
     }
 
-    reloadProjects() {
-        this.projectMap = {};
+    reloadCategories() {
+        this.categoryMap = {};
+        this.addCategory(this.uncategorisedCategory);
 
+        let jsonCategories = PersistentObject.getAllJSON(Category.keyPrefix);
+        jsonCategories.forEach(jsonCategory => {
+            this.addCategory(Category.load(this, jsonCategory));
+        });
+
+        this.reloadProjects();
+    }
+    reloadProjects() {
         let jsonProjects = PersistentObject.getAllJSON(Project.keyPrefix);
         jsonProjects.forEach(jsonProject => {
             this.addProject(Project.load(this, jsonProject));
         });
 
         this.loadProjectsLogs();
-    }
-
-    reloadCategories() {
-        this.categoryMap = {};
-
-// Add a fake category, to test
-//this.addCategory(new Category(this, "Fake category", 1));
-
-        let jsonCategories = PersistentObject.getAllJSON(Category.keyPrefix);
-        jsonCategories.forEach(jsonCategory => {
-            this.addCategory(Category.load(this, jsonCategory));
-        });
     }
 
     addCategory(category) {
@@ -217,34 +215,48 @@ class TimeTracker {
 
     getCategories() {
         // Return an array of categories, ordered my "order"
-        return this._sortCategoryArray(Object.values(this.categoryMap));
+        return TimeTracker.sortCategoryArray(Object.values(this.categoryMap));
     }
 
     addProject(project) {
-        this.projectMap[project.getKey()] = project;
+        let categoryId = project.getCategoryId();
+        let category = categoryId ? this.categoryMap[categoryId] : null;
+        if (!category) {
+            category = this.uncategorisedCategory;
+        }
+
+        category.addProject(project);
     }
 
     getProjectMap() {
-        return this.projectMap;
+        const projectMap = {};
+        $.each(this.categoryMap, function(categoryKey, category) {
+            $.each(category.getProjectMap(), function(projectKey, project) {
+                projectMap[projectKey] = project;
+            });
+        });
+        return projectMap;
     }
 
     getProjects() {
-        // Return an array of projects, ordered my "order"
-        return this._sortProjectArray(Object.values(this.projectMap));
+        // Return an array of projects, ordered by "order"
+        return TimeTracker.sortProjectArray(Object.values(this.getProjectMap()));
     }
 
     getSelectedProjects() {
         // Return an array of selected projects, ordered my "order"
         const projects = [];
-        $.each(this.projectMap, function(projectKey, project) {
-            if (project.isSelected()) {
-                projects.push(project);
-            }
+        $.each(this.categoryMap, function(categoryKey, category) {
+            $.each(category.getProjectMap(), function(projectKey, project) {
+                if (project.isSelected()) {
+                    projects.push(project);
+                }
+            });
         });
-        return this._sortProjectArray(projects);
+        return TimeTracker.sortProjectArray(projects);
     }
 
-    _sortProjectArray(projects) {
+    static sortProjectArray(projects) {
         // Sort projects by order
         projects.sort(function (a, b) {
             return a.getOrder() - b.getOrder();
@@ -253,15 +265,19 @@ class TimeTracker {
         return projects;
     }
 
-    _sortCategoryArray(categories) {
-        // Categories sort the same way as projects
-        return this._sortProjectArray(categories);
+    static sortCategoryArray(categories) {
+        // Sort categories by order
+        categories.sort(function (a, b) {
+            return a.getOrder() - b.getOrder();
+        });
+
+        return categories;
     }
 
     // Used to auto fix order after drag n drop, delete project, etc
     fixProjectOrder() {
         this.fixDatabaseProjectOrder();
-        this.reloadProjectsMarkup();
+        this.reloadCategoriesMarkup();
     }
 
     // NOTE: If the app has no bug, this will do nothing.
@@ -282,41 +298,37 @@ class TimeTracker {
     }
 
     // Used to re-order project after a drag n drop
-    reloadProjectsMarkup() {
-        // Remove all projects
-        this.dashboardEl.find(".project").remove();
-
-        const projects = this.getProjects();
-        $.each(projects, function(timeTracker) {
-            return function(index, project) {
-                // Insert the JQuery element to the page Markup, before the "New Project" box
-                timeTracker.newProjectBox.before(project.getMarkup());
-                project.scrollToBottom();
-                project.addEventListeners();
-            };
-        }(this));
-    }
-
     reloadCategoriesMarkup() {
         // Remove all category
-        this.dashboardEl.parent().find(".category").remove();
+        this.dashboardEl.find(".category").remove();
 
         const categories = this.getCategories();
         $.each(categories, function(timeTracker) {
             return function(index, category) {
                 // Insert the JQuery element to the page Markup
-                timeTracker.dashboardEl.before(category.getMarkup());
+                timeTracker.dashboardEl.append(category.getMarkup());
+                category.reloadProjectsMarkup();
             };
         }(this));
     }
 
     getProject(projectKey) {
-        return this.projectMap[projectKey];
+        let project = null;
+        $.each(this.categoryMap, function(categoryKey, category) {
+            let projectMap = category.getProjectMap();
+            if (projectMap.hasOwnProperty(projectKey)) {
+                project = projectMap[projectKey];
+                return true;
+            }
+        });
+        return project;
     }
 
     loadProjectsLogs() {
-        $.each(this.projectMap, function(projectKey, project) {
-            project.loadLogs();
+        $.each(this.categoryMap, function(categoryKey, category) {
+            $.each(category.getProjectMap(), function(projectKey, project) {
+                project.loadLogs();
+            });
         });
 
         this.flagOverlappingLogs();
@@ -324,19 +336,21 @@ class TimeTracker {
 
     flagOverlappingLogs() {
         const allLogs = {}; // Array of all logs, used to flag overlapping dates
-        $.each(this.projectMap, function(projectKey, project) {
-            const logs = project.getLogs();
+        $.each(this.categoryMap, function(categoryKey, category) {
+            $.each(category.getProjectMap(), function(projectKey, project) {
+                const logs = project.getLogs();
 
-            $.each(logs, function(logIndex, log) {
-                // Collect all logs to set log overlap flags
-                log.startDateOverlaps = false;
-                log.endDateOverlaps = false;
-                if (allLogs[log.getStartDate()]) {
-                    log.startDateOverlaps = true;
-                    allLogs[log.getStartDate()].startDateOverlaps = true;
-                } else {
-                    allLogs[log.getStartDate()] = log;
-                }
+                $.each(logs, function(logIndex, log) {
+                    // Collect all logs to set log overlap flags
+                    log.startDateOverlaps = false;
+                    log.endDateOverlaps = false;
+                    if (allLogs[log.getStartDate()]) {
+                        log.startDateOverlaps = true;
+                        allLogs[log.getStartDate()].startDateOverlaps = true;
+                    } else {
+                        allLogs[log.getStartDate()] = log;
+                    }
+                });
             });
         });
 
