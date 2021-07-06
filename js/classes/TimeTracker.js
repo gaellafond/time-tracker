@@ -218,9 +218,14 @@ class TimeTracker {
         return TimeTracker.sortCategoryArray(Object.values(this.categoryMap));
     }
 
+    getCategory(categoryKey) {
+        const category = this.categoryMap[categoryKey];
+        return category ? category : this.uncategorisedCategory;
+    }
+
     addProject(project) {
-        let categoryId = project.getCategoryId();
-        let category = categoryId ? this.categoryMap[categoryId] : null;
+        let categoryKey = project.getCategoryKey();
+        let category = categoryKey ? this.categoryMap[categoryKey] : null;
         if (!category) {
             category = this.uncategorisedCategory;
         }
@@ -282,16 +287,18 @@ class TimeTracker {
 
     // NOTE: If the app has no bug, this will do nothing.
     fixDatabaseProjectOrder() {
-        const projects = this.getProjects();
-
         let changed = false;
-        $.each(projects, function(index, project) {
-            let expectedOrder = index + 1;
-            if (project.getOrder() !== expectedOrder) {
-                project.setOrder(expectedOrder);
-                project.save();
-                changed = true;
-            }
+        $.each(this.categoryMap, function(categoryKey, category) {
+            const projects = category.getProjects();
+
+            $.each(projects, function(index, project) {
+                let expectedOrder = index + 1;
+                if (project.getOrder() !== expectedOrder) {
+                    project.setOrder(expectedOrder);
+                    project.save();
+                    changed = true;
+                }
+            });
         });
 
         return changed;

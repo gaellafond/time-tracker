@@ -53,6 +53,11 @@ class Category extends PersistentObject {
 
     addProject(project) {
         this.projectMap[project.getKey()] = project;
+        project.setCategoryKey(this.getKey());
+    }
+    removeProject(project) {
+        delete this.projectMap[project.getKey()];
+        project.setCategoryKey(null);
     }
     getProjectMap() {
         return this.projectMap;
@@ -77,8 +82,52 @@ class Category extends PersistentObject {
             }(this));
             editableCategoryName.setAutoSelect(true);
             editableCategoryName.setInputCssClass("category-header");
+
+            this.addEventListeners();
         }
         return this.markup;
+    }
+
+    addEventListeners() {
+        // Tell the browser that projects can be dropped on this category.
+        this.markup.on("dragover", function(event) {
+            event.preventDefault();
+        });
+
+        // A project was drop on the category project
+        // this = drop on category
+        this.markup.on("drop", function(dropOnCategory) {
+            return function(event) {
+                event.preventDefault();
+                const draggedProject = dropOnCategory.timeTracker.draggedProject;
+                if (draggedProject != null && dropOnCategory instanceof Category) {
+                    dropOnCategory.timeTracker.draggedProject = null;
+                    dropOnCategory.moveProjectOn(draggedProject);
+                }
+            };
+        }(this));
+    }
+
+    moveProjectOn(draggedProject) {
+        const currentCategory = draggedProject.getCategory();
+        if (currentCategory !== this) {
+            currentCategory.removeProject(draggedProject);
+            this.addProject(draggedProject);
+            draggedProject.setOrder(this.getHigherOrder() + 1);
+            draggedProject.save();
+            this.timeTracker.fixProjectOrder();
+        }
+    }
+
+    getHigherOrder() {
+        let higherOrder = 0;
+        $.each(this.projectMap, function(projectKey, project) {
+            if (project.getOrder() > higherOrder) {
+                higherOrder = project.getOrder();
+            }
+        });
+
+        return higherOrder;
     }
 
     // Used to re-order project after a drag n drop

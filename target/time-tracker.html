@@ -732,6 +732,11 @@ class Category extends PersistentObject {
 
     addProject(project) {
         this.projectMap[project.getKey()] = project;
+        project.setCategoryKey(this.getKey());
+    }
+    removeProject(project) {
+        delete this.projectMap[project.getKey()];
+        project.setCategoryKey(null);
     }
     getProjectMap() {
         return this.projectMap;
@@ -756,8 +761,52 @@ class Category extends PersistentObject {
             }(this));
             editableCategoryName.setAutoSelect(true);
             editableCategoryName.setInputCssClass("category-header");
+
+            this.addEventListeners();
         }
         return this.markup;
+    }
+
+    addEventListeners() {
+        // Tell the browser that projects can be dropped on this category.
+        this.markup.on("dragover", function(event) {
+            event.preventDefault();
+        });
+
+        // A project was drop on the category project
+        // this = drop on category
+        this.markup.on("drop", function(dropOnCategory) {
+            return function(event) {
+                event.preventDefault();
+                const draggedProject = dropOnCategory.timeTracker.draggedProject;
+                if (draggedProject != null && dropOnCategory instanceof Category) {
+                    dropOnCategory.timeTracker.draggedProject = null;
+                    dropOnCategory.moveProjectOn(draggedProject);
+                }
+            };
+        }(this));
+    }
+
+    moveProjectOn(draggedProject) {
+        const currentCategory = draggedProject.getCategory();
+        if (currentCategory !== this) {
+            currentCategory.removeProject(draggedProject);
+            this.addProject(draggedProject);
+            draggedProject.setOrder(this.getHigherOrder() + 1);
+            draggedProject.save();
+            this.timeTracker.fixProjectOrder();
+        }
+    }
+
+    getHigherOrder() {
+        let higherOrder = 0;
+        $.each(this.projectMap, function(projectKey, project) {
+            if (project.getOrder() > higherOrder) {
+                higherOrder = project.getOrder();
+            }
+        });
+
+        return higherOrder;
     }
 
     // Used to re-order project after a drag n drop
@@ -802,7 +851,7 @@ class Category extends PersistentObject {
 <script>
 // FILE: js/classes/Project.js
 class Project extends PersistentObject {
-    constructor(timeTracker, name, categoryId, colourIndex, order, selected, key=null) {
+    constructor(timeTracker, name, categoryKey, colourIndex, order, selected, key=null) {
         if (key === null) {
             super(Project.keyPrefix, false);
         } else {
@@ -811,7 +860,7 @@ class Project extends PersistentObject {
 
         this.timeTracker = timeTracker;
         this.name = name;
-        this.categoryId = categoryId;
+        this.categoryKey = categoryKey;
         this.colourIndex = colourIndex;
         this.order = order;
         // Set to false to ignore in the admin
@@ -910,7 +959,7 @@ class Project extends PersistentObject {
         return new Project(
             timeTracker,
             jsonProject.name,
-            jsonProject.categoryId,
+            jsonProject.categoryKey,
             jsonProject.colourIndex !== undefined ? jsonProject.colourIndex : jsonProject.bgColourIndex,
             jsonProject.order,
             jsonProject.selected === undefined ? true : jsonProject.selected,
@@ -961,8 +1010,10 @@ class Project extends PersistentObject {
             return function(event) {
                 event.preventDefault();
                 const draggedProject = dropOnProject.timeTracker.draggedProject;
-                dropOnProject.timeTracker.draggedProject = null;
-                draggedProject.moveOn(dropOnProject);
+                if (draggedProject != null && dropOnProject instanceof Project) {
+                    dropOnProject.timeTracker.draggedProject = null;
+                    dropOnProject.moveProjectOn(draggedProject);
+                }
             };
         }(this));
 
@@ -994,13 +1045,25 @@ class Project extends PersistentObject {
         });
     }
 
-    moveOn(dropOnProject) {
-        if (dropOnProject !== this) {
-            const draggedProjectOrder = this.getOrder();
-            const dropOnProjectOrder = dropOnProject.getOrder();
+    moveProjectOn(draggedProject) {
+        if (draggedProject !== this) {
+            // Move from a category to another
+            const draggedProjectCategory = draggedProject.getCategory();
+            const dropOnProjectCategory = this.getCategory();
+            if (draggedProjectCategory !== dropOnProjectCategory) {
+                draggedProjectCategory.removeProject(draggedProject);
+                dropOnProjectCategory.addProject(draggedProject);
+                // Move it at the end of it's new category, to make it easier to move to its
+                // expected order without messing with other project order.
+                draggedProject.setOrder(dropOnProjectCategory.getHigherOrder() + 1);
+            }
+
+            // Fix order
+            const draggedProjectOrder = draggedProject.getOrder();
+            const dropOnProjectOrder = this.getOrder();
             const newOrder = dropOnProjectOrder;
             if (draggedProjectOrder > dropOnProjectOrder) {
-                $.each(this.timeTracker.getProjectMap(), function(projectKey, project) {
+                $.each(this.getCategory().getProjectMap(), function(projectKey, project) {
                     let projectOrder = project.getOrder();
                     if (projectOrder >= dropOnProjectOrder && projectOrder < draggedProjectOrder) {
                         project.setOrder(projectOrder + 1);
@@ -1008,7 +1071,7 @@ class Project extends PersistentObject {
                     }
                 });
             } else if (draggedProjectOrder < dropOnProjectOrder) {
-                $.each(this.timeTracker.getProjectMap(), function(projectKey, project) {
+                $.each(this.getCategory().getProjectMap(), function(projectKey, project) {
                     let projectOrder = project.getOrder();
                     if (projectOrder <= dropOnProjectOrder && projectOrder > draggedProjectOrder) {
                         project.setOrder(projectOrder - 1);
@@ -1016,8 +1079,8 @@ class Project extends PersistentObject {
                     }
                 });
             }
-            this.setOrder(newOrder);
-            this.save();
+            draggedProject.setOrder(newOrder);
+            draggedProject.save();
 
             this.timeTracker.fixProjectOrder();
         }
@@ -1114,11 +1177,15 @@ class Project extends PersistentObject {
         this.name = name;
     }
 
-    getCategoryId() {
-        return this.categoryId;
+    getCategoryKey() {
+        return this.categoryKey;
     }
-    setCategoryId(categoryId) {
-        this.categoryId = categoryId;
+    setCategoryKey(categoryKey) {
+        this.categoryKey = categoryKey;
+    }
+
+    getCategory() {
+        return this.timeTracker.getCategory(this.categoryKey);
     }
 
     getLastLog() {
@@ -1169,7 +1236,7 @@ class Project extends PersistentObject {
         return {
             "key": this.getKey(),
             "name": this.name,
-            "categoryId": this.categoryId,
+            "categoryKey": this.categoryKey,
             "colourIndex": this.colourIndex,
             "order": this.order,
             "selected": this.selected
@@ -1585,9 +1652,14 @@ class TimeTracker {
         return TimeTracker.sortCategoryArray(Object.values(this.categoryMap));
     }
 
+    getCategory(categoryKey) {
+        const category = this.categoryMap[categoryKey];
+        return category ? category : this.uncategorisedCategory;
+    }
+
     addProject(project) {
-        let categoryId = project.getCategoryId();
-        let category = categoryId ? this.categoryMap[categoryId] : null;
+        let categoryKey = project.getCategoryKey();
+        let category = categoryKey ? this.categoryMap[categoryKey] : null;
         if (!category) {
             category = this.uncategorisedCategory;
         }
@@ -1649,16 +1721,18 @@ class TimeTracker {
 
     // NOTE: If the app has no bug, this will do nothing.
     fixDatabaseProjectOrder() {
-        const projects = this.getProjects();
-
         let changed = false;
-        $.each(projects, function(index, project) {
-            let expectedOrder = index + 1;
-            if (project.getOrder() !== expectedOrder) {
-                project.setOrder(expectedOrder);
-                project.save();
-                changed = true;
-            }
+        $.each(this.categoryMap, function(categoryKey, category) {
+            const projects = category.getProjects();
+
+            $.each(projects, function(index, project) {
+                let expectedOrder = index + 1;
+                if (project.getOrder() !== expectedOrder) {
+                    project.setOrder(expectedOrder);
+                    project.save();
+                    changed = true;
+                }
+            });
         });
 
         return changed;
@@ -3407,14 +3481,14 @@ class ProjectView extends AbstractView {
                 let projectCategorySelect = $(`<select class="projectCategory"></select>`);
                 const categoryMap = projectView.admin.timeTracker.getCategoryMap();
                 $.each(categoryMap, function(categoryKey, category) {
-                    const selected = categoryKey === project.getCategoryId();
+                    const selected = categoryKey === project.getCategoryKey();
                     projectCategorySelect.append($(`<option value="${categoryKey}" ${selected ? "selected=\"selected\"" : ""}>${category.getName()}</option>`));
                 });
                 projectCategoryCellEl.append(projectCategorySelect);
 
                 projectCategorySelect.change(function(projectView, project) {
                     return function() {
-                        project.setCategoryId($(this).val());
+                        project.setCategoryKey($(this).val());
                         project.save();
                         projectView.admin.render();
                         projectView.admin.dirty = true;
