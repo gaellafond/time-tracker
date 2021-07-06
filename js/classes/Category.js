@@ -29,6 +29,10 @@ class Category extends PersistentObject {
         );
     }
 
+    isUncategoriseCategory() {
+        return this.getKey() === "UNCATEGORISED";
+    }
+
     getCategoryClass() {
         return this.categoryClass;
     }
@@ -76,8 +80,16 @@ class Category extends PersistentObject {
 
             const editableCategoryName = new EditableCategoryName(this.markup.find("legend.category-header"), function(category) {
                 return function(oldValue, newValue) {
-                    category.setName(newValue);
-                    category.save();
+                    if (category.isUncategoriseCategory()) {
+                        const newCategory = new Category(category.timeTracker, newValue, category.timeTracker.getHigherCategoryOrder() + 1);
+                        category.timeTracker.addCategory(newCategory);
+                        newCategory.save();
+                    } else {
+                        category.setName(newValue);
+                        category.save();
+                    }
+                    category.timeTracker.reloadCategoriesMarkup();
+                    return !category.isUncategoriseCategory();
                 };
             }(this));
             editableCategoryName.setAutoSelect(true);
@@ -86,6 +98,10 @@ class Category extends PersistentObject {
             this.addEventListeners();
         }
         return this.markup;
+    }
+
+    deleteMarkup() {
+        this.markup = null;
     }
 
     addEventListeners() {
@@ -113,13 +129,13 @@ class Category extends PersistentObject {
         if (currentCategory !== this) {
             currentCategory.removeProject(draggedProject);
             this.addProject(draggedProject);
-            draggedProject.setOrder(this.getHigherOrder() + 1);
+            draggedProject.setOrder(this.getHigherProjectOrder() + 1);
             draggedProject.save();
             this.timeTracker.fixProjectOrder();
         }
     }
 
-    getHigherOrder() {
+    getHigherProjectOrder() {
         let higherOrder = 0;
         $.each(this.projectMap, function(projectKey, project) {
             if (project.getOrder() > higherOrder) {

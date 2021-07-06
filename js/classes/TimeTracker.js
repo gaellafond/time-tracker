@@ -140,6 +140,17 @@ class TimeTracker {
         this.spaceLeftEl.html((mbLeft).toFixed(2));
     }
 
+    getHigherCategoryOrder() {
+        let higherOrder = 0;
+        $.each(this.categoryMap, function(categoryKey, category) {
+            if (category.getOrder() > higherOrder) {
+                higherOrder = category.getOrder();
+            }
+        });
+
+        return higherOrder;
+    }
+
     addEventListeners() {
         $(window).on("localStorageChange", function(timeTracker) {
             return function(event) {
@@ -244,8 +255,14 @@ class TimeTracker {
     }
 
     getProjects() {
-        // Return an array of projects, ordered by "order"
-        return TimeTracker.sortProjectArray(Object.values(this.getProjectMap()));
+        let projectList = [];
+        $.each(this.getCategories(), function(categoryIndex, category) {
+            $.each(category.getProjects(), function(projectIndex, project) {
+                projectList.push(project);
+            });
+        });
+
+        return projectList;
     }
 
     getSelectedProjects() {
@@ -281,17 +298,24 @@ class TimeTracker {
 
     // Used to auto fix order after drag n drop, delete project, etc
     fixProjectOrder() {
-        this.fixDatabaseProjectOrder();
+        this.fixDatabaseOrder();
         this.reloadCategoriesMarkup();
     }
 
     // NOTE: If the app has no bug, this will do nothing.
-    fixDatabaseProjectOrder() {
+    fixDatabaseOrder() {
         let changed = false;
-        $.each(this.categoryMap, function(categoryKey, category) {
-            const projects = category.getProjects();
+        $.each(this.getCategories(), function(categoryIndex, category) {
+            // NOTE: No need for "+1" here.
+            //     "Uncategorised" category is at order 0 and is expected to stay at 0.
+            let expectedCatOrder = categoryIndex;
+            if (category.getOrder() !== expectedCatOrder) {
+                category.setOrder(expectedCatOrder);
+                category.save();
+                changed = true;
+            }
 
-            $.each(projects, function(index, project) {
+            $.each(category.getProjects(), function(index, project) {
                 let expectedOrder = index + 1;
                 if (project.getOrder() !== expectedOrder) {
                     project.setOrder(expectedOrder);
@@ -312,6 +336,9 @@ class TimeTracker {
         const categories = this.getCategories();
         $.each(categories, function(timeTracker) {
             return function(index, category) {
+                if (!category.isUncategoriseCategory()) {
+                    category.deleteMarkup();
+                }
                 // Insert the JQuery element to the page Markup
                 timeTracker.dashboardEl.append(category.getMarkup());
                 category.reloadProjectsMarkup();

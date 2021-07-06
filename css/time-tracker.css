@@ -16,7 +16,8 @@ select {
 
 select.projectColour,
 select.projectCategory,
-select.projectOrder {
+select.projectOrder,
+select.categoryOrder {
     padding: 0;
     margin: 0 0.5em;
     font-size: 1em;
@@ -105,10 +106,12 @@ span.spaceLeft::after {
     /* To help position the input field, used to edit the category name */
     position: relative;
     margin-top: 1em;
+    min-height: 250px;
 }
 
 .new-category{
-    border-color: #EEEEEE;
+    border-color: #CCCCCC;
+    border-style: dashed;
 }
 .category {
     border-color: #000000;

@@ -203,7 +203,7 @@ class Project extends PersistentObject {
                 dropOnProjectCategory.addProject(draggedProject);
                 // Move it at the end of it's new category, to make it easier to move to its
                 // expected order without messing with other project order.
-                draggedProject.setOrder(dropOnProjectCategory.getHigherOrder() + 1);
+                draggedProject.setOrder(dropOnProjectCategory.getHigherProjectOrder() + 1);
             }
 
             // Fix order

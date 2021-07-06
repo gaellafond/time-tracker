@@ -91,7 +91,9 @@ class EditableCategoryName {
             }
 
             // Delete the input field and show the changed element
-            this.inputEl.remove();
+            if (this.inputEl) {
+                this.inputEl.remove();
+            }
             this.legendEl.css("visibility", "visible");
 
             this.inputEl = null;

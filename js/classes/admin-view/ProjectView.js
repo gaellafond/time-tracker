@@ -5,15 +5,126 @@ class ProjectView extends AbstractView {
     }
 
     render() {
-        const projects = this.admin.timeTracker.getProjects();
-        if (!projects || projects.length <= 0) {
-            return;
-        }
+        let categoriesTable = $(`<table class="projects-table">
+            <tr class="header">
+                <th class="key">Key</th>
+                <th>Category name</th>
+                <th>Order</th>
+                <th class="delete-column">X</th>
+            </tr>
+        </table>`);
 
+        const categories = this.admin.timeTracker.getCategories();
+        $.each(categories, function(projectView) {
+            return function(categoryIndex, category) {
+                if (category.isUncategoriseCategory()) {
+                    categoriesTable.append(`<tr>
+                        <td class="key">${category.getKey()}</td>
+                        <td>${Utils.escapeHTML(category.getName())}</td>
+                        <td>N/A</td>
+                        <td></td>
+                    </tr>`);
+                } else {
+                    // Editable category
+                    const categoryRow = $(`<tr>
+                        <td class="key">${category.getKey()}</td>
+                        <td>${Utils.escapeHTML(category.getName())}</td>
+                    </tr>`);
+
+
+                    let categoryOrderCellEl = $(`<td></td>`);
+                    let categoryOrderSelect = $(`<select class="categoryOrder"></select>`);
+                    for (let i=1; i<=categories.length-1; i++) {
+                        const selected = i === category.getOrder();
+                        categoryOrderSelect.append($(`<option value="${i}" ${selected ? "selected=\"selected\"" : ""}>${i}</option>`));
+                    }
+                    categoryOrderCellEl.append(categoryOrderSelect);
+                    categoryRow.append(categoryOrderCellEl);
+
+                    categoryOrderSelect.change(function(projectView, category) {
+                        return function() {
+                            let newValue = $(this).val();
+                            if (isNaN(newValue)) {
+                                return false;
+                            }
+                            const oldOrder = category.getOrder();
+                            const newOrder = parseInt(newValue);
+                            if (oldOrder === newOrder) {
+                                // The new value is basically equivalent, something like 2 === 2.0
+                                return false;
+                            }
+
+                            if (oldOrder > newOrder) {
+                                // Why -0.5?
+                                // If the project was in position 5 and the user input 2 (for example),
+                                // we change the value to 1.5, which mean the project will be placed
+                                // between 1 and 2, therefore getting position 2 after fixing project orders.
+                                category.setOrder(newOrder - 0.5);
+                            } else {
+                                // Why +0.5?
+                                // If the project was in position 2 and the user input 5 (for example),
+                                // we change the value to 5.5, which mean the project will be placed
+                                // between 5 and 6, therefore getting position 5 after fixing project orders,
+                                // considering the moved project won't be in position 2 anymore.
+                                category.setOrder(newOrder + 0.5);
+                            }
+
+                            category.save();
+                            projectView.admin.timeTracker.fixProjectOrder();
+                            projectView.admin.render();
+                            projectView.admin.dirty = true;
+                        };
+                    }(projectView, category));
+
+
+                    let deleteCellEl = $(`<td class="delete-column"></td>`);
+                    let deleteCellButtonEl = $(`<button class="delete">X</button>`);
+                    deleteCellEl.append(deleteCellButtonEl);
+                    categoryRow.append(deleteCellEl);
+
+                    deleteCellButtonEl.click(function(projectView, category) {
+                        return function() {
+                            // NOTE: No character need escaping in a "confirm" window
+                            const warningMessage =
+                                "Are you sure you want to delete this category?\n" +
+                                "    Category: " + category.getName()
+                            if (window.confirm(warningMessage)) {
+                                category.delete();
+                                projectView.admin.timeTracker.reload();
+                                projectView.admin.timeTracker.fixProjectOrder();
+                                projectView.admin.render();
+                                projectView.admin.dirty = true;
+                            }
+                        };
+                    }(projectView, category));
+
+
+                    categoriesTable.append(categoryRow);
+                }
+
+                // Add category's projects
+                const projects = category.getProjects();
+                if (projects && projects.length > 0) {
+                    const categoryProjectsRow = $(`<tr></tr>`);
+                    const categoryProjectsKeyCell = $(`<td class="key"></td>`);
+                    const categoryProjectsCell = $(`<td colspan=3></td>`);
+                    categoryProjectsCell.append(projectView.renderCategoryTable(projects));
+
+                    categoryProjectsRow.append(categoryProjectsKeyCell);
+                    categoryProjectsRow.append(categoryProjectsCell);
+                    categoriesTable.append(categoryProjectsRow);
+                }
+            };
+        }(this));
+
+        return categoriesTable;
+    }
+
+    renderCategoryTable(projects) {
         let projectTable = $(`<table class="projects-table">
             <tr class="header">
                 <th class="key">Key</th>
-                <th>Name</th>
+                <th>Project name</th>
                 <th>Colour</th>
                 <th>Category</th>
                 <th>Order</th>
@@ -139,7 +250,7 @@ class ProjectView extends AbstractView {
                 projectTable.append(projectTableRow);
 
                 let projectLogsRow = $(`<tr><td class="key"></td></tr>`);
-                let projectLogsCell = $(`<td colspan="4" style="background-color: ${project.getBackgroundColour()}"></td>`);
+                let projectLogsCell = $(`<td colspan="5" style="background-color: ${project.getBackgroundColour()}"></td>`);
                 projectLogsCell.append(projectView._renderProjectLogTable(project));
 
                 projectLogsRow.append(projectLogsCell);
