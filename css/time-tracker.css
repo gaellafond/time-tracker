@@ -15,7 +15,9 @@ select {
 }
 
 select.projectColour,
-select.projectOrder {
+select.projectCategory,
+select.projectOrder,
+select.categoryOrder {
     padding: 0;
     margin: 0 0.5em;
     font-size: 1em;
@@ -95,9 +97,37 @@ span.spaceLeft::after {
     content: " MB";
 }
 
-.dashboard {
+.dashboard {}
+
+.new-category,
+.category {
     display: flex;
     flex-wrap: wrap;
+    /* To help position the input field, used to edit the category name */
+    position: relative;
+    margin-top: 1em;
+    min-height: 250px;
+}
+
+.new-category{
+    border-color: #CCCCCC;
+    border-style: dashed;
+}
+.category {
+    border-color: #000000;
+}
+
+.category-header {
+    font-size: 2em;
+}
+.new-category .category-header {
+    color: #999999;
+}
+
+/* Make the input appear where the fieldset legend needs to be. */
+input.category-header {
+    position: absolute;
+    top: -1.2em;
 }
 
 .dashboard .project,
@@ -290,6 +320,7 @@ span.spaceLeft::after {
 }
 
 .admin .project-editor {
+    min-width: 40em;
     overflow: auto;
 }
 
@@ -339,6 +370,11 @@ span.spaceLeft::after {
 .admin .project-editor table.logs-table td,
 .admin .project-editor table.logs-table th {
     width: 16%;
+}
+
+.admin .project-editor table.category-logs-table td,
+.admin .project-editor table.category-logs-table th {
+    width: 14%;
 }
 
 .admin .project-editor table.logs-table tr.header,
