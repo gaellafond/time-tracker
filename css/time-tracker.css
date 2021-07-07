@@ -94,10 +94,10 @@ div.pageTitle input {
     font-size: 2em;
 }
 
-span.spaceLeft::before {
-    content: "Space left: ";
+span.spaceUsed::before {
+    content: "Space used: ";
 }
-span.spaceLeft::after {
+span.spaceUsed::after {
     content: " MB";
 }
 

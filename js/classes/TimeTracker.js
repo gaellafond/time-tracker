@@ -10,10 +10,10 @@ class TimeTracker {
         this.leftButtonDivEl = $(`<div class="header-buttons-left"></div>`);
 
         this.pauseButtonEl = $(`<button>Pause</button>`);
-        this.spaceLeftEl = $(`<span class="spaceLeft">?</span>`);
+        this.spaceUsedEl = $(`<span class="spaceUsed">?</span>`);
 
         this.leftButtonDivEl.append(this.pauseButtonEl);
-        this.leftButtonDivEl.append(this.spaceLeftEl);
+        this.leftButtonDivEl.append(this.spaceUsedEl);
 
 
         // Title
@@ -95,7 +95,7 @@ class TimeTracker {
         this.todayTimeRibbon = new TimeRibbon(this.todayTimeRibbonEl, this);
         this.todayTimeRibbon.render([this.todayTimeRibbonFilter]);
 
-        this.updateSpaceLeft();
+        this.updateSpaceUsed();
         this.addEventListeners();
     }
 
@@ -138,10 +138,10 @@ class TimeTracker {
         this.timeNormalisationPercentage = timeNormalisationPercentage;
     }
 
-    updateSpaceLeft() {
-        const bytesLeft = Utils.getLocalStorageRemainingSpace();
-        const mbLeft = bytesLeft / (1024 * 1024);
-        this.spaceLeftEl.html((mbLeft).toFixed(2));
+    updateSpaceUsed() {
+        const bytesUsed = Utils.getLocalStorageUsedBytes();
+        const mbUsed = bytesUsed / (1024 * 1024);
+        this.spaceUsedEl.html((mbUsed).toFixed(2));
     }
 
     getHigherCategoryOrder() {
@@ -158,7 +158,7 @@ class TimeTracker {
     addEventListeners() {
         $(window).on("localStorageChange", function(timeTracker) {
             return function(event) {
-                timeTracker.updateSpaceLeft();
+                timeTracker.updateSpaceUsed();
             };
         }(this));
 

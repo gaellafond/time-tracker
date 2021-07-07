@@ -212,12 +212,15 @@ class Utils {
     }
 
     // Approximate local storage usage, in bytes
+    // The following article is promising, but doesn't seem to work:
+    //     https://developers.google.com/web/updates/2017/08/estimating-available-storage-space
     static getLocalStorageUsedBytes() {
-        // x2 because JS store strings as UTF16
+        // x2 because JS store strings as UCS-2 (similar to UTF16)
         return JSON.stringify(window.localStorage).length * 2;
     }
 
     // Approximate space left on local storage, in bytes
+    // NOTE: This is not practical since every browser have different localstorage size.
     static getLocalStorageRemainingSpace() {
         // NOTE: IE has a window.localStorage.remainingSpace property, but other browsers do not yet have it.
         if (window.localStorage.hasOwnProperty("remainingSpace")) {
@@ -1481,10 +1484,10 @@ class TimeTracker {
         this.leftButtonDivEl = $(`<div class="header-buttons-left"></div>`);
 
         this.pauseButtonEl = $(`<button>Pause</button>`);
-        this.spaceLeftEl = $(`<span class="spaceLeft">?</span>`);
+        this.spaceUsedEl = $(`<span class="spaceUsed">?</span>`);
 
         this.leftButtonDivEl.append(this.pauseButtonEl);
-        this.leftButtonDivEl.append(this.spaceLeftEl);
+        this.leftButtonDivEl.append(this.spaceUsedEl);
 
 
         // Title
@@ -1566,7 +1569,7 @@ class TimeTracker {
         this.todayTimeRibbon = new TimeRibbon(this.todayTimeRibbonEl, this);
         this.todayTimeRibbon.render([this.todayTimeRibbonFilter]);
 
-        this.updateSpaceLeft();
+        this.updateSpaceUsed();
         this.addEventListeners();
     }
 
@@ -1609,10 +1612,10 @@ class TimeTracker {
         this.timeNormalisationPercentage = timeNormalisationPercentage;
     }
 
-    updateSpaceLeft() {
-        const bytesLeft = Utils.getLocalStorageRemainingSpace();
-        const mbLeft = bytesLeft / (1024 * 1024);
-        this.spaceLeftEl.html((mbLeft).toFixed(2));
+    updateSpaceUsed() {
+        const bytesUsed = Utils.getLocalStorageUsedBytes();
+        const mbUsed = bytesUsed / (1024 * 1024);
+        this.spaceUsedEl.html((mbUsed).toFixed(2));
     }
 
     getHigherCategoryOrder() {
@@ -1629,7 +1632,7 @@ class TimeTracker {
     addEventListeners() {
         $(window).on("localStorageChange", function(timeTracker) {
             return function(event) {
-                timeTracker.updateSpaceLeft();
+                timeTracker.updateSpaceUsed();
             };
         }(this));
 
@@ -3996,10 +3999,10 @@ div.pageTitle input {
     font-size: 2em;
 }
 
-span.spaceLeft::before {
-    content: "Space left: ";
+span.spaceUsed::before {
+    content: "Space used: ";
 }
-span.spaceLeft::after {
+span.spaceUsed::after {
     content: " MB";
 }
 

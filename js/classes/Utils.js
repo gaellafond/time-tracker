@@ -195,12 +195,15 @@ class Utils {
     }
 
     // Approximate local storage usage, in bytes
+    // The following article is promising, but doesn't seem to work:
+    //     https://developers.google.com/web/updates/2017/08/estimating-available-storage-space
     static getLocalStorageUsedBytes() {
-        // x2 because JS store strings as UTF16
+        // x2 because JS store strings as UCS-2 (similar to UTF16)
         return JSON.stringify(window.localStorage).length * 2;
     }
 
     // Approximate space left on local storage, in bytes
+    // NOTE: This is not practical since every browser have different localstorage size.
     static getLocalStorageRemainingSpace() {
         // NOTE: IE has a window.localStorage.remainingSpace property, but other browsers do not yet have it.
         if (window.localStorage.hasOwnProperty("remainingSpace")) {
