@@ -86,8 +86,8 @@ class Admin {
                         <h2>View</h2>
                         <select class="view">
                             <option value="chronoView" selected="selected">By date</option>
-                            <option value="dailyProjectView">By date, grouped by project</option>
-                            <option value="dailyCategoryView">By date, grouped by category</option>
+                            <!-- <option value="dailyProjectView">By project</option> -->
+                            <option value="dailyCategoryView">By category</option>
                             <option value="projectView">Category and project management</option>
                         </select>
                     </div>

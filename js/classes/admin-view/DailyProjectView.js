@@ -109,7 +109,7 @@ class DailyProjectView extends AbstractView {
 
                     const spacerRow = $(`<tr class="spacer">
                         <td class="key"></td>
-                        <th colspan="7"></th>
+                        <td colspan="7"></td>
                     </tr>`);
                     logsTable.append(spacerRow);
 
@@ -187,7 +187,7 @@ class DailyProjectView extends AbstractView {
 
         const spacerRow = $(`<tr class="spacer">
             <td class="key"></td>
-            <th colspan="7"></th>
+            <td colspan="7"></td>
         </tr>`);
         logsTable.append(spacerRow);
 

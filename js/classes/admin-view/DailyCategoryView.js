@@ -14,7 +14,7 @@ class DailyCategoryView extends AbstractView {
         let datesTable = $(`<table class="dates-table">
             <tr class="header">
                 <th class="weekday">Weekday</th>
-                <th>Date TEST</th>
+                <th>Date</th>
             </tr>
         </table>`);
 
@@ -95,10 +95,9 @@ class DailyCategoryView extends AbstractView {
 
         const timeNormalisation = this.admin.timeTracker.getTimeNormalisationPercentage();
 
-        const logsTable = $(`<table class="logs-table category-logs-table">
+        const logsTable = $(`<table class="logs-table">
             <tr class="header">
                 <th class="key">Key</th>
-                <th>Category</th>
                 <th>Project</th>
                 <th>Start date</th>
                 <th>End date</th>
@@ -118,11 +117,11 @@ class DailyCategoryView extends AbstractView {
                     return true; // continue
                 }
 
-                const spacerRow = $(`<tr class="spacer">
+                const categoryRow = $(`<tr class="categoryRow">
                     <td class="key"></td>
-                    <th colspan="8"></th>
+                    <td colspan="7">${Utils.escapeHTML(category.getName())}</td>
                 </tr>`);
-                logsTable.append(spacerRow);
+                logsTable.append(categoryRow);
 
                 let categoryTotal = 0;
                 $.each(category.getProjects(), function(dailyCategoryView) {
@@ -141,10 +140,6 @@ class DailyCategoryView extends AbstractView {
                                 const logRow = $(`<tr class="${rowClass}">
                                     <td class="key">${Utils.escapeHTML(log.getKey())}</td>
                                 </tr>`);
-
-                                let categoryCellEl = $(`<td></td>`);
-                                let categoryCellDataEl = $(`<span>${Utils.escapeHTML(category.getName())}</span>`);
-                                categoryCellEl.append(categoryCellDataEl);
 
                                 let projectCellEl = $(`<td style="background-color: ${projectColor}"></td>`);
                                 let projectCellDataEl = $(`<span>${Utils.escapeHTML(project.getName())}</span>`);
@@ -176,7 +171,6 @@ class DailyCategoryView extends AbstractView {
                                 let deleteCellButtonEl = $(`<button class="delete">X</button>`);
                                 deleteCellEl.append(deleteCellButtonEl);
 
-                                logRow.append(categoryCellEl);
                                 logRow.append(projectCellEl);
                                 logRow.append(startDateCellEl);
                                 logRow.append(endDateCellEl);
@@ -196,7 +190,6 @@ class DailyCategoryView extends AbstractView {
 
                             const projectTotalRow = $(`<tr class="${rowClass}">
                                 <td class="key"></td>
-                                <td></td> <!-- Category -->
                                 <th style="background-color: ${projectColor}; text-align:left;">TOTAL</th>
                                 <th colspan="2"></th>
                                 <td>${Utils.formatTotalTime(total)}</td>
@@ -216,7 +209,6 @@ class DailyCategoryView extends AbstractView {
                 // Total per category
                 const categoryTotalRow = $(`<tr class="total">
                     <td class="key"></td>
-                    <td><span>${Utils.escapeHTML(category.getName())}</span></td> <!-- Category -->
                     <th>TOTAL</th>
                     <th colspan="2"></th>
                     <td>${Utils.formatTotalTime(categoryTotal)}</td>
@@ -229,13 +221,12 @@ class DailyCategoryView extends AbstractView {
 
         const spacerRow = $(`<tr class="spacer">
             <td class="key"></td>
-            <th colspan="7"></th>
+            <td colspan="7"></td>
         </tr>`);
         logsTable.append(spacerRow);
 
         const dayTotalRow = $(`<tr class="total">
             <td class="key"></td>
-            <td></td> <!-- Category -->
             <th>GRAND TOTAL</th>
             <th colspan="2"></th>
             <td>${Utils.formatTotalTime(dayTotal)}</td>

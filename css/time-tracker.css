@@ -376,11 +376,6 @@ input.category-header {
     width: 16%;
 }
 
-.admin .project-editor table.category-logs-table td,
-.admin .project-editor table.category-logs-table th {
-    width: 14%;
-}
-
 .admin .project-editor table.logs-table tr.header,
 .admin .project-editor table.logs-table tr.total {
     background-color: #EEEEEE;
@@ -455,6 +450,13 @@ input.category-header {
 
 .admin button.reset {
     background-color: #FF0000;
+}
+
+.admin .categoryRow {
+    font-weight: bold;
+    font-size: 1.2em;
+    height: 2.5em;
+    vertical-align: bottom;
 }
 
 .today-time-ribbon {
