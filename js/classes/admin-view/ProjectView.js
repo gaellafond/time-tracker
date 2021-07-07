@@ -164,15 +164,16 @@ class ProjectView extends AbstractView {
                 let projectCategoryCellEl = $(`<td></td>`);
                 let projectCategorySelect = $(`<select class="projectCategory"></select>`);
                 const categoryMap = projectView.admin.timeTracker.getCategoryMap();
+                const projectCategory = project.getCategory();
                 $.each(categoryMap, function(categoryKey, category) {
-                    const selected = categoryKey === project.getCategoryKey();
+                    const selected = categoryKey === projectCategory.getKey();
                     projectCategorySelect.append($(`<option value="${categoryKey}" ${selected ? "selected=\"selected\"" : ""}>${category.getName()}</option>`));
                 });
                 projectCategoryCellEl.append(projectCategorySelect);
 
                 projectCategorySelect.change(function(projectView, project) {
                     return function() {
-                        project.setCategoryKey($(this).val());
+                        project.updateCategoryKey($(this).val());
                         project.save();
                         projectView.admin.render();
                         projectView.admin.dirty = true;

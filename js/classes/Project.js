@@ -331,6 +331,14 @@ class Project extends PersistentObject {
     setCategoryKey(categoryKey) {
         this.categoryKey = categoryKey;
     }
+    updateCategoryKey(categoryKey) {
+        const currentCategory = this.getCategory();
+        const newCategory = this.timeTracker.getCategory(categoryKey);
+        if (currentCategory !== newCategory) {
+            currentCategory.removeProject(this);
+            newCategory.addProject(this);
+        }
+    }
 
     getCategory() {
         return this.timeTracker.getCategory(this.categoryKey);
