@@ -72,6 +72,10 @@ class EditableCategoryName {
             // Get the new value from the input field
             const newValue = this.inputEl.val().trim();
 
+            // Delete the input field now, to prevent multiple call of "toggleEditOff"
+            this.inputEl.remove();
+            this.inputEl = null;
+
             if (newValue !== oldValue) {
                 if (this.allowEmpty || newValue.length) {
                     // Call the callback, to save the value to the Database
@@ -90,13 +94,8 @@ class EditableCategoryName {
                 }
             }
 
-            // Delete the input field and show the changed element
-            if (this.inputEl) {
-                this.inputEl.remove();
-            }
+            // Show the changed element
             this.legendEl.css("visibility", "visible");
-
-            this.inputEl = null;
         }
     }
 }

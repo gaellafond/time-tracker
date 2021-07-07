@@ -50,6 +50,10 @@ class EditableProject {
             // Get the new value from the input field
             const newProjectKey = this.inputEl.val().trim();
 
+            // Delete the input field now, to prevent multiple call of "toggleEditOff"
+            this.inputEl.remove();
+            this.inputEl = null;
+
             if (newProjectKey !== oldProjectKey) {
                 const projectMap = this.timeTracker.getProjectMap();
                 const newProject = projectMap[newProjectKey];
@@ -71,11 +75,8 @@ class EditableProject {
                 }
             }
 
-            // Delete the input field and show the changed element
-            this.inputEl.remove();
+            // Show the changed element
             this.spanEl.show();
-
-            this.inputEl = null;
         }
     }
 }

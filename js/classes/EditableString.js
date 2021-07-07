@@ -71,6 +71,10 @@ class EditableString {
             // Get the new value from the input field
             const newValue = this.inputEl.val().trim();
 
+            // Delete the input field now, to prevent multiple call of "toggleEditOff"
+            this.inputEl.remove();
+            this.inputEl = null;
+
             if (newValue !== oldValue) {
                 if (this.allowEmpty || newValue.length) {
                     // Call the callback, to save the value to the Database
@@ -89,11 +93,8 @@ class EditableString {
                 }
             }
 
-            // Delete the input field and show the changed element
-            this.inputEl.remove();
+            // Show the changed element
             this.spanEl.show();
-
-            this.inputEl = null;
         }
     }
 }
