@@ -401,6 +401,7 @@ class Project extends PersistentObject {
 
     // Override
     delete() {
+        this.getCategory().removeProject(this);
         $.each(this.logs, function(index, log) {
             log.delete();
         });
