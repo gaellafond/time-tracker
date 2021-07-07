@@ -65,15 +65,19 @@ class TimeTracker {
 
         this.newProjectBox.find("button.new").click(function(timeTracker) {
             return function() {
-                const projects = timeTracker.getProjects();
+                // Determine project colour.
+                // To ensure a good colour rolling, set it to "total number of project" + 1
                 let colourIndex = 1;
-                let projectOrder = 1;
+                const projects = timeTracker.getProjects();
                 if (projects !== null && projects.length > 0) {
-                    const lastProject = projects[projects.length - 1];
                     colourIndex = projects.length + 1;
-                    projectOrder = lastProject.getOrder() + 1;
                 }
-                let newProject = new Project(timeTracker, "New project", colourIndex, projectOrder, true);
+
+                // Set project order to be the last one in the "Uncategorised" category,
+                // since that's the category new projects appears.
+                let projectOrder = timeTracker.uncategorisedCategory.getHigherProjectOrder() + 1;
+
+                let newProject = new Project(timeTracker, "New project", null, colourIndex, projectOrder, true);
                 newProject.save();
                 timeTracker.addProject(newProject);
                 timeTracker.reloadCategoriesMarkup();
