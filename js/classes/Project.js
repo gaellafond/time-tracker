@@ -360,7 +360,8 @@ class Project extends PersistentObject {
     }
 
     getColourIndex() {
-        return this.colourIndex;
+        const colours = Project.getProjectColours();
+        return this.colourIndex % colours.length;
     }
     getColour() {
         return Project.getProjectColour(this.colourIndex);
