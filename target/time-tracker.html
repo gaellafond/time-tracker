@@ -507,11 +507,19 @@ class EditableProject {
             this.spanEl.hide();
             this.inputEl = $(`<select class="editableProjectSelect"></select>`);
 
-            const projectMap = this.timeTracker.getProjectMap();
-            $.each(projectMap, function(editableProject) {
-                return function(projectKey, project) {
-                    const selected = editableProject.project.getKey() === project.getKey();
-                    editableProject.inputEl.append(`<option style="background-color: ${project.getBackgroundColour()}" value="${Utils.escapeHTML(project.getKey())}" ${selected ? "selected" : ""}>${Utils.escapeHTML(project.getName())}</option>`);
+            $.each(this.timeTracker.getCategories(), function(editableProject) {
+                return function(categoryIndex, category) {
+                    const projectList = category.getProjects();
+                    if (projectList.length > 0) {
+                        // Show a category header
+                        editableProject.inputEl.append(`<optgroup label="${Utils.escapeHTML(category.getName())}">`);
+                        $.each(projectList, function(projectIndex, project) {
+                            const selected = editableProject.project.getKey() === project.getKey();
+                            editableProject.inputEl.append(`<option style="background-color: ${project.getBackgroundColour()}" value="${Utils.escapeHTML(project.getKey())}" ${selected ? "selected" : ""}>${Utils.escapeHTML(project.getName())}</option>`);
+                            projectList.push(project);
+                        });
+                        editableProject.inputEl.append(`</optgroup>`);
+                    }
                 };
             }(this));
 
@@ -3959,6 +3967,10 @@ select.categoryOrder {
 
 .editableString .empty {
     color: #999999;
+}
+
+.editableProjectSelect optgroup {
+    font-size: 1.2em;
 }
 
 div.header {

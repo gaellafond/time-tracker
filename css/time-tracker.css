@@ -59,6 +59,10 @@ select.categoryOrder {
     color: #999999;
 }
 
+.editableProjectSelect optgroup {
+    font-size: 1.2em;
+}
+
 div.header {
     display: flex;
     flex-wrap: wrap;
