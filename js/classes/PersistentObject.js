@@ -85,7 +85,15 @@ class PersistentObject {
 
     static load(key) {
         let jsonStr = window.localStorage.getItem(key);
-        return jsonStr === null ? null : JSON.parse(jsonStr);
+        let json = null;
+        if (jsonStr !== null) {
+            try {
+                json = JSON.parse(jsonStr);
+            } catch(err) {
+                alert("Invalid JSON found in the Database:\n" + jsonStr + "\nError:\n" + err);
+            }
+        }
+        return json;
     }
 
     // Abstract methods
