@@ -20,9 +20,27 @@ class PersistentObject {
 
     static getAllKeys(keyPrefix) {
         let keys = [];
-        for (let key in window.localStorage){
-            if (window.localStorage.hasOwnProperty(key) && key.startsWith(keyPrefix)) {
-                keys.push(key);
+        if (keyPrefix === null || keyPrefix === undefined) {
+            for (let key in window.localStorage){
+                if (window.localStorage.hasOwnProperty(key)) {
+                    if (
+                        key === 'timeTrackerPauseData' ||
+                        key === 'timeTrackerData' ||
+                        key.match(/^cat[0-9]+$/) ||
+                        key.match(/^project[0-9]+$/) ||
+                        key.match(/^log_project[0-9]+_[0-9]+$/)
+                    ) {
+                        keys.push(key);
+                    }
+                }
+            }
+        } else {
+            let allKeys = PersistentObject.getAllKeys();
+            for (let i=0; i<allKeys.length; i++){
+                let key = allKeys[i];
+                if (key.startsWith(keyPrefix)) {
+                    keys.push(key);
+                }
             }
         }
 
@@ -31,17 +49,17 @@ class PersistentObject {
 
     static getAllJSON(keyPrefix) {
         let jsonObjs = [];
-        for (let key in window.localStorage){
-            if (window.localStorage.hasOwnProperty(key)) {
-                let selected = true;
-                if (keyPrefix) {
-                    selected = key.startsWith(keyPrefix);
-                }
-                if (selected) {
-                    let jsonObj = PersistentObject.load(key);
-                    if (jsonObj !== null) {
-                        jsonObjs.push(jsonObj);
-                    }
+        let allKeys = PersistentObject.getAllKeys();
+        for (let i=0; i<allKeys.length; i++){
+            let key = allKeys[i];
+            let selected = true;
+            if (keyPrefix) {
+                selected = key.startsWith(keyPrefix);
+            }
+            if (selected) {
+                let jsonObj = PersistentObject.load(key);
+                if (jsonObj !== null) {
+                    jsonObjs.push(jsonObj);
                 }
             }
         }
@@ -51,12 +69,12 @@ class PersistentObject {
 
     static getDBBackup() {
         let jsonObjs = {};
-        for (let key in window.localStorage){
-            if (window.localStorage.hasOwnProperty(key)) {
-                let jsonObj = PersistentObject.load(key);
-                if (jsonObj !== null) {
-                    jsonObjs[key] = jsonObj;
-                }
+        let allKeys = PersistentObject.getAllKeys();
+        for (let i=0; i<allKeys.length; i++){
+            let key = allKeys[i];
+            let jsonObj = PersistentObject.load(key);
+            if (jsonObj !== null) {
+                jsonObjs[key] = jsonObj;
             }
         }
 
@@ -90,7 +108,7 @@ class PersistentObject {
             try {
                 json = JSON.parse(jsonStr);
             } catch(err) {
-                alert("Invalid JSON found in the Database.\nKey: " + key + "\nJSON:\n" + jsonStr + "\nError:\n" + err);
+                console.error("Invalid JSON found in the Database.\nKey: " + key + "\nJSON: " + jsonStr + "\nError: " + err);
             }
         }
         return json;
