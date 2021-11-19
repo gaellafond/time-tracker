@@ -90,7 +90,7 @@ class PersistentObject {
             try {
                 json = JSON.parse(jsonStr);
             } catch(err) {
-                alert("Invalid JSON found in the Database:\n" + jsonStr + "\nError:\n" + err);
+                alert("Invalid JSON found in the Database. Key: " + key + "\nJSON:\n" + jsonStr + "\nError:\n" + err);
             }
         }
         return json;
