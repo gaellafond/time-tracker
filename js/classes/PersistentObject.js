@@ -87,7 +87,7 @@ class PersistentObject {
     }
 
     static _reset() {
-        window.localStorage.clear();
+        Utils.localStorageClear();
     }
 
     static restoreDBBackup(jsonDB) {
@@ -95,14 +95,18 @@ class PersistentObject {
         for (let key in jsonDB) {
             if (jsonDB.hasOwnProperty(key)) {
                 let jsonObj = jsonDB[key];
-                window.localStorage.setItem(key, JSON.stringify(jsonObj));
+                Utils.localStorageSetItem(key, JSON.stringify(jsonObj));
             }
         }
         Utils.notifyLocalStorageChange();
     }
 
     static load(key) {
-        let jsonStr = window.localStorage.getItem(key);
+        // Weird hack to make FF load localStorage correctly...
+        //   https://stackoverflow.com/questions/13852209/localstorage-unreliable-in-firefox
+        localStorage.length;
+        let jsonStr = Utils.localStorageGetItem(key);
+        localStorage.length;
         let json = null;
         if (jsonStr !== null) {
             try {
@@ -122,12 +126,20 @@ class PersistentObject {
     }
 
     save() {
-        window.localStorage.setItem(this.getKey(), JSON.stringify(this.toJson()));
+        // Weird hack to make FF load localStorage correctly...
+        //   https://stackoverflow.com/questions/13852209/localstorage-unreliable-in-firefox
+        localStorage.length;
+        Utils.localStorageSetItem(this.getKey(), JSON.stringify(this.toJson()));
+        localStorage.length;
         Utils.notifyLocalStorageChange();
     }
 
     delete() {
-        window.localStorage.removeItem(this.getKey());
+        // Weird hack to make FF load localStorage correctly...
+        //   https://stackoverflow.com/questions/13852209/localstorage-unreliable-in-firefox
+        localStorage.length;
+        Utils.localStorageRemoveItem(this.getKey());
+        localStorage.length;
         Utils.notifyLocalStorageChange();
     }
 }

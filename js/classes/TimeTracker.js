@@ -38,7 +38,7 @@ class TimeTracker {
 
         this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
         this.dashboardEl = $(`<div class="dashboard"></div>`);
-        
+
 
         timeTrackerEl.append(this.headerEl);
         timeTrackerEl.append(this.todayTimeRibbonEl);
@@ -100,7 +100,7 @@ class TimeTracker {
     }
 
     load() {
-        const timeTrackerDataStr = window.localStorage.getItem('timeTrackerData');
+        const timeTrackerDataStr = Utils.localStorageGetItem('timeTrackerData');
         this.timeNormalisationPercentage = 1.13;
 
         if (timeTrackerDataStr) {
@@ -120,7 +120,7 @@ class TimeTracker {
             "timeNormalisationPercentage": this.timeNormalisationPercentage
         };
 
-        window.localStorage.setItem('timeTrackerData', JSON.stringify(jsonTimeTrackerData));
+        Utils.localStorageSetItem('timeTrackerData', JSON.stringify(jsonTimeTrackerData));
         Utils.notifyLocalStorageChange();
     }
 

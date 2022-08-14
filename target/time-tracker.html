@@ -277,6 +277,35 @@ class Utils {
 
         uploadFile.trigger('click');
     }
+
+
+    // LocalStorage function wrapper, to make it work reliably with Firefox
+    // See: https://stackoverflow.com/questions/13852209/localstorage-unreliable-in-firefox
+
+    static localStorageClear() {
+        localStorage.length;
+        window.localStorage.clear();
+        localStorage.length;
+    }
+
+    static localStorageGetItem(key) {
+        localStorage.length;
+        const item = window.localStorage.getItem(key);
+        localStorage.length;
+        return item;
+    }
+
+    static localStorageSetItem(key, item) {
+        localStorage.length;
+        window.localStorage.setItem(key, item);
+        localStorage.length;
+    }
+
+    static localStorageRemoveItem(key) {
+        localStorage.length;
+        window.localStorage.removeItem(key);
+        localStorage.length;
+    }
 }
 </script>
 <script>
@@ -670,7 +699,7 @@ class PersistentObject {
     }
 
     static _reset() {
-        window.localStorage.clear();
+        Utils.localStorageClear();
     }
 
     static restoreDBBackup(jsonDB) {
@@ -678,14 +707,18 @@ class PersistentObject {
         for (let key in jsonDB) {
             if (jsonDB.hasOwnProperty(key)) {
                 let jsonObj = jsonDB[key];
-                window.localStorage.setItem(key, JSON.stringify(jsonObj));
+                Utils.localStorageSetItem(key, JSON.stringify(jsonObj));
             }
         }
         Utils.notifyLocalStorageChange();
     }
 
     static load(key) {
-        let jsonStr = window.localStorage.getItem(key);
+        // Weird hack to make FF load localStorage correctly...
+        //   https://stackoverflow.com/questions/13852209/localstorage-unreliable-in-firefox
+        localStorage.length;
+        let jsonStr = Utils.localStorageGetItem(key);
+        localStorage.length;
         let json = null;
         if (jsonStr !== null) {
             try {
@@ -705,12 +738,20 @@ class PersistentObject {
     }
 
     save() {
-        window.localStorage.setItem(this.getKey(), JSON.stringify(this.toJson()));
+        // Weird hack to make FF load localStorage correctly...
+        //   https://stackoverflow.com/questions/13852209/localstorage-unreliable-in-firefox
+        localStorage.length;
+        Utils.localStorageSetItem(this.getKey(), JSON.stringify(this.toJson()));
+        localStorage.length;
         Utils.notifyLocalStorageChange();
     }
 
     delete() {
-        window.localStorage.removeItem(this.getKey());
+        // Weird hack to make FF load localStorage correctly...
+        //   https://stackoverflow.com/questions/13852209/localstorage-unreliable-in-firefox
+        localStorage.length;
+        Utils.localStorageRemoveItem(this.getKey());
+        localStorage.length;
         Utils.notifyLocalStorageChange();
     }
 }
@@ -1538,7 +1579,7 @@ class TimeTracker {
 
         this.todayTimeRibbonEl = $(`<div class="time-ribbon today-time-ribbon"></div>`);
         this.dashboardEl = $(`<div class="dashboard"></div>`);
-        
+
 
         timeTrackerEl.append(this.headerEl);
         timeTrackerEl.append(this.todayTimeRibbonEl);
@@ -1600,7 +1641,7 @@ class TimeTracker {
     }
 
     load() {
-        const timeTrackerDataStr = window.localStorage.getItem('timeTrackerData');
+        const timeTrackerDataStr = Utils.localStorageGetItem('timeTrackerData');
         this.timeNormalisationPercentage = 1.13;
 
         if (timeTrackerDataStr) {
@@ -1620,7 +1661,7 @@ class TimeTracker {
             "timeNormalisationPercentage": this.timeNormalisationPercentage
         };
 
-        window.localStorage.setItem('timeTrackerData', JSON.stringify(jsonTimeTrackerData));
+        Utils.localStorageSetItem('timeTrackerData', JSON.stringify(jsonTimeTrackerData));
         Utils.notifyLocalStorageChange();
     }
 
@@ -2201,7 +2242,7 @@ class PausePage {
                     "pausedLog": runningLog.toJson(),
                 };
 
-                window.localStorage.setItem('timeTrackerPauseData', JSON.stringify(jsonTimeTrackerPauseData));
+                Utils.localStorageSetItem('timeTrackerPauseData', JSON.stringify(jsonTimeTrackerPauseData));
                 this.timeTracker.stopLogCounter();
             }
         }
@@ -2212,7 +2253,7 @@ class PausePage {
     }
 
     resume() {
-        const timeTrackerPauseDataStr = window.localStorage.getItem('timeTrackerPauseData');
+        const timeTrackerPauseDataStr = Utils.localStorageGetItem('timeTrackerPauseData');
         if (timeTrackerPauseDataStr) {
             const jsonTimeTrackerPauseData = JSON.parse(timeTrackerPauseDataStr);
             const jsonPausedLog = jsonTimeTrackerPauseData["pausedLog"];
@@ -2225,13 +2266,13 @@ class PausePage {
             }
         }
 
-        window.localStorage.removeItem('timeTrackerPauseData');
+        Utils.localStorageRemoveItem('timeTrackerPauseData');
 
         this.hide();
     }
 
     isPaused() {
-        return !!window.localStorage.getItem('timeTrackerPauseData');
+        return !!Utils.localStorageGetItem('timeTrackerPauseData');
     }
 
     show() {

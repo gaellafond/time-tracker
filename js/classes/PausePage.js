@@ -38,7 +38,7 @@ class PausePage {
                     "pausedLog": runningLog.toJson(),
                 };
 
-                window.localStorage.setItem('timeTrackerPauseData', JSON.stringify(jsonTimeTrackerPauseData));
+                Utils.localStorageSetItem('timeTrackerPauseData', JSON.stringify(jsonTimeTrackerPauseData));
                 this.timeTracker.stopLogCounter();
             }
         }
@@ -49,7 +49,7 @@ class PausePage {
     }
 
     resume() {
-        const timeTrackerPauseDataStr = window.localStorage.getItem('timeTrackerPauseData');
+        const timeTrackerPauseDataStr = Utils.localStorageGetItem('timeTrackerPauseData');
         if (timeTrackerPauseDataStr) {
             const jsonTimeTrackerPauseData = JSON.parse(timeTrackerPauseDataStr);
             const jsonPausedLog = jsonTimeTrackerPauseData["pausedLog"];
@@ -62,13 +62,13 @@ class PausePage {
             }
         }
 
-        window.localStorage.removeItem('timeTrackerPauseData');
+        Utils.localStorageRemoveItem('timeTrackerPauseData');
 
         this.hide();
     }
 
     isPaused() {
-        return !!window.localStorage.getItem('timeTrackerPauseData');
+        return !!Utils.localStorageGetItem('timeTrackerPauseData');
     }
 
     show() {

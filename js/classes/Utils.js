@@ -260,4 +260,33 @@ class Utils {
 
         uploadFile.trigger('click');
     }
+
+
+    // LocalStorage function wrapper, to make it work reliably with Firefox
+    // See: https://stackoverflow.com/questions/13852209/localstorage-unreliable-in-firefox
+
+    static localStorageClear() {
+        localStorage.length;
+        window.localStorage.clear();
+        localStorage.length;
+    }
+
+    static localStorageGetItem(key) {
+        localStorage.length;
+        const item = window.localStorage.getItem(key);
+        localStorage.length;
+        return item;
+    }
+
+    static localStorageSetItem(key, item) {
+        localStorage.length;
+        window.localStorage.setItem(key, item);
+        localStorage.length;
+    }
+
+    static localStorageRemoveItem(key) {
+        localStorage.length;
+        window.localStorage.removeItem(key);
+        localStorage.length;
+    }
 }
